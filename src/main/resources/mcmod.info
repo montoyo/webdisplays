@@ -5,7 +5,7 @@
     "description": "Web Screens! Yayyy!!",
     "version": "${version}",
     "mcversion": "${mcversion}",
-    "url": "http://montoyo.net/wd2.php",
+    "url": "https://montoyo.net/wd2.php",
     "updateUrl": "",
     "authorList": [ "montoyo" ],
     "credits": "",
