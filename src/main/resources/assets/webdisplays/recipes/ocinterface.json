@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "GSG",
+    "GGG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:dye",
+      "data": 8
+    },
+    "S": {
+      "item": "webdisplays:screen"
+    }
+  },
+  "result": {
+    "item": "webdisplays:peripheral",
+    "data": 3
+  }
+}

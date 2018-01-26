@@ -21,6 +21,8 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * French translations
 * Embedded videos sound/distance
 * minePad management: check GuiContainer.draggedStack for minePad
+* Enhance crafts
+* Enhance models
 
 ### Config elements
 * Site blacklist
