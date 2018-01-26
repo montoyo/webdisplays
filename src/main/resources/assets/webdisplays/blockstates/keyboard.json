@@ -1,0 +1,8 @@
+{
+	"variants": {
+        "facing=0": { "model": "webdisplays:kb_right"             },
+        "facing=1": { "model": "webdisplays:kb_right", "y": 90.0  },
+        "facing=2": { "model": "webdisplays:kb_right", "y": 180.0 },
+        "facing=3": { "model": "webdisplays:kb_right", "y": 270.0 }
+    }
+}

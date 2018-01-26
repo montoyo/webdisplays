@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "RGB",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:glass_pane"
+    },
+    "R": {
+      "item": "minecraft:dye",
+      "data": 1
+    },
+    "G": {
+      "item": "minecraft:dye",
+      "data": 2
+    },
+    "B": {
+      "item": "minecraft:dye",
+      "data": 4
+    }
+  },
+  "result": {
+    "item": "webdisplays:screen",
+    "count": 16
+  }
+}

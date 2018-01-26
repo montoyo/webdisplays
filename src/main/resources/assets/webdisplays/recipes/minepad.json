@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PRP",
+    "PGP",
+    "DBD"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:glass_pane"
+    },
+    "R": {
+      "item": "minecraft:dye",
+      "data": 1
+    },
+    "G": {
+      "item": "minecraft:dye",
+      "data": 2
+    },
+    "B": {
+      "item": "minecraft:dye",
+      "data": 4
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "item": "webdisplays:minepad"
+  }
+}

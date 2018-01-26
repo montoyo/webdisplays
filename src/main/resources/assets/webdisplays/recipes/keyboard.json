@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "KKK",
+    "KRK",
+    "KKK"
+  ],
+  "key": {
+    "K": {
+      "item": "webdisplays:stonekey"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "webdisplays:peripheral",
+    "data": 0
+  }
+}

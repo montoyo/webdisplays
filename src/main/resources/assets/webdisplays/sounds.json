@@ -1,0 +1,16 @@
+{
+    "keyboardType": {
+        "category": "block",
+        "subtitle": "block.webdisplays.keyboard",
+        "sounds": [
+            "webdisplays:keyboard1",
+            "webdisplays:keyboard2",
+            "webdisplays:keyboard3",
+            "webdisplays:keyboard4",
+            "webdisplays:keyboard5",
+            "webdisplays:keyboard6",
+            "webdisplays:keyboard7",
+            "webdisplays:keyboard8"
+        ]
+    }
+}

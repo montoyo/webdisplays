@@ -1,0 +1,38 @@
+{
+  "controls": [
+    {
+      "type": "Label",
+      "x": 5,
+      "y": 5,
+      "label": "$webdisplays.gui.keyboard.hooked",
+      "color": "yellow",
+      "name": "lblInfo",
+      "visible": "1 - showWarning"
+    },
+    {
+      "type": "Label",
+      "label": "$webdisplays.gui.keyboard.warning1",
+      "color": "red",
+      "visible": "showWarning"
+    },
+    {
+      "type": "Label",
+      "label": "$webdisplays.gui.keyboard.warning2",
+      "color": "red",
+      "visible": "showWarning"
+    },
+    {
+      "type": "Label",
+      "label": "$webdisplays.gui.keyboard.warning3",
+      "color": "red",
+      "visible": "showWarning"
+    },
+    {
+      "type": "Button",
+      "name": "btnOk",
+      "label": "$webdisplays.gui.keyboard.gotcha",
+      "visible": "showWarning",
+      "disabled": "1 - showWarning"
+    }
+  ]
+}

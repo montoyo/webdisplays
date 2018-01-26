@@ -1,0 +1,22 @@
+/*
+ * Copyright (C) 2018 BARBOTIN Nicolas
+ */
+
+package net.montoyo.wd.core;
+
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemStack;
+import net.montoyo.wd.WebDisplays;
+
+public class WDCreativeTab extends CreativeTabs {
+
+    public WDCreativeTab() {
+        super("webdisplays");
+    }
+
+    @Override
+    public ItemStack getTabIconItem() {
+        return new ItemStack(WebDisplays.INSTANCE.blockScreen);
+    }
+
+}

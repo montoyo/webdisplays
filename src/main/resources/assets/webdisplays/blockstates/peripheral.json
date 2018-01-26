@@ -1,0 +1,23 @@
+{
+	"variants": {
+        "facing=0,type=keyboard": { "model": "webdisplays:kb_left"             },
+        "facing=1,type=keyboard": { "model": "webdisplays:kb_left", "y": 90.0  },
+        "facing=2,type=keyboard": { "model": "webdisplays:kb_left", "y": 180.0 },
+        "facing=3,type=keyboard": { "model": "webdisplays:kb_left", "y": 270.0 },
+
+        "facing=0,type=remotectrl": { "model": "webdisplays:peripheral" },
+        "facing=1,type=remotectrl": { "model": "webdisplays:peripheral" },
+        "facing=2,type=remotectrl": { "model": "webdisplays:peripheral" },
+        "facing=3,type=remotectrl": { "model": "webdisplays:peripheral" },
+
+        "facing=0,type=ccinterface": { "model": "webdisplays:peripheral" },
+        "facing=1,type=ccinterface": { "model": "webdisplays:peripheral" },
+        "facing=2,type=ccinterface": { "model": "webdisplays:peripheral" },
+        "facing=3,type=ccinterface": { "model": "webdisplays:peripheral" },
+
+        "facing=0,type=cointerface": { "model": "webdisplays:peripheral" },
+        "facing=1,type=cointerface": { "model": "webdisplays:peripheral" },
+        "facing=2,type=cointerface": { "model": "webdisplays:peripheral" },
+        "facing=3,type=cointerface": { "model": "webdisplays:peripheral" }
+    }
+}

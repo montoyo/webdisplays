@@ -1,0 +1,16 @@
+[
+{
+  "modid": "webdisplays",
+  "name": "WebDisplays",
+  "description": "Web Screens! Yayyy!!",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://montoyo.net/wd2.php",
+  "updateUrl": "",
+  "authorList": ["montoyo"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
