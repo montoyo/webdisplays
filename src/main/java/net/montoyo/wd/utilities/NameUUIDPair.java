@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import java.util.UUID;
 
-public class NameUUIDPair {
+public final class NameUUIDPair {
 
     public final String name;
     public final UUID uuid;

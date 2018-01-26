@@ -30,7 +30,7 @@ public class GuiScreenConfig extends WDScreen {
     private boolean waitingAC;
     private int acFailTicks = -1;
 
-    private ArrayList<NameUUIDPair> acResults = new ArrayList<NameUUIDPair>();
+    private ArrayList<NameUUIDPair> acResults = new ArrayList<>();
     private boolean adding;
 
     //Controls

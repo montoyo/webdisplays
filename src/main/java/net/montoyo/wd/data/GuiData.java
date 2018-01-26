@@ -16,7 +16,7 @@ import java.util.HashMap;
 
 public abstract class GuiData {
 
-    private static final HashMap<String, Class<? extends GuiData>> dataTable = new HashMap<String, Class<? extends GuiData>>();
+    private static final HashMap<String, Class<? extends GuiData>> dataTable = new HashMap<>();
     static {
         dataTable.put("SetURL", SetURLData.class);
         dataTable.put("ScreenConfig", ScreenConfigData.class);

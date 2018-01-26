@@ -36,8 +36,8 @@ public abstract class WDScreen extends GuiScreen {
 
     public static WDScreen CURRENT_SCREEN = null;
 
-    protected ArrayList<Control> controls = new ArrayList<Control>();
-    private HashMap<Class<? extends Event>, Method> eventMap = new HashMap<Class<? extends Event>, Method>();
+    protected ArrayList<Control> controls = new ArrayList<>();
+    private HashMap<Class<? extends Event>, Method> eventMap = new HashMap<>();
     protected boolean quitOnEscape = true;
     protected boolean defaultBackground = true;
     protected int syncTicks = 40;
@@ -265,7 +265,7 @@ public abstract class WDScreen extends GuiScreen {
         if(!root.has("controls") || !root.get("controls").isJsonArray())
             throw new RuntimeException("In GUI file " + resLoc.toString() + ": missing root 'controls' object.");
 
-        HashMap<String, Double> vars = new HashMap<String, Double>();
+        HashMap<String, Double> vars = new HashMap<>();
         vars.put("width", (double) width);
         vars.put("height", (double) height);
         vars.put("displayWidth", (double) mc.displayWidth);

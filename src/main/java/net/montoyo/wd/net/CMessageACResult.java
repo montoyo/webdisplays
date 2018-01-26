@@ -47,8 +47,8 @@ public class CMessageACResult implements IMessage, Runnable {
     public void toBytes(ByteBuf buf) {
         buf.writeByte(result.length);
 
-        for(int i = 0; i < result.length; i++)
-            result[i].writeTo(buf);
+        for(NameUUIDPair pair : result)
+            pair.writeTo(buf);
     }
 
     @Override

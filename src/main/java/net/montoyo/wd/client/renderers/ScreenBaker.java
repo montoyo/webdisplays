@@ -94,7 +94,7 @@ public class ScreenBaker implements IModelBaker {
             return noQuads;
 
         IExtendedBlockState bs = (IExtendedBlockState) state;
-        List<BakedQuad> ret = new ArrayList<BakedQuad>();
+        List<BakedQuad> ret = new ArrayList<>();
 
         int sid = BlockSide.reverse(side.ordinal());
         BlockSide s = blockSides[sid];

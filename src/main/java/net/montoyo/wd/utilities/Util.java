@@ -15,7 +15,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Util {
+public abstract class Util {
 
     public static void serialize(ByteBuf bb, Object f) {
         Class<?> cls = f.getClass();
@@ -38,18 +38,18 @@ public class Util {
             Object[] ray = (Object[]) f;
 
             bb.writeInt(ray.length);
-            for (int i = 0; i < ray.length; i++)
-                serialize(bb, ray[i]);
+            for(Object o: ray)
+                serialize(bb, o);
         } else if(!cls.isPrimitive()) {
             Field[] fields = cls.getFields();
 
-            for(int i = 0; i < fields.length; i++) {
+            for(Field ff: fields) {
                 try {
-                    if(fields[i].getAnnotation(DontSerialize.class) == null && !Modifier.isStatic(fields[i].getModifiers()))
-                        serialize(bb, fields[i].get(f));
+                    if(ff.getAnnotation(DontSerialize.class) == null && !Modifier.isStatic(ff.getModifiers()))
+                        serialize(bb, ff.get(f));
                 } catch(IllegalAccessException e) {
                     e.printStackTrace();
-                    throw new RuntimeException(String.format("Caught IllegalAccessException for %s.%s", cls.getName(), fields[i].getName()));
+                    throw new RuntimeException(String.format("Caught IllegalAccessException for %s.%s", cls.getName(), ff.getName()));
                 }
             }
         } else
@@ -92,12 +92,12 @@ public class Util {
                 throw new RuntimeException(String.format("Caught IllegalAccessException for class %s", cls.getName()));
             }
 
-            for(int i = 0; i < fields.length; i++) {
+            for(Field ff: fields) {
                 try {
-                    if(fields[i].getAnnotation(DontSerialize.class) == null && !Modifier.isStatic(fields[i].getModifiers()))
-                        fields[i].set(ret, unserialize(bb, fields[i].getType()));
+                    if(ff.getAnnotation(DontSerialize.class) == null && !Modifier.isStatic(ff.getModifiers()))
+                        ff.set(ret, unserialize(bb, ff.getType()));
                 } catch(IllegalAccessException e) {
-                    throw new RuntimeException(String.format("Caught IllegalAccessException for %s.%s", cls.getName(), fields[i].getName()));
+                    throw new RuntimeException(String.format("Caught IllegalAccessException for %s.%s", cls.getName(), ff.getName()));
                 }
             }
 
@@ -123,8 +123,8 @@ public class Util {
             Object[] ray = (Object[]) f;
             NBTTagList ret = new NBTTagList();
 
-            for(int i = 0; i < ray.length; i++)
-                ret.appendTag(serialize(ray[i]));
+            for(Object o: ray)
+                ret.appendTag(serialize(o));
 
             return ret;
         } else
@@ -155,7 +155,7 @@ public class Util {
     }
 
     public static String[] commaSplit(String str) {
-        ArrayList<String> lst = new ArrayList<String>();
+        ArrayList<String> lst = new ArrayList<>();
         String out = "";
         boolean escape = false;
 

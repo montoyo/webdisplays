@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class JsonOWrapper {
 
-    private static final HashMap<String, Integer> defaultColors = new HashMap<String, Integer>();
+    private static final HashMap<String, Integer> defaultColors = new HashMap<>();
     static {
         defaultColors.put("black", Control.COLOR_BLACK);
         defaultColors.put("white", Control.COLOR_WHITE);
@@ -219,7 +219,7 @@ public class JsonOWrapper {
         }
 
         //Parse into ops
-        ArrayList<VarOpPair> ops = new ArrayList<VarOpPair>();
+        ArrayList<VarOpPair> ops = new ArrayList<>();
         StringBuilder str = new StringBuilder();
         boolean negIsPartOfStr = true;
         boolean strIsNumber = true;

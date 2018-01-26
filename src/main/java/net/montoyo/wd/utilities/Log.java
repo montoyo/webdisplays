@@ -7,7 +7,7 @@ package net.montoyo.wd.utilities;
 import net.minecraftforge.fml.common.FMLLog;
 import org.apache.logging.log4j.Level;
 
-public class Log {
+public abstract class Log {
 
     public static void info(String what, Object ... data) {
         FMLLog.log("WebDisplays", Level.INFO, what, data);

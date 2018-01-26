@@ -62,7 +62,7 @@ public class SMessageACQuery implements IMessage, Runnable {
                 WebDisplays.NET_HANDLER.sendTo(new CMessageACResult(new NameUUIDPair[0]), player);
             }
         } else {
-            ArrayList<NameUUIDPair> results = new ArrayList<NameUUIDPair>();
+            ArrayList<NameUUIDPair> results = new ArrayList<>();
 
             for(GameProfile gp : profiles) {
                 if(gp.getName().toLowerCase().startsWith(beginning)) {

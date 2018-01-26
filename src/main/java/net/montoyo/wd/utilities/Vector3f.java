@@ -4,7 +4,7 @@
 
 package net.montoyo.wd.utilities;
 
-public class Vector3f {
+public final class Vector3f {
 
     public float x;
     public float y;

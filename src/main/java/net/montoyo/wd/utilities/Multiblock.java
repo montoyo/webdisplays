@@ -8,12 +8,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.montoyo.wd.block.BlockScreen;
 
-public class Multiblock {
+public abstract class Multiblock {
 
-    public static enum OverrideAction {
+    public enum OverrideAction {
         NONE,
         SIMULATE,
-        IGNORE;
+        IGNORE
     }
 
     public static class BlockOverride {

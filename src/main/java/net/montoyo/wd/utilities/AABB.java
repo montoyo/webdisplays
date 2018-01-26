@@ -6,7 +6,7 @@ package net.montoyo.wd.utilities;
 
 import net.minecraft.util.math.AxisAlignedBB;
 
-public class AABB {
+public final class AABB {
 
     public final Vector3i start;
     public final Vector3i end;

@@ -19,12 +19,7 @@ import net.montoyo.wd.core.DefaultPeripheral;
 public class ItemPeripheral extends ItemMultiTexture {
 
     public ItemPeripheral(Block block) {
-        super(block, block, new ItemMultiTexture.Mapper() {
-            @Override
-            public String apply(ItemStack is) {
-                return DefaultPeripheral.values()[is.getMetadata()].getName();
-            }
-        });
+        super(block, block, (is) -> DefaultPeripheral.values()[is.getMetadata()].getName());
     }
 
     @Override

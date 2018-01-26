@@ -7,7 +7,7 @@ package net.montoyo.wd.utilities;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.math.BlockPos;
 
-public class Vector3i {
+public final class Vector3i {
 
     public int x;
     public int y;

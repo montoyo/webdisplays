@@ -20,8 +20,8 @@ import java.util.HashMap;
 
 public class GuiLoader {
 
-    private static HashMap<String, Class<? extends Control>> controls = new HashMap<String, Class<? extends Control>>();
-    private static HashMap<ResourceLocation, JsonObject> resources = new HashMap<ResourceLocation, JsonObject>();
+    private static HashMap<String, Class<? extends Control>> controls = new HashMap<>();
+    private static HashMap<ResourceLocation, JsonObject> resources = new HashMap<>();
 
     public static void register(Class<? extends Control> cls) {
         if(Modifier.isAbstract(cls.getModifiers()))

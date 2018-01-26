@@ -6,7 +6,7 @@ package net.montoyo.wd.utilities;
 
 import io.netty.buffer.ByteBuf;
 
-public class Vector2i {
+public final class Vector2i {
 
     public int x;
     public int y;

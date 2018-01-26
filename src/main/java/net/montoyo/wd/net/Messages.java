@@ -16,7 +16,7 @@ public class Messages {
     private static DefaultHandler DEFAULT_HANDLER = new DefaultHandler();
     private static Class<? extends IMessage>[] messages;
     static {
-        ArrayList<Class<? extends IMessage>> l = new ArrayList<Class<? extends IMessage>>();
+        ArrayList<Class<? extends IMessage>> l = new ArrayList<>();
         l.add(CMessageAddScreen.class);
         l.add(SMessageRequestTEData.class);
         l.add(SMessageScreenCtrl.class);

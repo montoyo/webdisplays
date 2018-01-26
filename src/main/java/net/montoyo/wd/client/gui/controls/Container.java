@@ -16,7 +16,7 @@ public abstract class Container extends BasicControl {
 
     protected int paddingX = 0;
     protected int paddingY = 0;
-    protected ArrayList<Control> childs = new ArrayList<Control>();
+    protected ArrayList<Control> childs = new ArrayList<>();
 
     public <T extends Control> T addControl(T ctrl) {
         childs.add(ctrl);

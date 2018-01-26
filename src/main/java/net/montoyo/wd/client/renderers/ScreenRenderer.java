@@ -98,13 +98,13 @@ public class ScreenRenderer extends TileEntitySpecialRenderer<TileEntityScreen> 
             glPopMatrix();
         }
 
-        if(false) {
-            //Bounding box debugging
-            glPushMatrix();
-            glTranslated(-rendererDispatcher.entityX, -rendererDispatcher.entityY, -rendererDispatcher.entityZ);
-            renderAABB(te.getRenderBoundingBox());
-            glPopMatrix();
-        }
+        /*
+        //Bounding box debugging
+        glPushMatrix();
+        glTranslated(-rendererDispatcher.entityX, -rendererDispatcher.entityY, -rendererDispatcher.entityZ);
+        renderAABB(te.getRenderBoundingBox());
+        glPopMatrix();
+        */
 
         //Re-enable lighting
         RenderHelper.enableStandardItemLighting();

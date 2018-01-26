@@ -68,8 +68,8 @@ public class BlockScreen extends WDBlockContainer {
         return new ExtendedBlockState(this, properties, sideFlags);
     }
 
-    public static boolean isScreenBlock(IBlockAccess world, Vector3i pos) {
-        return world.getBlockState(pos.toBlock()).getBlock() instanceof BlockScreen;
+    public static boolean isntScreenBlock(IBlockAccess world, Vector3i pos) {
+        return world.getBlockState(pos.toBlock()).getBlock() != WebDisplays.INSTANCE.blockScreen;
     }
 
     @Override
@@ -79,10 +79,10 @@ public class BlockScreen extends WDBlockContainer {
 
         for(BlockSide side : BlockSide.values()) {
             int icon = 0;
-            if(!isScreenBlock(world, side.up.clone().add(pos)))    icon |= BAR_TOP;
-            if(!isScreenBlock(world, side.down.clone().add(pos)))  icon |= BAR_BOT;
-            if(!isScreenBlock(world, side.left.clone().add(pos)))  icon |= BAR_LEFT;
-            if(!isScreenBlock(world, side.right.clone().add(pos))) icon |= BAR_RIGHT;
+            if(isntScreenBlock(world, side.up.clone().add(pos)))    icon |= BAR_TOP;
+            if(isntScreenBlock(world, side.down.clone().add(pos)))  icon |= BAR_BOT;
+            if(isntScreenBlock(world, side.left.clone().add(pos)))  icon |= BAR_LEFT;
+            if(isntScreenBlock(world, side.right.clone().add(pos))) icon |= BAR_RIGHT;
 
             ret = ret.withProperty(sideFlags[side.ordinal()], icon);
         }

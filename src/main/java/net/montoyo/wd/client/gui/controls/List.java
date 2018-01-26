@@ -52,7 +52,7 @@ public class List extends BasicControl {
 
     private int width;
     private int height;
-    private ArrayList<Entry> content = new ArrayList<Entry>();
+    private ArrayList<Entry> content = new ArrayList<>();
     private Framebuffer fbo;
     private int selected = -1;
     private boolean update;

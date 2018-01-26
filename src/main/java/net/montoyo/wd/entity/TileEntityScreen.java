@@ -73,7 +73,7 @@ public class TileEntityScreen extends TileEntity {
             }
 
             NBTTagList friends = tag.getTagList("Friends", 10);
-            ret.friends = new ArrayList<NameUUIDPair>(friends.tagCount());
+            ret.friends = new ArrayList<>(friends.tagCount());
 
             for(int i = 0; i < friends.tagCount(); i++) {
                 NBTTagCompound nf = friends.getCompoundTagAt(i);
@@ -136,7 +136,7 @@ public class TileEntityScreen extends TileEntity {
 
     }
 
-    private ArrayList<Screen> screens = new ArrayList<Screen>();
+    private ArrayList<Screen> screens = new ArrayList<>();
     private AxisAlignedBB renderBB = new AxisAlignedBB(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
     private boolean loaded = true;
     public float ytVolume = 100.0f;
@@ -199,7 +199,7 @@ public class TileEntityScreen extends TileEntity {
         ret.side = side;
         ret.size = size;
         ret.url = WebDisplays.INSTANCE.homePage;
-        ret.friends = new ArrayList<NameUUIDPair>();
+        ret.friends = new ArrayList<>();
         ret.friendRights = ScreenRights.DEFAULTS;
         ret.otherRights = ScreenRights.DEFAULTS;
 
