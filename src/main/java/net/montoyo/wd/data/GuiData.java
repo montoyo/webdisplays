@@ -21,6 +21,7 @@ public abstract class GuiData {
         dataTable.put("SetURL", SetURLData.class);
         dataTable.put("ScreenConfig", ScreenConfigData.class);
         dataTable.put("Keyboard", KeyboardData.class);
+        dataTable.put("RedstoneCtrl", RedstoneCtrlData.class);
     }
 
     public static Class<? extends GuiData> classOf(String name) {

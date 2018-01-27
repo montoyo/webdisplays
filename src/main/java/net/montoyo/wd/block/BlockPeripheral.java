@@ -68,29 +68,35 @@ public class BlockPeripheral extends WDBlockContainer {
     @Override
     public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing rrezozei, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
         int rot = MathHelper.floor(((double) (placer.rotationYaw * 4.0f / 360.0f)) + 2.5) & 3;
-        return getDefaultState().withProperty(type, DefaultPeripheral.values()[meta]).withProperty(facing, rot);
+        return getDefaultState().withProperty(type, DefaultPeripheral.fromMetadata(meta)).withProperty(facing, rot);
     }
 
     @Override
     public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> list) {
         for(DefaultPeripheral dp : DefaultPeripheral.values())
-            list.add(new ItemStack(getItem(), 1, dp.ordinal()));
+            list.add(new ItemStack(getItem(), 1, dp.toMetadata(0)));
     }
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        return getDefaultState().withProperty(type, DefaultPeripheral.values()[meta & 3]).withProperty(facing, (meta >> 2) & 3);
+        DefaultPeripheral dp = DefaultPeripheral.fromMetadata(meta);
+        IBlockState state = getDefaultState().withProperty(type, dp);
+
+        if(dp.hasFacing())
+            state = state.withProperty(facing, (meta >> 2) & 3);
+
+        return state;
     }
 
     @Override
     public int getMetaFromState(IBlockState state) {
-        return state.getValue(type).ordinal() | (state.getValue(facing) << 2);
+        return state.getValue(type).toMetadata(state.getValue(facing));
     }
 
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World world, int meta) {
-        Class<? extends TileEntityPeripheralBase> cls = DefaultPeripheral.values()[meta & 3].getTEClass();
+        Class<? extends TileEntityPeripheralBase> cls = DefaultPeripheral.fromMetadata(meta).getTEClass();
         if(cls == null)
             return null;
 
@@ -204,6 +210,10 @@ public class BlockPeripheral extends WDBlockContainer {
 
     @Override
     public void neighborChanged(IBlockState state, World world, BlockPos pos, Block neighborType, BlockPos neighbor) {
+        TileEntity te = world.getTileEntity(pos);
+        if(te != null && te instanceof TileEntityPeripheralBase)
+            ((TileEntityPeripheralBase) te).onNeighborChange(neighborType, neighbor);
+
         if(world.isRemote || state.getValue(type) != DefaultPeripheral.KEYBOARD)
             return;
 

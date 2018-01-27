@@ -1,0 +1,56 @@
+{
+  "controls": [
+    {
+      "type": "Icon",
+      "resourceLocation": "webdisplays:textures/gui/edges.png",
+      "x": 0,
+      "y": 1,
+      "width": 16,
+      "height": 16,
+      "v1": 0.0,
+      "v2": 0.5
+    },
+    {
+      "type": "TextField",
+      "name": "tfRisingEdge",
+      "x": 20,
+      "y": 0,
+      "width": 280
+    },
+    {
+      "type": "Icon",
+      "resourceLocation": "webdisplays:textures/gui/edges.png",
+      "x": 0,
+      "y": 26,
+      "width": 16,
+      "height": 16,
+      "v1": 0.5,
+      "v2": 1.0
+    },
+    {
+      "type": "TextField",
+      "name": "tfFallingEdge",
+      "x": 20,
+      "y": 24,
+      "width": 280
+    },
+    {
+      "type": "Button",
+      "name": "btnOk",
+      "label": "$webdisplays.gui.seturl.ok",
+      "x": 20,
+      "y": 48,
+      "width": 137
+    },
+    {
+      "type": "Button",
+      "name": "btnCancel",
+      "label": "$webdisplays.gui.seturl.cancel",
+      "x": 163,
+      "y": 48,
+      "width": 137
+    }
+  ],
+
+  "center": true
+}

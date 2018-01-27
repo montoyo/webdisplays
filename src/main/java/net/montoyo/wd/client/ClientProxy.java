@@ -252,9 +252,10 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
         registerItemModel(wd.blockScreen.getItem(), 0, "inventory");
         ModelLoader.setCustomModelResourceLocation(wd.blockPeripheral.getItem(), 0, new ModelResourceLocation("webdisplays:kb_inv", "normal"));
-        registerItemModel(wd.blockPeripheral.getItem(), 1, "facing=0,type=remotectrl");
-        registerItemModel(wd.blockPeripheral.getItem(), 2, "facing=2,type=ccinterface");
-        registerItemModel(wd.blockPeripheral.getItem(), 3, "facing=2,type=cointerface");
+        registerItemModel(wd.blockPeripheral.getItem(), 1, "facing=2,type=ccinterface");
+        registerItemModel(wd.blockPeripheral.getItem(), 2, "facing=2,type=cointerface");
+        registerItemModel(wd.blockPeripheral.getItem(), 3, "facing=0,type=remotectrl");
+        registerItemModel(wd.blockPeripheral.getItem(), 7, "facing=0,type=redstonectrl");
         registerItemModel(wd.itemScreenCfg, 0, "normal");
         registerItemModel(wd.itemOwnerThief, 0, "normal");
         registerItemModel(wd.itemLinker, 0, "normal");

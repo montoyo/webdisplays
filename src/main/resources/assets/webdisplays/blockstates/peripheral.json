@@ -5,11 +5,6 @@
     "facing=2,type=keyboard": { "model": "webdisplays:kb_left", "y": 180.0 },
     "facing=3,type=keyboard": { "model": "webdisplays:kb_left", "y": 270.0 },
 
-    "facing=0,type=remotectrl": { "model": "webdisplays:rctrl" },
-    "facing=1,type=remotectrl": { "model": "webdisplays:rctrl" },
-    "facing=2,type=remotectrl": { "model": "webdisplays:rctrl" },
-    "facing=3,type=remotectrl": { "model": "webdisplays:rctrl" },
-
     "facing=0,type=ccinterface": { "model": "webdisplays:ccinterface", "y": 180.0 },
     "facing=1,type=ccinterface": { "model": "webdisplays:ccinterface", "y": 270.0 },
     "facing=2,type=ccinterface": { "model": "webdisplays:ccinterface"             },
@@ -18,6 +13,16 @@
     "facing=0,type=cointerface": { "model": "webdisplays:ocinterface", "y": 180.0 },
     "facing=1,type=cointerface": { "model": "webdisplays:ocinterface", "y": 270.0 },
     "facing=2,type=cointerface": { "model": "webdisplays:ocinterface"             },
-    "facing=3,type=cointerface": { "model": "webdisplays:ocinterface", "y": 90.0  }
+    "facing=3,type=cointerface": { "model": "webdisplays:ocinterface", "y": 90.0  },
+
+    "facing=0,type=remotectrl": { "model": "webdisplays:rctrl" },
+    "facing=1,type=remotectrl": { "model": "webdisplays:rctrl" },
+    "facing=2,type=remotectrl": { "model": "webdisplays:rctrl" },
+    "facing=3,type=remotectrl": { "model": "webdisplays:rctrl" },
+
+    "facing=0,type=redstonectrl": { "model": "webdisplays:redctrl" },
+    "facing=1,type=redstonectrl": { "model": "webdisplays:redctrl" },
+    "facing=2,type=redstonectrl": { "model": "webdisplays:redctrl" },
+    "facing=3,type=redstonectrl": { "model": "webdisplays:redctrl" }
   }
 }

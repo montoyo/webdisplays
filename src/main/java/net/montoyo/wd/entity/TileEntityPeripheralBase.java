@@ -4,6 +4,7 @@
 
 package net.montoyo.wd.entity;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -114,6 +115,9 @@ public abstract class TileEntityPeripheralBase extends TileEntity implements IPe
 
     public boolean onRightClick(EntityPlayer player, EnumHand hand, BlockSide side) {
         return false;
+    }
+
+    public void onNeighborChange(Block neighborType, BlockPos neighborPos) {
     }
 
 }

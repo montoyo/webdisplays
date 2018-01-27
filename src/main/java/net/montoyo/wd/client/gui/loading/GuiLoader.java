@@ -41,6 +41,7 @@ public class GuiLoader {
         register(Label.class);
         register(List.class);
         register(TextField.class);
+        register(Icon.class);
     }
 
     public static Control create(JsonOWrapper json) {

@@ -7,6 +7,7 @@ package net.montoyo.wd.client.gui.controls;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
@@ -144,7 +145,7 @@ public abstract class Control {
 
     public void bindTexture(ResourceLocation resLoc) {
         if(resLoc == null)
-            glBindTexture(GL_TEXTURE_2D, 0);
+            GlStateManager.bindTexture(0); //Damn state manager
         else
             mc.renderEngine.bindTexture(resLoc);
     }
