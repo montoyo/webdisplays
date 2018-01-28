@@ -6,6 +6,7 @@ package net.montoyo.wd.net;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -30,6 +31,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     public static final int CTRL_SET_RIGHTS = 4;
     public static final int CTRL_SET_RESOLUTION = 5;
     public static final int CTRL_TYPE = 6;
+    public static final int CTRL_REMOVE_UPGRADE = 7;
 
     private int ctrl;
     private int dim;
@@ -43,6 +45,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     private Vector2i resolution;
     private String text;
     private BlockPos soundPos;
+    private ItemStack toRemove;
 
     public SMessageScreenCtrl() {
     }
@@ -88,6 +91,14 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         resolution = res;
     }
 
+    public SMessageScreenCtrl(TileEntityScreen tes, BlockSide side, ItemStack toRem) {
+        ctrl = CTRL_REMOVE_UPGRADE;
+        dim = tes.getWorld().provider.getDimension();
+        pos = new Vector3i(tes.getPos());
+        this.side = side;
+        toRemove = toRem;
+    }
+
     public static SMessageScreenCtrl type(TileEntityScreen tes, BlockSide side, String text, BlockPos soundPos) {
         SMessageScreenCtrl ret = new SMessageScreenCtrl();
         ret.ctrl = CTRL_TYPE;
@@ -123,7 +134,8 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
             int sy = buf.readInt();
             int sz = buf.readInt();
             soundPos = new BlockPos(sx, sy, sz);
-        }
+        } else if(ctrl == CTRL_REMOVE_UPGRADE)
+            toRemove = ByteBufUtils.readItemStack(buf);
     }
 
     @Override
@@ -147,7 +159,8 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
             buf.writeInt(soundPos.getX());
             buf.writeInt(soundPos.getY());
             buf.writeInt(soundPos.getZ());
-        }
+        } else if(ctrl == CTRL_REMOVE_UPGRADE)
+            ByteBufUtils.writeItemStack(buf, toRemove);
     }
 
     @Override
@@ -205,6 +218,9 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         } else if(ctrl == CTRL_TYPE) {
             checkPermission(tes, ScreenRights.CLICK);
             tes.type(side, text, soundPos);
+        } else if(ctrl == CTRL_REMOVE_UPGRADE) {
+            checkPermission(tes, ScreenRights.MANAGE_UPGRADES);
+            tes.removeUpgrade(side, toRemove);
         } else
             Log.info("SMessageScreenCtrl: TODO"); //TODO: other ctrl messages
     }

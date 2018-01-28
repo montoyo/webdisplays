@@ -250,6 +250,11 @@ public class GuiScreenConfig extends WDScreen {
         }
     }
 
+    @GuiSubscribe
+    public void onRemoveUpgrade(UpgradeGroup.ClickEvent ev) {
+        WebDisplays.NET_HANDLER.sendToServer(new SMessageScreenCtrl(tes, side, ev.getMouseOverStack()));
+    }
+
     public boolean isFriendCheckbox(CheckBox cb) {
         for(CheckBox box : friendBoxes) {
             if(box == cb)

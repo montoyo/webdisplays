@@ -623,4 +623,36 @@ public class TileEntityScreen extends TileEntity {
         return scr.upgrades.stream().anyMatch((otherStack) -> itemAsUpgrade.isSameUpgrade(is, otherStack));
     }
 
+    public void removeUpgrade(BlockSide side, ItemStack is) {
+        if(world.isRemote)
+            return;
+
+        Screen scr = getScreen(side);
+        if(scr == null) {
+            Log.error("Tried to remove an upgrade on invalid screen on side %s", side.toString());
+            return;
+        }
+
+        if(!(is.getItem() instanceof IUpgrade)) {
+            Log.error("Tried to remove a non-upgrade item %s to screen (%s does not implement IUpgrade)", safeName(is), is.getItem().getClass().getCanonicalName());
+            return;
+        }
+
+        int idxToRemove = -1;
+        IUpgrade itemAsUpgrade = (IUpgrade) is.getItem();
+
+        for(int i = 0; i < scr.upgrades.size(); i++) {
+            if(itemAsUpgrade.isSameUpgrade(is, scr.upgrades.get(i))) {
+                idxToRemove = i;
+                break;
+            }
+        }
+
+        if(idxToRemove >= 0) {
+            scr.upgrades.remove(idxToRemove);
+            WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.upgrade(this, side), point());
+        } else
+            Log.warning("Tried to remove non-existing upgrade %s to screen %s at %s", safeName(is), side.toString(), pos.toString());
+    }
+
 }

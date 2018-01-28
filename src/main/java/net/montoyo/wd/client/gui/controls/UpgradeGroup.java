@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.item.ItemStack;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class UpgradeGroup extends BasicControl {
@@ -17,6 +18,7 @@ public class UpgradeGroup extends BasicControl {
     private int height;
     private ArrayList<ItemStack> upgrades;
     private ItemStack overStack;
+    private ItemStack clickStack;
     private final RenderItem renderItem = Minecraft.getMinecraft().getRenderItem();
 
     public UpgradeGroup() {
@@ -29,6 +31,9 @@ public class UpgradeGroup extends BasicControl {
             int x = this.x;
 
             for(ItemStack is: upgrades) {
+                if(is == overStack)
+                    fillRect(x, y, 16, 16, 0x80FF0000);
+
                 renderItem.renderItemAndEffectIntoGUI(mc.player, is, x, y);
                 renderItem.renderItemOverlayIntoGUI(font, is, x, y, null);
                 x += 18;
@@ -77,15 +82,48 @@ public class UpgradeGroup extends BasicControl {
 
     @Override
     public void mouseMove(int mouseX, int mouseY) {
-        overStack = null;
+        if(upgrades != null) {
+            overStack = null;
 
-        if(mouseY >= y && mouseY <= y + 16 && mouseX >= x) {
-            mouseX -= x;
-            int sel = mouseX / 18;
+            if(mouseY >= y && mouseY <= y + 16 && mouseX >= x) {
+                mouseX -= x;
+                int sel = mouseX / 18;
 
-            if(sel < upgrades.size() && mouseX % 18 <= 16)
-                overStack = upgrades.get(sel);
+                if(sel < upgrades.size() && mouseX % 18 <= 16)
+                    overStack = upgrades.get(sel);
+            }
         }
+    }
+
+    @Override
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        if(mouseButton == 0)
+            clickStack = overStack;
+    }
+
+    @Override
+    public void mouseReleased(int mouseX, int mouseY, int state) {
+        if(state == 0 && clickStack != null) {
+            if(clickStack == overStack && upgrades.contains(clickStack)) //HOTFIX: Make sure it's actually in the list :p
+                parent.actionPerformed(new ClickEvent(this));
+
+            clickStack = null;
+        }
+    }
+
+    public static class ClickEvent extends Event<UpgradeGroup> {
+
+        private ItemStack clickStack;
+
+        private ClickEvent(UpgradeGroup src) {
+            source = src;
+            clickStack = src.clickStack;
+        }
+
+        public ItemStack getMouseOverStack() {
+            return clickStack;
+        }
+
     }
 
 }
