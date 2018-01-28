@@ -22,6 +22,7 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * minePad management: check GuiContainer.draggedStack for minePad
 * Enhance crafts
 * Enhance models
+* minePad item texture seems to be transparent in some corners...
 
 ### Config elements
 * Site blacklist

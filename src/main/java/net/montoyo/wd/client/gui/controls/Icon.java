@@ -43,12 +43,49 @@ public class Icon extends BasicControl {
 
     @Override
     public void draw(int mouseX, int mouseY, float ptt) {
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
-        bindTexture(texture);
-        blend(true);
-        fillTexturedRect(x, y, width, height, u1, v1, u2, v2);
-        blend(false);
-        bindTexture(null);
+        if(texture != null) {
+            GL11.glEnable(GL11.GL_TEXTURE_2D);
+            bindTexture(texture);
+            blend(true);
+            fillTexturedRect(x, y, width, height, u1, v1, u2, v2);
+            blend(false);
+            bindTexture(null);
+        }
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public void setTextureCoordinates(double u1, double v1, double u2, double v2) {
+        this.u1 = u1;
+        this.v1 = v1;
+        this.u2 = u2;
+        this.v2 = v2;
+    }
+
+    public void setTexture(ResourceLocation texture) {
+        this.texture = texture;
+    }
+
+    public double getU1() {
+        return u1;
+    }
+
+    public double getV1() {
+        return v1;
+    }
+
+    public double getU2() {
+        return u2;
+    }
+
+    public double getV2() {
+        return v2;
     }
 
 }

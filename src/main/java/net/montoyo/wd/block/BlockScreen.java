@@ -20,6 +20,7 @@ import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -135,9 +136,13 @@ public class BlockScreen extends WDBlockContainer {
                     return true;
                 }
 
-                te.addUpgrade(side, heldItem);
-                if(!player.isCreative())
-                    heldItem.shrink(1);
+                if(te.addUpgrade(side, heldItem, false)) {
+                    if(!player.isCreative())
+                        heldItem.shrink(1);
+
+                    Util.toast(player, TextFormatting.AQUA, "upgradeOk");
+                } else
+                    Util.toast(player, "upgradeError");
 
                 return true;
             } else { //Click

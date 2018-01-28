@@ -172,6 +172,8 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
             tes.setResolution(side, resolution);
         else if(action == UPDATE_TYPE)
             tes.type(side, text, null);
+        else if(action == UPDATE_UPGRADES)
+            tes.updateUpgrades(side, upgrades);
         else
             Log.warning("===> TODO"); //TODO
     }

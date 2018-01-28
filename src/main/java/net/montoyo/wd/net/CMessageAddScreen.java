@@ -101,6 +101,7 @@ public class CMessageAddScreen implements IMessage, Runnable {
         for(TileEntityScreen.Screen entry: screens) {
             TileEntityScreen.Screen scr = tes.addScreen(entry.side, entry.size, entry.resolution, false);
             scr.url = entry.url;
+            scr.upgrades = entry.upgrades;
 
             if(scr.browser != null)
                 scr.browser.loadURL(entry.url);

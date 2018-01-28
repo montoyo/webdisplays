@@ -42,6 +42,7 @@ public class GuiLoader {
         register(List.class);
         register(TextField.class);
         register(Icon.class);
+        register(UpgradeGroup.class);
     }
 
     public static Control create(JsonOWrapper json) {
@@ -51,10 +52,10 @@ public class GuiLoader {
             ret = controls.get(json.getString("type", null)).newInstance();
         } catch(InstantiationException e) {
             Log.errorEx("Could not create control from JSON: instantiation exception", e);
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } catch(IllegalAccessException e) {
             Log.errorEx("Could not create control from JSON: access denied", e);
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         ret.load(json);
@@ -70,7 +71,7 @@ public class GuiLoader {
                 resource = Minecraft.getMinecraft().getResourceManager().getResource(resLoc);
             } catch(IOException e) {
                 Log.errorEx("Couldn't load JSON UI from file", e);
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
 
             JsonParser parser = new JsonParser();

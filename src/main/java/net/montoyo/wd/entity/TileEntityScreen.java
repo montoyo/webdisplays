@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -94,6 +95,8 @@ public class TileEntityScreen extends TileEntity {
             for(int i = 0; i < upgrades.tagCount(); i++)
                 ret.upgrades.add(new ItemStack(upgrades.getCompoundTagAt(i)));
 
+            System.out.println("Read " + ret.upgrades.size() + " upgrades from NBT"); //TODO: Remove me
+
             return ret;
         }
 
@@ -130,6 +133,7 @@ public class TileEntityScreen extends TileEntity {
             for(ItemStack is: upgrades)
                 list.appendTag(is.writeToNBT(new NBTTagCompound()));
 
+            System.out.println("Saved " + list.tagCount() + " upgrades"); //TODO: Remove me
             tag.setTag("Upgrades", list);
             return tag;
         }
@@ -570,9 +574,13 @@ public class TileEntityScreen extends TileEntity {
         Collections.addAll(scr.upgrades, upgrades);
     }
 
+    private static String safeName(ItemStack is) {
+        ResourceLocation rl = is.getItem().getRegistryName();
+        return (rl == null) ? "[NO NAME, WTF?!]" : rl.toString();
+    }
+
     //If equal is null, no duplicate check is preformed
-    public boolean addUpgrade(BlockSide side, ItemStack is, @Nullable Predicate<ItemStack> equal) {
-        //TODO: Remove Predicate. It should be obtained from IUpgrade.
+    public boolean addUpgrade(BlockSide side, ItemStack is, boolean abortIfExisting) {
         if(world.isRemote)
             return false;
 
@@ -583,22 +591,23 @@ public class TileEntityScreen extends TileEntity {
         }
 
         if(!(is.getItem() instanceof IUpgrade)) {
-            Log.error("Tried to add a non-upgrade item %s to screen (%s does not implement IUpgrade)", is.getItem().getRegistryName().toString(), is.getItem().getClass().getCanonicalName());
+            Log.error("Tried to add a non-upgrade item %s to screen (%s does not implement IUpgrade)", safeName(is), is.getItem().getClass().getCanonicalName());
             return false;
         }
 
-        if(equal != null && scr.upgrades.stream().anyMatch(equal))
+        if(scr.upgrades.size() >= 16) {
+            Log.error("Can't insert upgrade %s in screen %s at %s: too many upgrades already!", safeName(is), side.toString(), pos.toString());
+            return false;
+        }
+
+        IUpgrade itemAsUpgrade = (IUpgrade) is.getItem();
+        if(abortIfExisting && scr.upgrades.stream().anyMatch((otherStack) -> itemAsUpgrade.isSameUpgrade(is, otherStack)))
             return false; //Upgrade already exists
 
         scr.upgrades.add(is);
         WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.upgrade(this, side), point());
-        ((IUpgrade) is.getItem()).onInstall(this, side, null, is);
+        itemAsUpgrade.onInstall(this, side, null, is);
         return true;
-    }
-
-    //Uses the default item stack comparing (same Item & metadata)
-    public boolean addUpgrade(BlockSide side, ItemStack is) {
-        return addUpgrade(side, is, (other) -> other.getItem() == is.getItem() && other.getMetadata() == is.getMetadata());
     }
 
     //Uses the default item stack comparing (same Item & metadata)
@@ -607,16 +616,11 @@ public class TileEntityScreen extends TileEntity {
         if(scr == null)
             return false;
 
-        return scr.upgrades.stream().anyMatch((other) -> other.getItem() == is.getItem() && other.getMetadata() == is.getMetadata());
-    }
-
-    public boolean hasUpgrade(BlockSide side, Predicate<ItemStack> equal) {
-        //TODO: Remove Predicate. It should be obtained from IUpgrade.
-        Screen scr = getScreen(side);
-        if(scr == null)
+        if(!(is.getItem() instanceof IUpgrade))
             return false;
 
-        return scr.upgrades.stream().anyMatch(equal);
+        IUpgrade itemAsUpgrade = (IUpgrade) is.getItem();
+        return scr.upgrades.stream().anyMatch((otherStack) -> itemAsUpgrade.isSameUpgrade(is, otherStack));
     }
 
 }

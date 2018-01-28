@@ -44,10 +44,12 @@ import net.montoyo.wd.client.renderers.IModelBaker;
 import net.montoyo.wd.client.renderers.MinePadRenderer;
 import net.montoyo.wd.client.renderers.ScreenBaker;
 import net.montoyo.wd.client.renderers.ScreenRenderer;
+import net.montoyo.wd.core.DefaultUpgrade;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.SMessagePadCtrl;
 import net.montoyo.wd.utilities.*;
+import scala.tools.nsc.doc.model.Def;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -261,6 +263,10 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         registerItemModel(wd.itemLinker, 0, "normal");
         registerItemModel(wd.itemStoneKey, 0, "normal");
         registerItemModel(wd.itemMinePad, 0, "normal");
+
+        DefaultUpgrade[] upgrades = DefaultUpgrade.values();
+        for(int i = 0; i < upgrades.length; i++)
+            ModelLoader.setCustomModelResourceLocation(wd.itemUpgrade, i, new ModelResourceLocation("webdisplays:upgrade_" + upgrades[i].getName(), "normal"));
     }
 
     @SubscribeEvent

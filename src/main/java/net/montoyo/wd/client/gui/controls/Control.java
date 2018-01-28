@@ -82,6 +82,9 @@ public abstract class Control {
     public void draw(int mouseX, int mouseY, float ptt) {
     }
 
+    public void postDraw(int mouseX, int mouseY, float ptt) {
+    }
+
     public void destroy() {
     }
 

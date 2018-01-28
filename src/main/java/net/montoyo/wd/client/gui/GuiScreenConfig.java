@@ -91,6 +91,9 @@ public class GuiScreenConfig extends WDScreen {
     @FillControl
     private Button btnSetRes;
 
+    @FillControl
+    private UpgradeGroup ugUpgrades;
+
     private CheckBox[] friendBoxes;
     private CheckBox[] otherBoxes;
 
@@ -126,6 +129,9 @@ public class GuiScreenConfig extends WDScreen {
         if(scr != null) {
             tfResX.setText("" + scr.resolution.x);
             tfResY.setText("" + scr.resolution.y);
+
+            //Hopefully upgrades have been synchronized...
+            ugUpgrades.setUpgrades(scr.upgrades);
         }
 
         lblOwner.setLabel(lblOwner.getLabel() + owner.name);

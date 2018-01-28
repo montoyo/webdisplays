@@ -26,10 +26,7 @@ import net.montoyo.wd.block.BlockScreen;
 import net.montoyo.wd.core.DefaultPeripheral;
 import net.montoyo.wd.core.WDCreativeTab;
 import net.montoyo.wd.entity.TileEntityScreen;
-import net.montoyo.wd.item.ItemLinker;
-import net.montoyo.wd.item.ItemMinePad2;
-import net.montoyo.wd.item.ItemOwnershipThief;
-import net.montoyo.wd.item.ItemScreenConfigurator;
+import net.montoyo.wd.item.*;
 import net.montoyo.wd.net.Messages;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
@@ -61,6 +58,7 @@ public class WebDisplays {
     public ItemLinker itemLinker;
     public Item itemStoneKey;
     public ItemMinePad2 itemMinePad;
+    public ItemUpgrade itemUpgrade;
 
     //Sounds
     public SoundEvent soundTyping;
@@ -95,6 +93,7 @@ public class WebDisplays {
         itemOwnerThief = new ItemOwnershipThief();
         itemLinker = new ItemLinker();
         itemMinePad = new ItemMinePad2();
+        itemUpgrade = new ItemUpgrade();
 
         itemStoneKey = new Item();
         itemStoneKey.setCreativeTab(CREATIVE_TAB);
@@ -133,7 +132,7 @@ public class WebDisplays {
     @SubscribeEvent
     public void onRegisterItems(RegistryEvent.Register<Item> ev) {
         ev.getRegistry().registerAll(blockScreen.getItem(), blockPeripheral.getItem());
-        ev.getRegistry().registerAll(itemScreenCfg, itemOwnerThief, itemLinker, itemStoneKey, itemMinePad);
+        ev.getRegistry().registerAll(itemScreenCfg, itemOwnerThief, itemLinker, itemStoneKey, itemMinePad, itemUpgrade);
     }
 
     @SubscribeEvent

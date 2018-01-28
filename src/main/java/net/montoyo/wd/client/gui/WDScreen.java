@@ -9,6 +9,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.gui.controls.Container;
@@ -37,6 +38,7 @@ public abstract class WDScreen extends GuiScreen {
     public static WDScreen CURRENT_SCREEN = null;
 
     protected ArrayList<Control> controls = new ArrayList<>();
+    protected ArrayList<Control> postDrawList = new ArrayList<>();
     private HashMap<Class<? extends Event>, Method> eventMap = new HashMap<>();
     protected boolean quitOnEscape = true;
     protected boolean defaultBackground = true;
@@ -131,6 +133,9 @@ public abstract class WDScreen extends GuiScreen {
 
         for(Control ctrl: controls)
             ctrl.draw(mouseX, mouseY, ptt);
+
+        for(Control ctrl: postDrawList)
+            ctrl.postDraw(mouseX, mouseY, ptt);
     }
 
     @Override
@@ -348,6 +353,15 @@ public abstract class WDScreen extends GuiScreen {
             if(--syncTicksLeft < 0)
                 sync();
         }
+    }
+
+    public void drawItemStackTooltip(ItemStack is, int x, int y) {
+        renderToolTip(is, x, y); //Since it's protected...
+    }
+
+    public void requirePostDraw(Control ctrl) {
+        if(!postDrawList.contains(ctrl))
+            postDrawList.add(ctrl);
     }
 
 }

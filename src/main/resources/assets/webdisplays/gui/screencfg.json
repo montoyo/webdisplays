@@ -144,16 +144,22 @@
             "label": "$webdisplays.gui.screencfg.upgrades"
         },
         {
+            "type": "UpgradeGroup",
+            "name": "ugUpgrades",
+            "x": 258,
+            "y": 23
+        },
+        {
             "type": "Label",
             "x": 258,
-            "y": 40,
+            "y": 42,
             "label": "$webdisplays.gui.screencfg.resolution"
         },
         {
             "type": "TextField",
             "name": "tfResX",
             "x": 260,
-            "y": 52,
+            "y": 54,
             "width": 40,
             "maxLength": 4
         },
@@ -161,7 +167,7 @@
             "type": "TextField",
             "name": "tfResY",
             "x": 304,
-            "y": 52,
+            "y": 54,
             "width": 40,
             "maxLength": 4
         },
