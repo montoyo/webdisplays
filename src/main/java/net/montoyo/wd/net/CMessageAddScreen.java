@@ -5,6 +5,7 @@
 package net.montoyo.wd.net;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -16,6 +17,8 @@ import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Vector2i;
 import net.montoyo.wd.utilities.Vector3i;
+
+import java.util.ArrayList;
 
 @Message(messageId = 0, side = Side.CLIENT)
 public class CMessageAddScreen implements IMessage, Runnable {
@@ -55,6 +58,11 @@ public class CMessageAddScreen implements IMessage, Runnable {
             screens[i].size = new Vector2i(buf);
             screens[i].url = ByteBufUtils.readUTF8String(buf);
             screens[i].resolution = new Vector2i(buf);
+            screens[i].upgrades = new ArrayList<>();
+
+            int numUpgrades = buf.readByte();
+            for(int j = 0; j < numUpgrades; j++)
+                screens[i].upgrades.add(ByteBufUtils.readItemStack(buf));
         }
     }
 
@@ -69,6 +77,10 @@ public class CMessageAddScreen implements IMessage, Runnable {
             scr.size.writeTo(buf);
             ByteBufUtils.writeUTF8String(buf, scr.url);
             scr.resolution.writeTo(buf);
+            buf.writeByte(scr.upgrades.size());
+
+            for(ItemStack is: scr.upgrades)
+                ByteBufUtils.writeItemStack(buf, is);
         }
     }
 

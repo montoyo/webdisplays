@@ -2,13 +2,12 @@
 This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The text below is my "TODO" list.
 
 ### Missing features
-* Redstone interface
-* Server blocks (to store some of the player's web pages)
 * Screen upgrade: "laser" mouse
 * Screen upgrade: redstone input
 * Screen upgrade: redstone output
-* Peripheral: ComputerCraft interface
+* ~~Peripheral: ComputerCraft interface~~ (CC not up to date)
 * Peripheral: OpenComputers interface
+* Server blocks (to store some of the player's web pages)
 * Read config (see "Config elements" below)
 
 ### TODO
@@ -30,5 +29,5 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * Homepage
 * RPMP (Real pixels per Minecraft pixels)
 * Browser language
-* Screen load/unload distance
+* Screen load/unload distance (max distance = 60.0)
 * Disable ownership thief item

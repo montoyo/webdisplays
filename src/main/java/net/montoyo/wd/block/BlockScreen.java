@@ -29,6 +29,7 @@ import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.common.property.Properties;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.core.ScreenRights;
+import net.montoyo.wd.core.IUpgrade;
 import net.montoyo.wd.data.SetURLData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.utilities.*;
@@ -102,7 +103,10 @@ public class BlockScreen extends WDBlockContainer {
 
     @Override
     public boolean onBlockActivated(World world, BlockPos bpos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if(!player.getHeldItem(hand).isEmpty())
+        ItemStack heldItem = player.getHeldItem(hand);
+        if(heldItem.isEmpty())
+            heldItem = null; //Easier to work with
+        else if(!(heldItem.getItem() instanceof IUpgrade))
             return false;
 
         if(world.isRemote)
@@ -125,7 +129,18 @@ public class BlockScreen extends WDBlockContainer {
                     (new SetURLData(pos, scr.side, scr.url)).sendTo((EntityPlayerMP) player);
 
                 return true;
-            } else {
+            } else if(heldItem != null && !te.hasUpgrade(side, heldItem)) { //Add upgrade
+                if((scr.rightsFor(player) & ScreenRights.MANAGE_UPGRADES) == 0) {
+                    Util.toast(player, "restrictions");
+                    return true;
+                }
+
+                te.addUpgrade(side, heldItem);
+                if(!player.isCreative())
+                    heldItem.shrink(1);
+
+                return true;
+            } else { //Click
                 if((scr.rightsFor(player) & ScreenRights.CLICK) == 0) {
                     Util.toast(player, "restrictions");
                     return true;

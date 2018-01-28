@@ -5,6 +5,7 @@
 package net.montoyo.wd.net;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -17,6 +18,8 @@ import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Vector2i;
 import net.montoyo.wd.utilities.Vector3i;
 
+import java.util.ArrayList;
+
 @Message(messageId = 4, side = Side.CLIENT)
 public class CMessageScreenUpdate implements IMessage, Runnable {
 
@@ -25,6 +28,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     public static final int UPDATE_DELETE = 2;
     public static final int UPDATE_CLICK = 3;
     public static final int UPDATE_TYPE = 4;
+    public static final int UPDATE_UPGRADES = 5;
 
     private Vector3i pos;
     private BlockSide side;
@@ -33,6 +37,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     private Vector2i resolution;
     private Vector2i click;
     private String text;
+    private ItemStack[] upgrades;
 
     public CMessageScreenUpdate() {
     }
@@ -83,6 +88,21 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         return ret;
     }
 
+    public static CMessageScreenUpdate upgrade(TileEntityScreen tes, BlockSide side) {
+        CMessageScreenUpdate ret = new CMessageScreenUpdate();
+        ret.pos = new Vector3i(tes.getPos());
+        ret.side = side;
+        ret.action = UPDATE_UPGRADES;
+
+        ArrayList<ItemStack> upgrades = tes.getScreen(side).upgrades;
+        ret.upgrades = new ItemStack[upgrades.size()];
+
+        for(int i = 0; i < upgrades.size(); i++)
+            ret.upgrades[i] = upgrades.get(i).copy();
+
+        return ret;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
         pos = new Vector3i(buf);
@@ -97,6 +117,12 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
             resolution = new Vector2i(buf);
         else if(action == UPDATE_TYPE)
             text = ByteBufUtils.readUTF8String(buf);
+        else if(action == UPDATE_UPGRADES) {
+            upgrades = new ItemStack[buf.readByte()];
+
+            for(int i = 0; i < upgrades.length; i++)
+                upgrades[i] = ByteBufUtils.readItemStack(buf);
+        }
     }
 
     @Override
@@ -113,6 +139,12 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
             resolution.writeTo(buf);
         else if(action == UPDATE_TYPE)
             ByteBufUtils.writeUTF8String(buf, text);
+        else if(action == UPDATE_UPGRADES) {
+            buf.writeByte(upgrades.length);
+
+            for(ItemStack is: upgrades)
+                ByteBufUtils.writeItemStack(buf, is);
+        }
     }
 
     @Override

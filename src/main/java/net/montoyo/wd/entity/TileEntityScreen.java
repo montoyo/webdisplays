@@ -6,6 +6,7 @@ package net.montoyo.wd.entity;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
@@ -16,6 +17,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.montoyo.mcef.api.IBrowser;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.block.BlockScreen;
+import net.montoyo.wd.core.IUpgrade;
 import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.data.ScreenConfigData;
 import net.montoyo.wd.net.CMessageAddScreen;
@@ -23,8 +25,9 @@ import net.montoyo.wd.net.CMessageScreenUpdate;
 import net.montoyo.wd.net.SMessageRequestTEData;
 import net.montoyo.wd.utilities.*;
 
-import java.util.ArrayList;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class TileEntityScreen extends TileEntity {
 
@@ -43,6 +46,7 @@ public class TileEntityScreen extends TileEntity {
         public int friendRights;
         public int otherRights;
         public IBrowser browser;
+        public ArrayList<ItemStack> upgrades;
 
         public static boolean isYouTubeURL(String url) {
             return url.matches(YT_REGEX1) || url.matches(YT_REGEX2);
@@ -83,6 +87,13 @@ public class TileEntityScreen extends TileEntity {
 
             ret.friendRights = tag.getByte("FriendRights");
             ret.otherRights = tag.getByte("OtherRights");
+
+            NBTTagList upgrades = tag.getTagList("Upgrades", 10);
+            ret.upgrades = new ArrayList<>();
+
+            for(int i = 0; i < upgrades.tagCount(); i++)
+                ret.upgrades.add(new ItemStack(upgrades.getCompoundTagAt(i)));
+
             return ret;
         }
 
@@ -114,6 +125,12 @@ public class TileEntityScreen extends TileEntity {
             tag.setTag("Friends", list);
             tag.setByte("FriendRights", (byte) friendRights);
             tag.setByte("OtherRights", (byte) otherRights);
+
+            list = new NBTTagList();
+            for(ItemStack is: upgrades)
+                list.appendTag(is.writeToNBT(new NBTTagCompound()));
+
+            tag.setTag("Upgrades", list);
             return tag;
         }
 
@@ -202,6 +219,7 @@ public class TileEntityScreen extends TileEntity {
         ret.friends = new ArrayList<>();
         ret.friendRights = ScreenRights.DEFAULTS;
         ret.otherRights = ScreenRights.DEFAULTS;
+        ret.upgrades = new ArrayList<>();
 
         if(resolution == null || resolution.x < 1 || resolution.y < 1) {
             float psx = ((float) size.x) * 16.f - 4.f;
@@ -534,6 +552,71 @@ public class TileEntityScreen extends TileEntity {
                 world.playSound(null, x + 0.5, y + 0.5, z + 0.5, WebDisplays.INSTANCE.soundTyping, SoundCategory.BLOCKS, 0.25f, 1.f);
             }
         }
+    }
+
+    public void updateUpgrades(BlockSide side, ItemStack[] upgrades) {
+        if(!world.isRemote) {
+            Log.error("Tried to call TileEntityScreen.updateUpgrades() from server side...");
+            return;
+        }
+
+        Screen scr = getScreen(side);
+        if(scr == null) {
+            Log.error("Tried to update upgrades on invalid screen on side %s", side.toString());
+            return;
+        }
+
+        scr.upgrades.clear();
+        Collections.addAll(scr.upgrades, upgrades);
+    }
+
+    //If equal is null, no duplicate check is preformed
+    public boolean addUpgrade(BlockSide side, ItemStack is, @Nullable Predicate<ItemStack> equal) {
+        //TODO: Remove Predicate. It should be obtained from IUpgrade.
+        if(world.isRemote)
+            return false;
+
+        Screen scr = getScreen(side);
+        if(scr == null) {
+            Log.error("Tried to add an upgrade on invalid screen on side %s", side.toString());
+            return false;
+        }
+
+        if(!(is.getItem() instanceof IUpgrade)) {
+            Log.error("Tried to add a non-upgrade item %s to screen (%s does not implement IUpgrade)", is.getItem().getRegistryName().toString(), is.getItem().getClass().getCanonicalName());
+            return false;
+        }
+
+        if(equal != null && scr.upgrades.stream().anyMatch(equal))
+            return false; //Upgrade already exists
+
+        scr.upgrades.add(is);
+        WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.upgrade(this, side), point());
+        ((IUpgrade) is.getItem()).onInstall(this, side, null, is);
+        return true;
+    }
+
+    //Uses the default item stack comparing (same Item & metadata)
+    public boolean addUpgrade(BlockSide side, ItemStack is) {
+        return addUpgrade(side, is, (other) -> other.getItem() == is.getItem() && other.getMetadata() == is.getMetadata());
+    }
+
+    //Uses the default item stack comparing (same Item & metadata)
+    public boolean hasUpgrade(BlockSide side, ItemStack is) {
+        Screen scr = getScreen(side);
+        if(scr == null)
+            return false;
+
+        return scr.upgrades.stream().anyMatch((other) -> other.getItem() == is.getItem() && other.getMetadata() == is.getMetadata());
+    }
+
+    public boolean hasUpgrade(BlockSide side, Predicate<ItemStack> equal) {
+        //TODO: Remove Predicate. It should be obtained from IUpgrade.
+        Screen scr = getScreen(side);
+        if(scr == null)
+            return false;
+
+        return scr.upgrades.stream().anyMatch(equal);
     }
 
 }
