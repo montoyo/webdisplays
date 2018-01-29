@@ -2,6 +2,6 @@
   "parent": "item/generated",
   "textures": {
     "layer0": "webdisplays:items/upgrade",
-    "layer1": "webdisplays:items/laserpointer"
+    "layer1": "webdisplays:items/laserpointer2"
   }
 }

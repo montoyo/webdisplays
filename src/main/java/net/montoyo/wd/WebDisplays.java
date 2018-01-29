@@ -59,9 +59,12 @@ public class WebDisplays {
     public Item itemStoneKey;
     public ItemMinePad2 itemMinePad;
     public ItemUpgrade itemUpgrade;
+    public ItemLaserPointer itemLaserPointer;
 
     //Sounds
     public SoundEvent soundTyping;
+    public SoundEvent soundUpgradeAdd;
+    public SoundEvent soundUpgradeDel;
 
     //Config
     public static final double PAD_RATIO = 59.0 / 30.0;
@@ -94,6 +97,7 @@ public class WebDisplays {
         itemLinker = new ItemLinker();
         itemMinePad = new ItemMinePad2();
         itemUpgrade = new ItemUpgrade();
+        itemLaserPointer = new ItemLaserPointer();
 
         itemStoneKey = new Item();
         itemStoneKey.setCreativeTab(CREATIVE_TAB);
@@ -132,14 +136,21 @@ public class WebDisplays {
     @SubscribeEvent
     public void onRegisterItems(RegistryEvent.Register<Item> ev) {
         ev.getRegistry().registerAll(blockScreen.getItem(), blockPeripheral.getItem());
-        ev.getRegistry().registerAll(itemScreenCfg, itemOwnerThief, itemLinker, itemStoneKey, itemMinePad, itemUpgrade);
+        ev.getRegistry().registerAll(itemScreenCfg, itemOwnerThief, itemLinker, itemStoneKey, itemMinePad, itemUpgrade, itemLaserPointer);
     }
 
     @SubscribeEvent
     public void onRegisterSounds(RegistryEvent.Register<SoundEvent> ev) {
         soundTyping = new SoundEvent(new ResourceLocation("webdisplays", "keyboardType"));
         soundTyping.setRegistryName(soundTyping.getSoundName());
-        ev.getRegistry().register(soundTyping);
+
+        soundUpgradeAdd = new SoundEvent(new ResourceLocation("webdisplays", "upgradeAdd"));
+        soundUpgradeAdd.setRegistryName(soundUpgradeAdd.getSoundName());
+
+        soundUpgradeDel = new SoundEvent(new ResourceLocation("webdisplays", "upgradeDel"));
+        soundUpgradeDel.setRegistryName(soundUpgradeDel.getSoundName());
+
+        ev.getRegistry().registerAll(soundTyping, soundUpgradeAdd, soundUpgradeDel);
     }
 
     @SubscribeEvent

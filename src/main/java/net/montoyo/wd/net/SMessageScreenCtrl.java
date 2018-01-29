@@ -220,7 +220,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
             tes.type(side, text, soundPos);
         } else if(ctrl == CTRL_REMOVE_UPGRADE) {
             checkPermission(tes, ScreenRights.MANAGE_UPGRADES);
-            tes.removeUpgrade(side, toRemove);
+            tes.removeUpgrade(side, toRemove, player);
         } else
             Log.info("SMessageScreenCtrl: TODO"); //TODO: other ctrl messages
     }

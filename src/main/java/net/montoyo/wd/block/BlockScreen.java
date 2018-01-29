@@ -136,7 +136,7 @@ public class BlockScreen extends WDBlockContainer {
                     return true;
                 }
 
-                if(te.addUpgrade(side, heldItem, false)) {
+                if(te.addUpgrade(side, heldItem, player, false)) {
                     if(!player.isCreative())
                         heldItem.shrink(1);
 

@@ -263,6 +263,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         registerItemModel(wd.itemLinker, 0, "normal");
         registerItemModel(wd.itemStoneKey, 0, "normal");
         registerItemModel(wd.itemMinePad, 0, "normal");
+        registerItemModel(wd.itemLaserPointer, 0, "normal");
 
         DefaultUpgrade[] upgrades = DefaultUpgrade.values();
         for(int i = 0; i < upgrades.length; i++)

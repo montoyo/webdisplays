@@ -31,7 +31,7 @@ public class UpgradeGroup extends BasicControl {
             int x = this.x;
 
             for(ItemStack is: upgrades) {
-                if(is == overStack)
+                if(is == overStack && !disabled)
                     fillRect(x, y, 16, 16, 0x80FF0000);
 
                 renderItem.renderItemAndEffectIntoGUI(mc.player, is, x, y);
@@ -104,7 +104,7 @@ public class UpgradeGroup extends BasicControl {
     @Override
     public void mouseReleased(int mouseX, int mouseY, int state) {
         if(state == 0 && clickStack != null) {
-            if(clickStack == overStack && upgrades.contains(clickStack)) //HOTFIX: Make sure it's actually in the list :p
+            if(clickStack == overStack && !disabled && upgrades.contains(clickStack)) //HOTFIX: Make sure it's actually in the list :p
                 parent.actionPerformed(new ClickEvent(this));
 
             clickStack = null;

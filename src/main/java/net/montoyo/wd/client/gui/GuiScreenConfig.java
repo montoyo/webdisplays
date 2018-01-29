@@ -415,6 +415,9 @@ public class GuiScreenConfig extends WDScreen {
 
         if(flag)
             btnSetRes.setDisabled(true);
+
+        flag = (myRights & ScreenRights.MANAGE_UPGRADES) == 0;
+        ugUpgrades.setDisabled(flag);
     }
 
     public void updateResolution(Vector2i res) {

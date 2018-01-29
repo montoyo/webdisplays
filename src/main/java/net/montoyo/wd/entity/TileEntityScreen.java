@@ -4,6 +4,7 @@
 
 package net.montoyo.wd.entity;
 
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -12,6 +13,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -28,7 +30,6 @@ import net.montoyo.wd.utilities.*;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Predicate;
 
 public class TileEntityScreen extends TileEntity {
 
@@ -548,14 +549,17 @@ public class TileEntityScreen extends TileEntity {
         } else {
             WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.type(this, side, text), point());
 
-            if(soundPos != null) {
-                double x = (double) soundPos.getX();
-                double y = (double) soundPos.getY();
-                double z = (double) soundPos.getZ();
-
-                world.playSound(null, x + 0.5, y + 0.5, z + 0.5, WebDisplays.INSTANCE.soundTyping, SoundCategory.BLOCKS, 0.25f, 1.f);
-            }
+            if(soundPos != null)
+                playSoundAt(WebDisplays.INSTANCE.soundTyping, soundPos, 0.25f, 1.f);
         }
+    }
+
+    private void playSoundAt(SoundEvent snd, BlockPos at, float vol, float pitch) {
+        double x = (double) at.getX();
+        double y = (double) at.getY();
+        double z = (double) at.getZ();
+
+        world.playSound(null, x + 0.5, y + 0.5, z + 0.5, snd, SoundCategory.BLOCKS, vol, pitch);
     }
 
     public void updateUpgrades(BlockSide side, ItemStack[] upgrades) {
@@ -580,7 +584,7 @@ public class TileEntityScreen extends TileEntity {
     }
 
     //If equal is null, no duplicate check is preformed
-    public boolean addUpgrade(BlockSide side, ItemStack is, boolean abortIfExisting) {
+    public boolean addUpgrade(BlockSide side, ItemStack is, @Nullable EntityPlayer player, boolean abortIfExisting) {
         if(world.isRemote)
             return false;
 
@@ -606,7 +610,8 @@ public class TileEntityScreen extends TileEntity {
 
         scr.upgrades.add(is);
         WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.upgrade(this, side), point());
-        itemAsUpgrade.onInstall(this, side, null, is);
+        itemAsUpgrade.onInstall(this, side, player, is);
+        playSoundAt(WebDisplays.INSTANCE.soundUpgradeAdd, pos, 1.0f, 1.0f);
         return true;
     }
 
@@ -623,7 +628,7 @@ public class TileEntityScreen extends TileEntity {
         return scr.upgrades.stream().anyMatch((otherStack) -> itemAsUpgrade.isSameUpgrade(is, otherStack));
     }
 
-    public void removeUpgrade(BlockSide side, ItemStack is) {
+    public void removeUpgrade(BlockSide side, ItemStack is, @Nullable EntityPlayer player) {
         if(world.isRemote)
             return;
 
@@ -649,8 +654,26 @@ public class TileEntityScreen extends TileEntity {
         }
 
         if(idxToRemove >= 0) {
+            if(!itemAsUpgrade.onRemove(this, side, player, scr.upgrades.get(idxToRemove))) { //Drop upgrade item
+                ItemStack toDrop = scr.upgrades.get(idxToRemove);
+                boolean spawnDrop = true;
+
+                if(player != null) {
+                    if(player.isCreative() || player.addItemStackToInventory(toDrop))
+                        spawnDrop = false; //If in creative or if the item was added to the player's inventory, don't spawn drop entity
+                }
+
+                if(spawnDrop) {
+                    Vector3f pos = new Vector3f((float) this.pos.getX(), (float) this.pos.getY(), (float) this.pos.getZ());
+                    pos.addMul(side.backward.toFloat(), 1.5f);
+
+                    world.spawnEntity(new EntityItem(world, (double) pos.x, (double) pos.y, (double) pos.z, toDrop));
+                }
+            }
+
             scr.upgrades.remove(idxToRemove);
             WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.upgrade(this, side), point());
+            playSoundAt(WebDisplays.INSTANCE.soundUpgradeDel, pos, 1.0f, 1.0f);
         } else
             Log.warning("Tried to remove non-existing upgrade %s to screen %s at %s", safeName(is), side.toString(), pos.toString());
     }
