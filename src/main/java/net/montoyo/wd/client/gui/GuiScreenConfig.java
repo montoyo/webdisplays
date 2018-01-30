@@ -168,7 +168,7 @@ public class GuiScreenConfig extends WDScreen {
                 throw new NumberFormatException(); //I'm lazy
 
             if(x != scr.resolution.x || y != scr.resolution.y)
-                WebDisplays.NET_HANDLER.sendToServer(new SMessageScreenCtrl(tes, side, new Vector2i(x, y)));
+                WebDisplays.NET_HANDLER.sendToServer(SMessageScreenCtrl.vec2(tes, side, SMessageScreenCtrl.CTRL_SET_RESOLUTION, new Vector2i(x, y)));
         } catch(NumberFormatException ex) {
             //Roll back
             tfResX.setText("" + scr.resolution.x);

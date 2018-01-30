@@ -32,6 +32,9 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     public static final int CTRL_SET_RESOLUTION = 5;
     public static final int CTRL_TYPE = 6;
     public static final int CTRL_REMOVE_UPGRADE = 7;
+    public static final int CTRL_LASER_DOWN = 8;
+    public static final int CTRL_LASER_MOVE = 9;
+    public static final int CTRL_LASER_UP = 10;
 
     private int ctrl;
     private int dim;
@@ -42,7 +45,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     private EntityPlayerMP player;
     private int friendRights;
     private int otherRights;
-    private Vector2i resolution;
+    private Vector2i vec2i;
     private String text;
     private BlockPos soundPos;
     private ItemStack toRemove;
@@ -83,14 +86,6 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         otherRights = or;
     }
 
-    public SMessageScreenCtrl(TileEntityScreen tes, BlockSide side, Vector2i res) {
-        ctrl = CTRL_SET_RESOLUTION;
-        dim = tes.getWorld().provider.getDimension();
-        pos = new Vector3i(tes.getPos());
-        this.side = side;
-        resolution = res;
-    }
-
     public SMessageScreenCtrl(TileEntityScreen tes, BlockSide side, ItemStack toRem) {
         ctrl = CTRL_REMOVE_UPGRADE;
         dim = tes.getWorld().provider.getDimension();
@@ -111,6 +106,34 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         return ret;
     }
 
+    public static SMessageScreenCtrl vec2(TileEntityScreen tes, BlockSide side, int ctrl, Vector2i vec) {
+        if(!isVec2Ctrl(ctrl))
+            throw new RuntimeException("Called SMessageScreenCtrl.vec2() with non-vec2 control message " + ctrl);
+
+        SMessageScreenCtrl ret = new SMessageScreenCtrl();
+        ret.ctrl = ctrl;
+        ret.pos = new Vector3i(tes.getPos());
+        ret.dim = tes.getWorld().provider.getDimension();
+        ret.side = side;
+        ret.vec2i = vec;
+
+        return ret;
+    }
+
+    public static SMessageScreenCtrl laserUp(TileEntityScreen tes, BlockSide side) {
+        SMessageScreenCtrl ret = new SMessageScreenCtrl();
+        ret.ctrl = CTRL_LASER_UP;
+        ret.pos = new Vector3i(tes.getPos());
+        ret.dim = tes.getWorld().provider.getDimension();
+        ret.side = side;
+
+        return ret;
+    }
+
+    private static boolean isVec2Ctrl(int msg) {
+        return msg == CTRL_SET_RESOLUTION || msg == CTRL_LASER_DOWN || msg == CTRL_LASER_MOVE;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
         ctrl = buf.readByte();
@@ -125,8 +148,8 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         else if(ctrl == CTRL_SET_RIGHTS) {
             friendRights = buf.readByte();
             otherRights = buf.readByte();
-        } else if(ctrl == CTRL_SET_RESOLUTION)
-            resolution = new Vector2i(buf);
+        } else if(isVec2Ctrl(ctrl))
+            vec2i = new Vector2i(buf);
         else if(ctrl == CTRL_TYPE) {
             text = ByteBufUtils.readUTF8String(buf);
 
@@ -152,8 +175,8 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         else if(ctrl == CTRL_SET_RIGHTS) {
             buf.writeByte(friendRights);
             buf.writeByte(otherRights);
-        } else if(ctrl == CTRL_SET_RESOLUTION)
-            resolution.writeTo(buf);
+        } else if(isVec2Ctrl(ctrl))
+            vec2i.writeTo(buf);
         else if(ctrl == CTRL_TYPE) {
             ByteBufUtils.writeUTF8String(buf, text);
             buf.writeInt(soundPos.getX());
@@ -214,14 +237,18 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
                 tes.setRights(player, side, fr, or);
         } else if(ctrl == CTRL_SET_RESOLUTION) {
             checkPermission(tes, ScreenRights.CHANGE_RESOLUTION);
-            tes.setResolution(side, resolution);
+            tes.setResolution(side, vec2i);
         } else if(ctrl == CTRL_TYPE) {
             checkPermission(tes, ScreenRights.CLICK);
             tes.type(side, text, soundPos);
         } else if(ctrl == CTRL_REMOVE_UPGRADE) {
             checkPermission(tes, ScreenRights.MANAGE_UPGRADES);
             tes.removeUpgrade(side, toRemove, player);
-        } else
+        } else if(ctrl == CTRL_LASER_DOWN || ctrl == CTRL_LASER_MOVE)
+            tes.laserDownMove(side, player, vec2i, ctrl == CTRL_LASER_DOWN);
+        else if(ctrl == CTRL_LASER_UP)
+            tes.laserUp(side, player);
+        else
             Log.info("SMessageScreenCtrl: TODO"); //TODO: other ctrl messages
     }
 

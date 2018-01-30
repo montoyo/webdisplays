@@ -2,7 +2,6 @@
 This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The text below is my "TODO" list.
 
 ### Missing features
-* Screen upgrade: "laser" mouse
 * Screen upgrade: redstone input
 * Screen upgrade: redstone output
 * ~~Peripheral: ComputerCraft interface~~ (CC not up to date)
@@ -11,6 +10,7 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * Read config (see "Config elements" below)
 
 ### TODO
+* VideoType doesn't seem to be used...
 * DROP UPGRADES WHEN SCREEN IS DESTROYED
 * Achievements (minePad 2 and all that stuff)
 * Top/bottom screen orientation

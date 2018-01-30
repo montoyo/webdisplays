@@ -18,6 +18,7 @@ import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Vector2i;
 import net.montoyo.wd.utilities.Vector3i;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 
 @Message(messageId = 4, side = Side.CLIENT)
@@ -26,16 +27,22 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     public static final int UPDATE_URL = 0;
     public static final int UPDATE_RESOLUTION = 1;
     public static final int UPDATE_DELETE = 2;
-    public static final int UPDATE_CLICK = 3;
+    public static final int UPDATE_MOUSE = 3;
     public static final int UPDATE_TYPE = 4;
     public static final int UPDATE_UPGRADES = 5;
+
+    public static final int MOUSE_CLICK = 0;
+    public static final int MOUSE_UP = 1;
+    public static final int MOUSE_MOVE = 2;
+    public static final int MOUSE_DOWN = 3;
 
     private Vector3i pos;
     private BlockSide side;
     private int action;
     private String url;
     private Vector2i resolution;
-    private Vector2i click;
+    private int mouseEvent;
+    private Vector2i mouse;
     private String text;
     private ItemStack[] upgrades;
 
@@ -62,12 +69,13 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         return ret;
     }
 
-    public static CMessageScreenUpdate click(TileEntityScreen tes, BlockSide side, Vector2i pos) {
+    public static CMessageScreenUpdate click(TileEntityScreen tes, BlockSide side, int mouseEvent, @Nullable Vector2i pos) {
         CMessageScreenUpdate ret = new CMessageScreenUpdate();
         ret.pos = new Vector3i(tes.getPos());
         ret.side = side;
-        ret.action = UPDATE_CLICK;
-        ret.click = pos;
+        ret.action = UPDATE_MOUSE;
+        ret.mouseEvent = mouseEvent;
+        ret.mouse = pos;
 
         return ret;
     }
@@ -111,9 +119,12 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
 
         if(action == UPDATE_URL)
             url = ByteBufUtils.readUTF8String(buf);
-        else if(action == UPDATE_CLICK)
-            click = new Vector2i(buf);
-        else if(action == UPDATE_RESOLUTION)
+        else if(action == UPDATE_MOUSE) {
+            mouseEvent = buf.readByte();
+
+            if(mouseEvent != MOUSE_UP)
+                mouse = new Vector2i(buf);
+        } else if(action == UPDATE_RESOLUTION)
             resolution = new Vector2i(buf);
         else if(action == UPDATE_TYPE)
             text = ByteBufUtils.readUTF8String(buf);
@@ -133,9 +144,12 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
 
         if(action == UPDATE_URL)
             ByteBufUtils.writeUTF8String(buf, url);
-        else if(action == UPDATE_CLICK)
-            click.writeTo(buf);
-        else if(action == UPDATE_RESOLUTION)
+        else if(action == UPDATE_MOUSE) {
+            buf.writeByte(mouseEvent);
+
+            if(mouseEvent != MOUSE_UP)
+                mouse.writeTo(buf);
+        } else if(action == UPDATE_RESOLUTION)
             resolution.writeTo(buf);
         else if(action == UPDATE_TYPE)
             ByteBufUtils.writeUTF8String(buf, text);
@@ -164,8 +178,8 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
 
         if(action == UPDATE_URL)
             tes.setScreenURL(side, url);
-        else if(action == UPDATE_CLICK)
-            tes.click(side, click);
+        else if(action == UPDATE_MOUSE)
+            tes.handleMouseEvent(side, mouseEvent, mouse);
         else if(action == UPDATE_DELETE)
             tes.removeScreen(side);
         else if(action == UPDATE_RESOLUTION)

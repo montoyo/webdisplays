@@ -38,6 +38,9 @@ public class ItemUpgrade extends Item implements IUpgrade {
 
     @Override
     public boolean onRemove(@Nonnull TileEntityScreen tes, @Nonnull BlockSide screenSide, @Nullable EntityPlayer player, @Nonnull ItemStack is) {
+        if(is.getMetadata() == DefaultUpgrade.LASER_MOUSE.ordinal())
+            tes.clearLaserUser(screenSide);
+
         return false;
     }
 

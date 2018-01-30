@@ -4,13 +4,10 @@
 
 package net.montoyo.wd.client.renderers;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.BufferUtils;
@@ -25,7 +22,6 @@ public final class LaserPointerRenderer implements IItemRenderer {
     private static final float PI = (float) Math.PI;
     private final Tessellator t = Tessellator.getInstance();
     private final BufferBuilder bb = t.getBuffer();
-    private final Minecraft mc = Minecraft.getMinecraft();
     private final FloatBuffer matrix1 = BufferUtils.createFloatBuffer(16);
     private final FloatBuffer renderBuffer = BufferUtils.createFloatBuffer(8);
 

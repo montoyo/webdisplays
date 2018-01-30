@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -46,6 +47,7 @@ import net.montoyo.wd.core.DefaultUpgrade;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.SMessagePadCtrl;
+import net.montoyo.wd.net.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
 import org.lwjgl.Sys;
 
@@ -75,6 +77,11 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     private net.montoyo.mcef.api.API mcef;
     private MinePadRenderer minePadRenderer;
     private LaserPointerRenderer laserPointerRenderer;
+
+    //Laser pointer
+    private TileEntityScreen pointedScreen;
+    private BlockSide pointedScreenSide;
+    private long lastPointPacket;
 
     //Tracking
     private ArrayList<TileEntityScreen> screenTracking = new ArrayList<>();
@@ -317,8 +324,13 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
                 }
             }
 
-            //If laser is on, raycast
-            if(laserPointerRenderer.isOn) {
+            //Laser pointer raycast
+            boolean raycastHit = false;
+
+            if(mc.player != null && mc.world != null && mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() == WebDisplays.INSTANCE.itemLaserPointer
+                                                     && mc.gameSettings.keyBindUseItem.isKeyDown()
+                                                     && (mc.objectMouseOver == null || mc.objectMouseOver.typeOfHit != RayTraceResult.Type.BLOCK)) {
+                laserPointerRenderer.isOn = true;
                 RayTraceResult result = raycast(64.0); //TODO: Make that distance configurable
 
                 if(result != null) {
@@ -333,17 +345,27 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
                         if(te != null && te.hasUpgrade(side, WebDisplays.INSTANCE.itemUpgrade, DefaultUpgrade.LASER_MOUSE.ordinal())) { //hasUpgrade returns false is there's no screen on side 'side'
                             //Since rights aren't synchronized, let the server check them for us...
-                            float hitX = ((float) result.hitVec.x) - (float) bpos.getX();
-                            float hitY = ((float) result.hitVec.y) - (float) bpos.getY();
-                            float hitZ = ((float) result.hitVec.z) - (float) bpos.getZ();
-                            Vector2i tmp = new Vector2i();
+                            TileEntityScreen.Screen scr = te.getScreen(side);
 
-                            if(BlockScreen.hit2pixels(side, bpos, pos, te.getScreen(side), hitX, hitY, hitZ, tmp))
-                                System.out.println("At " + tmp.x + ", " + tmp.y);
+                            if(scr.browser != null) {
+                                float hitX = ((float) result.hitVec.x) - (float) bpos.getX();
+                                float hitY = ((float) result.hitVec.y) - (float) bpos.getY();
+                                float hitZ = ((float) result.hitVec.z) - (float) bpos.getZ();
+                                Vector2i tmp = new Vector2i();
+
+                                if(BlockScreen.hit2pixels(side, bpos, pos, scr, hitX, hitY, hitZ, tmp)) {
+                                    laserClick(te, side, scr, tmp);
+                                    raycastHit = true;
+                                }
+                            }
                         }
                     }
                 }
-            }
+            } else
+                laserPointerRenderer.isOn = false;
+
+            if(!raycastHit)
+                deselectScreen();
         }
     }
 
@@ -367,15 +389,31 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         ev.setCanceled(true);
     }
 
-    @SubscribeEvent
-    public void onMouseButton(MouseEvent ev) {
-        if(ev.getButton() == 1 && mc.player != null && mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() == WebDisplays.INSTANCE.itemLaserPointer) {
-            laserPointerRenderer.isOn = ev.isButtonstate();
-            ev.setCanceled(true); //Do I really need this?
+    /**************************************** OTHER METHODS ****************************************/
+
+    private void laserClick(TileEntityScreen tes, BlockSide side, TileEntityScreen.Screen scr, Vector2i hit) {
+        if(pointedScreen == tes && pointedScreenSide == side) {
+            long t = System.currentTimeMillis();
+
+            if(t - lastPointPacket >= 100) {
+                lastPointPacket = t;
+                WebDisplays.NET_HANDLER.sendToServer(SMessageScreenCtrl.vec2(tes, side, SMessageScreenCtrl.CTRL_LASER_MOVE, hit));
+            }
+        } else {
+            deselectScreen();
+            pointedScreen = tes;
+            pointedScreenSide = side;
+            WebDisplays.NET_HANDLER.sendToServer(SMessageScreenCtrl.vec2(tes, side, SMessageScreenCtrl.CTRL_LASER_DOWN, hit));
         }
     }
 
-    /**************************************** OTHER METHODS ****************************************/
+    private void deselectScreen() {
+        if(pointedScreen != null && pointedScreenSide != null) {
+            WebDisplays.NET_HANDLER.sendToServer(SMessageScreenCtrl.laserUp(pointedScreen, pointedScreenSide));
+            pointedScreen = null;
+            pointedScreenSide = null;
+        }
+    }
 
     private RayTraceResult raycast(double dist) {
         Vec3d start = mc.player.getPositionEyes(1.0f);

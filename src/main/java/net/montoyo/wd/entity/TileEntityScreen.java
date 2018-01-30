@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -21,13 +22,16 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.montoyo.mcef.api.IBrowser;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.block.BlockScreen;
+import net.montoyo.wd.core.DefaultUpgrade;
 import net.montoyo.wd.core.IUpgrade;
 import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.data.ScreenConfigData;
 import net.montoyo.wd.net.CMessageAddScreen;
 import net.montoyo.wd.net.CMessageScreenUpdate;
 import net.montoyo.wd.net.SMessageRequestTEData;
+import net.montoyo.wd.net.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
+import org.lwjgl.Sys;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -52,6 +56,8 @@ public class TileEntityScreen extends TileEntity {
         public ArrayList<ItemStack> upgrades;
         public boolean doTurnOnAnim;
         public long turnOnTime;
+        public EntityPlayer laserUser;
+        public final Vector2i lastMousePos = new Vector2i();
 
         public static boolean isYouTubeURL(String url) {
             return url.matches(YT_REGEX1) || url.matches(YT_REGEX2);
@@ -147,16 +153,11 @@ public class TileEntityScreen extends TileEntity {
         }
 
         public int rightsFor(EntityPlayer ply) {
-            UUID uuid = ply.getGameProfile().getId();
+            final UUID uuid = ply.getGameProfile().getId();
             if(owner.uuid.equals(uuid))
                 return ScreenRights.ALL;
 
-            for(NameUUIDPair f: friends) {
-                if(f.uuid.equals(uuid))
-                    return friendRights;
-            }
-
-            return otherRights;
+            return friends.stream().anyMatch((f) -> f.uuid.equals(uuid)) ? friendRights : otherRights;
         }
 
     }
@@ -361,6 +362,27 @@ public class TileEntityScreen extends TileEntity {
         }
     }
 
+    private static EntityPlayer getLaserUser(Screen scr) {
+        if(scr.laserUser != null) {
+            if(scr.laserUser.isDead || scr.laserUser.getHeldItem(EnumHand.MAIN_HAND).getItem() != WebDisplays.INSTANCE.itemLaserPointer)
+                scr.laserUser = null;
+        }
+
+        return scr.laserUser;
+    }
+
+    private static void checkLaserUserRights(Screen scr) {
+        if(scr.laserUser != null && (scr.rightsFor(scr.laserUser) & ScreenRights.CLICK) == 0)
+            scr.laserUser = null;
+    }
+
+    public void clearLaserUser(BlockSide side) {
+        Screen scr = getScreen(side);
+
+        if(scr != null)
+            scr.laserUser = null;
+    }
+
     public void click(BlockSide side, Vector2i vec) {
         Screen scr = getScreen(side);
         if(scr == null) {
@@ -368,14 +390,40 @@ public class TileEntityScreen extends TileEntity {
             return;
         }
 
-        if(world.isRemote) {
-            if(scr.browser != null) {
-                scr.browser.injectMouseMove(vec.x, vec.y, 0, false);
-                scr.browser.injectMouseButton(vec.x, vec.y, 0, 1, true, 1);
-                scr.browser.injectMouseButton(vec.x, vec.y, 0, 1, false, 1);
+        if(world.isRemote)
+            Log.warning("TileEntityScreen.click() from client side is useless...");
+        else if(getLaserUser(scr) == null)
+            WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.click(this, side, CMessageScreenUpdate.MOUSE_CLICK, vec), point());
+    }
+
+    public void handleMouseEvent(BlockSide side, int event, @Nullable Vector2i vec) {
+        Screen scr = getScreen(side);
+        if(scr == null) {
+            Log.error("Attempt inject mouse events on non-existing screen of side %s", side.toString());
+            return;
+        }
+
+        if(scr.browser != null) {
+            if(event != CMessageScreenUpdate.MOUSE_MOVE)
+                System.out.println(String.format("handleMouseEvent2 %d @ %d, %d", event, vec == null ? -1 : vec.x, vec == null ? -1 : vec.y));
+
+            if(event == CMessageScreenUpdate.MOUSE_CLICK) {
+                scr.browser.injectMouseMove(vec.x, vec.y, 0, false);                                            //Move to target
+                scr.browser.injectMouseButton(vec.x, vec.y, 0, 1, true, 1);                              //Press
+                scr.browser.injectMouseButton(vec.x, vec.y, 0, 1, false, 1);                             //Release
+            } else if(event == CMessageScreenUpdate.MOUSE_DOWN) {
+                scr.browser.injectMouseMove(vec.x, vec.y, 0, false);                                            //Move to target
+                scr.browser.injectMouseButton(vec.x, vec.y, 0, 1, true, 1);                              //Press
+            } else if(event == CMessageScreenUpdate.MOUSE_MOVE)
+                scr.browser.injectMouseMove(vec.x, vec.y, 0, false);                                            //Move
+            else if(event == CMessageScreenUpdate.MOUSE_UP)
+                scr.browser.injectMouseButton(scr.lastMousePos.x, scr.lastMousePos.y, 0, 1, false, 1);  //Release
+
+            if(vec != null) {
+                scr.lastMousePos.x = vec.x;
+                scr.lastMousePos.y = vec.y;
             }
-        } else
-            WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.click(this, side, vec), point());
+        }
     }
 
     @Override
@@ -424,7 +472,7 @@ public class TileEntityScreen extends TileEntity {
 
     public void updateTrackDistance(double d) {
         boolean needsComputation = true;
-        float vol = -1.f;
+        float vol;
         String jsCode = null;
 
         for(Screen scr: screens) {
@@ -499,6 +547,7 @@ public class TileEntityScreen extends TileEntity {
             }
 
             if(scr.friends.remove(pair)) {
+                checkLaserUserRights(scr);
                 (new ScreenConfigData(new Vector3i(pos), side, scr)).updateOnly().sendTo(point());
                 markDirty();
             }
@@ -515,6 +564,8 @@ public class TileEntityScreen extends TileEntity {
 
             scr.friendRights = fr;
             scr.otherRights = or;
+
+            checkLaserUserRights(scr);
             (new ScreenConfigData(new Vector3i(pos), side, scr)).updateOnly().sendTo(point());
             markDirty();
         }
@@ -611,9 +662,12 @@ public class TileEntityScreen extends TileEntity {
         if(abortIfExisting && scr.upgrades.stream().anyMatch((otherStack) -> itemAsUpgrade.isSameUpgrade(is, otherStack)))
             return false; //Upgrade already exists
 
-        scr.upgrades.add(is);
+        ItemStack isCopy = is.copy(); //FIXME: Duct tape fix, because the original stack will be shrinked
+        isCopy.setCount(1);
+
+        scr.upgrades.add(isCopy);
         WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.upgrade(this, side), point());
-        itemAsUpgrade.onInstall(this, side, player, is);
+        itemAsUpgrade.onInstall(this, side, player, isCopy);
         playSoundAt(WebDisplays.INSTANCE.soundUpgradeAdd, pos, 1.0f, 1.0f);
         return true;
     }
@@ -687,6 +741,58 @@ public class TileEntityScreen extends TileEntity {
             playSoundAt(WebDisplays.INSTANCE.soundUpgradeDel, pos, 1.0f, 1.0f);
         } else
             Log.warning("Tried to remove non-existing upgrade %s to screen %s at %s", safeName(is), side.toString(), pos.toString());
+    }
+
+    private Screen getScreenForLaserOp(BlockSide side, EntityPlayer ply) {
+        if(world.isRemote)
+            return null;
+
+        Screen scr = getScreen(side);
+        if(scr == null) {
+            Log.error("Called laser operation on invalid screen on side %s", side.toString());
+            return null;
+        }
+
+        if((scr.rightsFor(ply) & ScreenRights.CLICK) == 0)
+            return null; //Don't output an error, it can 'legally' happen
+
+        if(scr.upgrades.stream().noneMatch((is) -> is.getItem() == WebDisplays.INSTANCE.itemUpgrade && is.getMetadata() == DefaultUpgrade.LASER_MOUSE.ordinal())) {
+            Log.error("Called laser operation on side %s, but it's missing the laser sensor upgrade", side.toString());
+            return null;
+        }
+
+        return scr; //Okay, go for it...
+    }
+
+    public void laserDownMove(BlockSide side, EntityPlayer ply, Vector2i pos, boolean down) {
+        //System.out.println("called laser" + (down ? "Down" : "Move"));
+        if(down)
+            System.out.println("called laserDown");
+
+        Screen scr = getScreenForLaserOp(side, ply);
+
+        if(scr != null) {
+            if(down) {
+                //Try to acquire laser lock
+                if(getLaserUser(scr) == null) {
+                    scr.laserUser = ply;
+                    WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.click(this, side, CMessageScreenUpdate.MOUSE_DOWN, pos), point());
+                }
+            } else if(getLaserUser(scr) == ply)
+                WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.click(this, side, CMessageScreenUpdate.MOUSE_MOVE, pos), point());
+        }
+    }
+
+    public void laserUp(BlockSide side, EntityPlayer ply) {
+        System.out.println("called laserUp");
+        Screen scr = getScreenForLaserOp(side, ply);
+
+        if(scr != null) {
+            if(getLaserUser(scr) == ply) {
+                scr.laserUser = null;
+                WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.click(this, side, CMessageScreenUpdate.MOUSE_UP, null), point());
+            }
+        }
     }
 
 }
