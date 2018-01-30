@@ -121,12 +121,4 @@ public final class LaserPointerRenderer implements IItemRenderer {
         GlStateManager.enableTexture2D(); //Fix for shitty minecraft fire
     }
 
-    private void raycast(float ptt, double dist) {
-        Vec3d start = mc.player.getPositionEyes(ptt);
-        Vec3d lookVec = mc.player.getLook(ptt);
-        Vec3d end = start.addVector(lookVec.x * dist, lookVec.y * dist, lookVec.z * dist);
-
-        RayTraceResult rtr = mc.world.rayTraceBlocks(start, end, true, true, false);
-    }
-
 }

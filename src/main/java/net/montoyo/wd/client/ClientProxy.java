@@ -20,6 +20,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -34,6 +35,7 @@ import net.montoyo.mcef.api.IDisplayHandler;
 import net.montoyo.mcef.api.MCEFApi;
 import net.montoyo.wd.SharedProxy;
 import net.montoyo.wd.WebDisplays;
+import net.montoyo.wd.block.BlockScreen;
 import net.montoyo.wd.client.gui.GuiMinePad;
 import net.montoyo.wd.client.gui.GuiScreenConfig;
 import net.montoyo.wd.client.gui.GuiSetURL2;
@@ -45,8 +47,7 @@ import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.SMessagePadCtrl;
 import net.montoyo.wd.utilities.*;
-import org.lwjgl.input.Mouse;
-import scala.tools.nsc.doc.model.Def;
+import org.lwjgl.Sys;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -315,6 +316,34 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
                     }
                 }
             }
+
+            //If laser is on, raycast
+            if(laserPointerRenderer.isOn) {
+                RayTraceResult result = raycast(64.0); //TODO: Make that distance configurable
+
+                if(result != null) {
+                    BlockPos bpos = result.getBlockPos();
+
+                    if(result.typeOfHit == RayTraceResult.Type.BLOCK && mc.world.getBlockState(bpos).getBlock() == WebDisplays.INSTANCE.blockScreen) {
+                        Vector3i pos = new Vector3i(result.getBlockPos());
+                        BlockSide side = BlockSide.values()[result.sideHit.ordinal()];
+
+                        Multiblock.findOrigin(mc.world, pos, side, null);
+                        TileEntityScreen te = (TileEntityScreen) mc.world.getTileEntity(pos.toBlock());
+
+                        if(te != null && te.hasUpgrade(side, WebDisplays.INSTANCE.itemUpgrade, DefaultUpgrade.LASER_MOUSE.ordinal())) { //hasUpgrade returns false is there's no screen on side 'side'
+                            //Since rights aren't synchronized, let the server check them for us...
+                            float hitX = ((float) result.hitVec.x) - (float) bpos.getX();
+                            float hitY = ((float) result.hitVec.y) - (float) bpos.getY();
+                            float hitZ = ((float) result.hitVec.z) - (float) bpos.getZ();
+                            Vector2i tmp = new Vector2i();
+
+                            if(BlockScreen.hit2pixels(side, bpos, pos, te.getScreen(side), hitX, hitY, hitZ, tmp))
+                                System.out.println("At " + tmp.x + ", " + tmp.y);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -340,15 +369,21 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
     @SubscribeEvent
     public void onMouseButton(MouseEvent ev) {
-        if(mc.player != null && mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() == WebDisplays.INSTANCE.itemLaserPointer) {
-            if(ev.getButton() == 1) {
-                //Right button
-                laserPointerRenderer.isOn = ev.isButtonstate();
-            }
+        if(ev.getButton() == 1 && mc.player != null && mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() == WebDisplays.INSTANCE.itemLaserPointer) {
+            laserPointerRenderer.isOn = ev.isButtonstate();
+            ev.setCanceled(true); //Do I really need this?
         }
     }
 
     /**************************************** OTHER METHODS ****************************************/
+
+    private RayTraceResult raycast(double dist) {
+        Vec3d start = mc.player.getPositionEyes(1.0f);
+        Vec3d lookVec = mc.player.getLook(1.0f);
+        Vec3d end = start.addVector(lookVec.x * dist, lookVec.y * dist, lookVec.z * dist);
+
+        return mc.world.rayTraceBlocks(start, end, true, true, false);
+    }
 
     private void updateInventory(NonNullList<ItemStack> inv, ItemStack heldStack, int cnt) {
         for(int i = 0; i < cnt; i++) {

@@ -151,32 +151,9 @@ public class BlockScreen extends WDBlockContainer {
                     return true;
                 }
 
-                if(side.right.x < 0)
-                    hitX -= 1.f;
-
-                if(side.right.z < 0 || side == BlockSide.TOP || side == BlockSide.BOTTOM)
-                    hitZ -= 1.f;
-
-                Vector3f rel = new Vector3f(bpos.getX(), bpos.getY(), bpos.getZ());
-                rel.sub((float) pos.x, (float) pos.y, (float) pos.z);
-                rel.add(hitX, hitY, hitZ);
-
-                float cx = rel.dot(side.right.toFloat()) - 2.f / 16.f;
-                float cy = rel.dot(side.up.toFloat()) - 2.f / 16.f;
-                float sw = ((float) scr.size.x) - 4.f / 16.f;
-                float sh = ((float) scr.size.y) - 4.f / 16.f;
-
-                cx /= sw;
-                cy /= sh;
-
-                if(cx >= 0.f && cx <= 1.0 && cy >= 0.f && cy <= 1.f) {
-                    if(side != BlockSide.BOTTOM)
-                        cy = 1.f - cy;
-
-                    cx *= (float) scr.resolution.x;
-                    cy *= (float) scr.resolution.y;
-                    te.click(side, new Vector2i((int) cx, (int) cy));
-                }
+                Vector2i tmp = new Vector2i();
+                if(hit2pixels(side, bpos, pos, scr, hitX, hitY, hitZ, tmp))
+                    te.click(side, tmp);
 
                 return true;
             }
@@ -209,6 +186,39 @@ public class BlockScreen extends WDBlockContainer {
 
         te.addScreen(side, size, null, !created).setOwner(player);
         return true;
+    }
+
+    public static boolean hit2pixels(BlockSide side, BlockPos bpos, Vector3i pos, TileEntityScreen.Screen scr, float hitX, float hitY, float hitZ, Vector2i dst) {
+        if(side.right.x < 0)
+            hitX -= 1.f;
+
+        if(side.right.z < 0 || side == BlockSide.TOP || side == BlockSide.BOTTOM)
+            hitZ -= 1.f;
+
+        Vector3f rel = new Vector3f(bpos.getX(), bpos.getY(), bpos.getZ());
+        rel.sub((float) pos.x, (float) pos.y, (float) pos.z);
+        rel.add(hitX, hitY, hitZ);
+
+        float cx = rel.dot(side.right.toFloat()) - 2.f / 16.f;
+        float cy = rel.dot(side.up.toFloat()) - 2.f / 16.f;
+        float sw = ((float) scr.size.x) - 4.f / 16.f;
+        float sh = ((float) scr.size.y) - 4.f / 16.f;
+
+        cx /= sw;
+        cy /= sh;
+
+        if(cx >= 0.f && cx <= 1.0 && cy >= 0.f && cy <= 1.f) {
+            if(side != BlockSide.BOTTOM)
+                cy = 1.f - cy;
+
+            cx *= (float) scr.resolution.x;
+            cy *= (float) scr.resolution.y;
+            dst.x = (int) cx;
+            dst.y = (int) cy;
+            return true;
+        }
+
+        return false;
     }
 
     @Nullable

@@ -7,6 +7,7 @@ package net.montoyo.wd.entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -615,7 +616,6 @@ public class TileEntityScreen extends TileEntity {
         return true;
     }
 
-    //Uses the default item stack comparing (same Item & metadata)
     public boolean hasUpgrade(BlockSide side, ItemStack is) {
         Screen scr = getScreen(side);
         if(scr == null)
@@ -626,6 +626,15 @@ public class TileEntityScreen extends TileEntity {
 
         IUpgrade itemAsUpgrade = (IUpgrade) is.getItem();
         return scr.upgrades.stream().anyMatch((otherStack) -> itemAsUpgrade.isSameUpgrade(is, otherStack));
+    }
+
+    //Special version of hasUpgrade(BlockSide, ItemStack) that matches only the item and the meta
+    public boolean hasUpgrade(BlockSide side, Item item, int meta) {
+        Screen scr = getScreen(side);
+        if(scr == null)
+            return false;
+
+        return scr.upgrades.stream().anyMatch((otherStack) -> otherStack.getItem() == item && otherStack.getMetadata() == meta);
     }
 
     public void removeUpgrade(BlockSide side, ItemStack is, @Nullable EntityPlayer player) {
