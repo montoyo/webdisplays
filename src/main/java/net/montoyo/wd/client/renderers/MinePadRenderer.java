@@ -21,7 +21,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_RESCALE_NORMAL;
 
 @SideOnly(Side.CLIENT)
-public final class MinePadRenderer {
+public final class MinePadRenderer implements IItemRenderer {
 
     private static final float PI = (float) Math.PI;
     private final Minecraft mc = Minecraft.getMinecraft();
@@ -34,7 +34,7 @@ public final class MinePadRenderer {
     private float sinSwingProg1;
     private float sinSwingProg2;
 
-    private static void drawAxis() {
+    public static void drawAxis() {
         glDisable(GL_TEXTURE_2D);
         glBegin(GL_LINES);
         glColor4f(1.f, 0.f, 0.f, 1.f); glVertex3d(0.0, 0.0, 0.0);
@@ -47,6 +47,7 @@ public final class MinePadRenderer {
         glEnable(GL_TEXTURE_2D);
     }
 
+    @Override
     public final void render(ItemStack is, float handSideSign, float swingProgress, float equipProgress) {
         //Pre-compute values
         float sqrtSwingProg = (float) Math.sqrt((double) swingProgress);

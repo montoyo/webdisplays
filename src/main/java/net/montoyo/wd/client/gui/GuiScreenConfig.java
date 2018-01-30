@@ -4,6 +4,7 @@
 
 package net.montoyo.wd.client.gui;
 
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.util.ResourceLocation;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.gui.controls.*;
@@ -142,6 +143,8 @@ public class GuiScreenConfig extends WDScreen {
         updateRights(friendRights, friendRights, friendBoxes, true);
         updateRights(otherRights, otherRights, otherBoxes, true);
         updateMyRights();
+
+        mc.getSoundHandler().playSound(PositionedSoundRecord.getRecord(WebDisplays.INSTANCE.soundScreenCfg, 1.0f, 1.0f));
     }
 
     private void addFriend(String name) {

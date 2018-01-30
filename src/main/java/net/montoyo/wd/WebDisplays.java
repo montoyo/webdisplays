@@ -65,6 +65,7 @@ public class WebDisplays {
     public SoundEvent soundTyping;
     public SoundEvent soundUpgradeAdd;
     public SoundEvent soundUpgradeDel;
+    public SoundEvent soundScreenCfg;
 
     //Config
     public static final double PAD_RATIO = 59.0 / 30.0;
@@ -150,7 +151,10 @@ public class WebDisplays {
         soundUpgradeDel = new SoundEvent(new ResourceLocation("webdisplays", "upgradeDel"));
         soundUpgradeDel.setRegistryName(soundUpgradeDel.getSoundName());
 
-        ev.getRegistry().registerAll(soundTyping, soundUpgradeAdd, soundUpgradeDel);
+        soundScreenCfg = new SoundEvent(new ResourceLocation("webdisplays", "screencfgOpen"));
+        soundScreenCfg.setRegistryName(soundScreenCfg.getSoundName());
+
+        ev.getRegistry().registerAll(soundTyping, soundUpgradeAdd, soundUpgradeDel, soundScreenCfg);
     }
 
     @SubscribeEvent

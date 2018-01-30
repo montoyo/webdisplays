@@ -15,6 +15,7 @@ item.webdisplays.upgrade.name=Screen Upgrade
 item.webdisplays.upgrade.lasermouse.name=Laser Sensor
 item.webdisplays.upgrade.redinput.name=Redstone Input Port
 item.webdisplays.upgrade.redoutput.name=Redstone Output Port
+item.webdisplays.laserpointer.name=Laser Pointer
 webdisplays.message.tooSmall=Too small! Minimum size is 2x2.
 webdisplays.message.invalid=Structure is invalid; look at %s.
 webdisplays.message.turnOn=You need to turn the screen on first!

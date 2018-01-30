@@ -20,11 +20,10 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.ModelBakeEvent;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.event.RenderSpecificHandEvent;
-import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -40,15 +39,13 @@ import net.montoyo.wd.client.gui.GuiScreenConfig;
 import net.montoyo.wd.client.gui.GuiSetURL2;
 import net.montoyo.wd.client.gui.WDScreen;
 import net.montoyo.wd.client.gui.loading.GuiLoader;
-import net.montoyo.wd.client.renderers.IModelBaker;
-import net.montoyo.wd.client.renderers.MinePadRenderer;
-import net.montoyo.wd.client.renderers.ScreenBaker;
-import net.montoyo.wd.client.renderers.ScreenRenderer;
+import net.montoyo.wd.client.renderers.*;
 import net.montoyo.wd.core.DefaultUpgrade;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.SMessagePadCtrl;
 import net.montoyo.wd.utilities.*;
+import org.lwjgl.input.Mouse;
 import scala.tools.nsc.doc.model.Def;
 
 import java.util.ArrayList;
@@ -76,6 +73,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     private ArrayList<ResourceModelPair> modelBakers = new ArrayList<>();
     private net.montoyo.mcef.api.API mcef;
     private MinePadRenderer minePadRenderer;
+    private LaserPointerRenderer laserPointerRenderer;
 
     //Tracking
     private ArrayList<TileEntityScreen> screenTracking = new ArrayList<>();
@@ -102,6 +100,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityScreen.class, new ScreenRenderer());
         mcef = MCEFApi.getAPI();
         minePadRenderer = new MinePadRenderer();
+        laserPointerRenderer = new LaserPointerRenderer();
     }
 
     @Override
@@ -321,13 +320,31 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
     @SubscribeEvent
     public void onRenderPlayerHand(RenderSpecificHandEvent ev) {
-        if(ev.getItemStack().getItem() == WebDisplays.INSTANCE.itemMinePad) {
-            EnumHandSide handSide = mc.player.getPrimaryHand();
-            if(ev.getHand() == EnumHand.OFF_HAND)
-                handSide = handSide.opposite();
+        Item item = ev.getItemStack().getItem();
+        IItemRenderer renderer;
 
-            minePadRenderer.render(ev.getItemStack(), (handSide == EnumHandSide.RIGHT) ? 1.0f : -1.0f, ev.getSwingProgress(), ev.getEquipProgress());
-            ev.setCanceled(true);
+        if(item == WebDisplays.INSTANCE.itemMinePad)
+            renderer = minePadRenderer;
+        else if(item == WebDisplays.INSTANCE.itemLaserPointer)
+            renderer = laserPointerRenderer;
+        else
+            return;
+
+        EnumHandSide handSide = mc.player.getPrimaryHand();
+        if(ev.getHand() == EnumHand.OFF_HAND)
+            handSide = handSide.opposite();
+
+        renderer.render(ev.getItemStack(), (handSide == EnumHandSide.RIGHT) ? 1.0f : -1.0f, ev.getSwingProgress(), ev.getEquipProgress());
+        ev.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public void onMouseButton(MouseEvent ev) {
+        if(mc.player != null && mc.player.getHeldItem(EnumHand.MAIN_HAND).getItem() == WebDisplays.INSTANCE.itemLaserPointer) {
+            if(ev.getButton() == 1) {
+                //Right button
+                laserPointerRenderer.isOn = ev.isButtonstate();
+            }
         }
     }
 

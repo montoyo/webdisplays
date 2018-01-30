@@ -1,7 +1,6 @@
 {
   "keyboardType": {
     "category": "block",
-    "subtitle": "block.webdisplays.keyboard",
     "sounds": [
       "webdisplays:keyboard1",
       "webdisplays:keyboard2",
@@ -15,16 +14,20 @@
   },
   "upgradeAdd": {
     "category": "block",
-    "subtitle": "block.webdisplays.upgradeAdd",
     "sounds": [
       "webdisplays:upgrade_add"
     ]
   },
   "upgradeDel": {
     "category": "block",
-    "subtitle": "block.webdisplays.upgradeDel",
     "sounds": [
       "webdisplays:upgrade_del"
+    ]
+  },
+  "screencfgOpen": {
+    "category": "master",
+    "sounds": [
+      "webdisplays:screencfg_open"
     ]
   }
 }
