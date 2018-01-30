@@ -6,12 +6,13 @@ package net.montoyo.wd.utilities;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public enum VideoType {
 
     YOUTUBE("document.getElementById(\"movie_player\").setVolume(", ")"),
-    YOUTUBE_EMBED("", "");
+    YOUTUBE_EMBED("document.getElementsByClassName(\"html5-video-player\")[0].setVolume(", ")");
 
     private final String volumePrefix;
     private final String volumeSuffix;
@@ -39,6 +40,15 @@ public enum VideoType {
             return loPath.length() > 7 ? YOUTUBE_EMBED : null;
 
         return null;
+    }
+
+    @Nullable
+    public static VideoType getTypeFromURL(@Nonnull String url) {
+        try {
+            return getTypeFromURL(new URL(url));
+        } catch(MalformedURLException ex) {
+            return null;
+        }
     }
 
     @Nonnull

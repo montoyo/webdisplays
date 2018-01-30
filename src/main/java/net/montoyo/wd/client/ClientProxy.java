@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -28,6 +27,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -49,7 +49,6 @@ import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.SMessagePadCtrl;
 import net.montoyo.wd.net.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
-import org.lwjgl.Sys;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -215,13 +214,16 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         if(browser != null) {
             long t = System.currentTimeMillis();
 
-            for(PadData pd : padList) {
+            for(PadData pd: padList) {
                 if(pd.view == browser && t - pd.lastURLSent >= 1000) {
                     pd.lastURLSent = t; //Avoid spamming the server with porn URLs
                     WebDisplays.NET_HANDLER.sendToServer(new SMessagePadCtrl(pd.id, url));
                     break;
                 }
             }
+
+            for(TileEntityScreen tes: screenTracking)
+                tes.updateClientSideURL(browser, url);
         }
     }
 
@@ -387,6 +389,17 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
         renderer.render(ev.getItemStack(), (handSide == EnumHandSide.RIGHT) ? 1.0f : -1.0f, ev.getSwingProgress(), ev.getEquipProgress());
         ev.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public void onWorldUnload(WorldEvent.Unload ev) {
+        Log.info("World unloaded; killing screens...");
+        int dim = ev.getWorld().provider.getDimension();
+
+        for(int i = screenTracking.size() - 1; i >= 0; i--) {
+            if(screenTracking.get(i).getWorld().provider.getDimension() == dim) //Could be world == ev.getWorld()
+                screenTracking.remove(i).unload();
+        }
     }
 
     /**************************************** OTHER METHODS ****************************************/

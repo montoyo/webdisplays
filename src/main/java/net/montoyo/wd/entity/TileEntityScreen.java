@@ -40,14 +40,11 @@ public class TileEntityScreen extends TileEntity {
 
     public static class Screen {
 
-        private static final String YT_REGEX1 = "^https?\\://(?:www\\.)?youtube\\.com/watch.+$"; //TODO: Fix embedded videos sound/distance
-        private static final String YT_REGEX2 = "^https?\\://(?:www\\.)?youtu\\.be/[a-zA-Z0-9_\\-]+.*$";
-
         public BlockSide side;
         public Vector2i size;
         public Vector2i resolution;
         public String url;
-        public boolean isYouTube = false;
+        private VideoType videoType;
         public NameUUIDPair owner;
         public ArrayList<NameUUIDPair> friends;
         public int friendRights;
@@ -59,17 +56,13 @@ public class TileEntityScreen extends TileEntity {
         public EntityPlayer laserUser;
         public final Vector2i lastMousePos = new Vector2i();
 
-        public static boolean isYouTubeURL(String url) {
-            return url.matches(YT_REGEX1) || url.matches(YT_REGEX2);
-        }
-
         public static Screen deserialize(NBTTagCompound tag) {
             Screen ret = new Screen();
             ret.side = BlockSide.values()[tag.getByte("Side")];
             ret.size = new Vector2i(tag.getInteger("Width"), tag.getInteger("Height"));
             ret.resolution = new Vector2i(tag.getInteger("ResolutionX"), tag.getInteger("ResolutionY"));
             ret.url = tag.getString("URL");
-            ret.isYouTube = isYouTubeURL(ret.url);
+            ret.videoType = VideoType.getTypeFromURL(ret.url);
 
             if(ret.resolution.x <= 0 || ret.resolution.y <= 0) {
                 float psx = ((float) ret.size.x) * 16.f - 4.f;
@@ -165,7 +158,7 @@ public class TileEntityScreen extends TileEntity {
     private ArrayList<Screen> screens = new ArrayList<>();
     private AxisAlignedBB renderBB = new AxisAlignedBB(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
     private boolean loaded = true;
-    public float ytVolume = 100.0f;
+    public float ytVolume = Float.POSITIVE_INFINITY;
 
     public boolean isLoaded() {
         return loaded;
@@ -292,7 +285,7 @@ public class TileEntityScreen extends TileEntity {
         }
 
         scr.url = url;
-        scr.isYouTube = Screen.isYouTubeURL(url);
+        scr.videoType = VideoType.getTypeFromURL(url);
 
         if(world.isRemote) {
             if(scr.browser != null)
@@ -472,13 +465,15 @@ public class TileEntityScreen extends TileEntity {
 
     public void updateTrackDistance(double d) {
         boolean needsComputation = true;
-        float vol;
-        String jsCode = null;
+        int intPart = 0; //Need to initialize those because the compiler is stupid
+        int fracPart = 0;
 
         for(Screen scr: screens) {
-            if(scr.isYouTube && scr.browser != null && !scr.browser.isPageLoading()) {
+            if(scr.videoType != null && scr.browser != null && !scr.browser.isPageLoading()) {
                 if(needsComputation) {
                     float dist = (float) Math.sqrt(d);
+                    float vol;
+
                     if(dist <= 10.f)
                         vol = 100.f;
                     else if(dist >= 30.f)
@@ -490,16 +485,23 @@ public class TileEntityScreen extends TileEntity {
                         return; //Delta is too small
 
                     ytVolume = vol;
-                    int intPart = (int) vol; //Manually convert to string, probably faster in that case...
-                    int fracPart = ((int) (vol * 100.f)) - intPart * 100;
-                    //jsCode = "yt.player.getPlayerByElement(document.getElementById(\"movie_player\")).setVolume(" + intPart + '.' + fracPart + ')';
-                    //jsCode = "console.log(document.getElementById(\"movie_player\"))";
-                    jsCode = "document.getElementById(\"movie_player\").setVolume(" + intPart + '.' + fracPart + ')';
-                    //Log.info(jsCode);
+                    intPart = (int) vol; //Manually convert to string, probably faster in that case...
+                    fracPart = ((int) (vol * 100.f)) - intPart * 100;
                     needsComputation = false;
                 }
 
-                scr.browser.runJS(jsCode, "");
+                scr.browser.runJS(scr.videoType.getVolumeJSQuery(intPart, fracPart), "");
+            }
+        }
+    }
+
+    public void updateClientSideURL(IBrowser target, String url) {
+        for(Screen scr: screens) {
+            if(scr.browser == target) {
+                scr.url = url; //FIXME: This is an invalid fix for something that CANNOT be fixed
+                scr.videoType = VideoType.getTypeFromURL(url);
+                ytVolume = Float.POSITIVE_INFINITY; //Force volume update
+                break;
             }
         }
     }

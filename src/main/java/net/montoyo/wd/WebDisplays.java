@@ -142,19 +142,10 @@ public class WebDisplays {
 
     @SubscribeEvent
     public void onRegisterSounds(RegistryEvent.Register<SoundEvent> ev) {
-        soundTyping = new SoundEvent(new ResourceLocation("webdisplays", "keyboardType"));
-        soundTyping.setRegistryName(soundTyping.getSoundName());
-
-        soundUpgradeAdd = new SoundEvent(new ResourceLocation("webdisplays", "upgradeAdd"));
-        soundUpgradeAdd.setRegistryName(soundUpgradeAdd.getSoundName());
-
-        soundUpgradeDel = new SoundEvent(new ResourceLocation("webdisplays", "upgradeDel"));
-        soundUpgradeDel.setRegistryName(soundUpgradeDel.getSoundName());
-
-        soundScreenCfg = new SoundEvent(new ResourceLocation("webdisplays", "screencfgOpen"));
-        soundScreenCfg.setRegistryName(soundScreenCfg.getSoundName());
-
-        ev.getRegistry().registerAll(soundTyping, soundUpgradeAdd, soundUpgradeDel, soundScreenCfg);
+        soundTyping = registerSound(ev, "keyboardType");
+        soundUpgradeAdd = registerSound(ev, "upgradeAdd");
+        soundUpgradeDel = registerSound(ev, "upgradeDel");
+        soundScreenCfg = registerSound(ev, "screencfgOpen");
     }
 
     @SubscribeEvent
@@ -202,6 +193,15 @@ public class WebDisplays {
 
     public static int getNextAvailablePadID() {
         return INSTANCE.lastPadId++;
+    }
+
+    private static SoundEvent registerSound(RegistryEvent.Register<SoundEvent> ev, String resName) {
+        ResourceLocation resLoc = new ResourceLocation("webdisplays", resName);
+        SoundEvent ret = new SoundEvent(resLoc);
+        ret.setRegistryName(resLoc);
+
+        ev.getRegistry().register(ret);
+        return ret;
     }
 
 }

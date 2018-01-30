@@ -10,7 +10,6 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * Read config (see "Config elements" below)
 
 ### TODO
-* VideoType doesn't seem to be used...
 * Achievements (minePad 2 and all that stuff)
 * Top/bottom screen orientation
 * GuiSetURL2 missing buttons
