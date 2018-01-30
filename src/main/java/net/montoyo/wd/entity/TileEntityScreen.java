@@ -719,28 +719,30 @@ public class TileEntityScreen extends TileEntity {
         }
 
         if(idxToRemove >= 0) {
-            if(!itemAsUpgrade.onRemove(this, side, player, scr.upgrades.get(idxToRemove))) { //Drop upgrade item
-                ItemStack toDrop = scr.upgrades.get(idxToRemove);
-                boolean spawnDrop = true;
-
-                if(player != null) {
-                    if(player.isCreative() || player.addItemStackToInventory(toDrop))
-                        spawnDrop = false; //If in creative or if the item was added to the player's inventory, don't spawn drop entity
-                }
-
-                if(spawnDrop) {
-                    Vector3f pos = new Vector3f((float) this.pos.getX(), (float) this.pos.getY(), (float) this.pos.getZ());
-                    pos.addMul(side.backward.toFloat(), 1.5f);
-
-                    world.spawnEntity(new EntityItem(world, (double) pos.x, (double) pos.y, (double) pos.z, toDrop));
-                }
-            }
-
+            dropUpgrade(scr.upgrades.get(idxToRemove), side, player);
             scr.upgrades.remove(idxToRemove);
             WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.upgrade(this, side), point());
             playSoundAt(WebDisplays.INSTANCE.soundUpgradeDel, pos, 1.0f, 1.0f);
         } else
             Log.warning("Tried to remove non-existing upgrade %s to screen %s at %s", safeName(is), side.toString(), pos.toString());
+    }
+
+    private void dropUpgrade(ItemStack is, BlockSide side, @Nullable EntityPlayer ply) {
+        if(!((IUpgrade) is.getItem()).onRemove(this, side, ply, is)) { //Drop upgrade item
+            boolean spawnDrop = true;
+
+            if(ply != null) {
+                if(ply.isCreative() || ply.addItemStackToInventory(is))
+                    spawnDrop = false; //If in creative or if the item was added to the player's inventory, don't spawn drop entity
+            }
+
+            if(spawnDrop) {
+                Vector3f pos = new Vector3f((float) this.pos.getX(), (float) this.pos.getY(), (float) this.pos.getZ());
+                pos.addMul(side.backward.toFloat(), 1.5f);
+
+                world.spawnEntity(new EntityItem(world, (double) pos.x, (double) pos.y, (double) pos.z, is));
+            }
+        }
     }
 
     private Screen getScreenForLaserOp(BlockSide side, EntityPlayer ply) {
@@ -792,6 +794,15 @@ public class TileEntityScreen extends TileEntity {
                 scr.laserUser = null;
                 WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.click(this, side, CMessageScreenUpdate.MOUSE_UP, null), point());
             }
+        }
+    }
+
+    public void onDestroy(@Nullable EntityPlayer ply) {
+        for(Screen scr: screens) {
+            for(ItemStack is: scr.upgrades)
+                dropUpgrade(is, scr.side, ply);
+
+            scr.upgrades.clear();
         }
     }
 

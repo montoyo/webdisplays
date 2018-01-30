@@ -227,34 +227,38 @@ public class BlockScreen extends WDBlockContainer {
         return meta == 0 ? null : new TileEntityScreen();
     }
 
-    @Override
-    public void onBlockDestroyedByPlayer(World world, BlockPos pos, IBlockState dontCare) {
+    /************************************************* DESTRUCTION HANDLING *************************************************/
+
+    private void onDestroy(World world, BlockPos pos, EntityPlayer ply) {
         if(!world.isRemote) {
             Vector3i bp = new Vector3i(pos);
             Multiblock.BlockOverride override = new Multiblock.BlockOverride(bp, Multiblock.OverrideAction.SIMULATE);
 
             for(BlockSide bs: BlockSide.values())
-                destroySide(world, bp.clone(), bs, override);
+                destroySide(world, bp.clone(), bs, override, ply);
         }
     }
 
-    private void destroySide(World world, Vector3i pos, BlockSide side, Multiblock.BlockOverride override) {
+    private void destroySide(World world, Vector3i pos, BlockSide side, Multiblock.BlockOverride override, EntityPlayer source) {
         Multiblock.findOrigin(world, pos, side, override);
         BlockPos bp = pos.toBlock();
         TileEntity te = world.getTileEntity(bp);
 
-        if(te != null && te instanceof TileEntityScreen)
+        if(te != null && te instanceof TileEntityScreen) {
+            ((TileEntityScreen) te).onDestroy(source);
             world.setBlockState(bp, getDefaultState().withProperty(hasTE, false)); //Destroy tile entity
+        }
     }
 
     @Override
-    public EnumPushReaction getMobilityFlag(IBlockState state) {
-        return EnumPushReaction.IGNORE;
+    public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer ply, boolean willHarvest) {
+        onDestroy(world, pos, ply);
+        return super.removedByPlayer(state, world, pos, ply, willHarvest);
     }
 
     @Override
     public void onBlockDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
-        onBlockDestroyedByPlayer(world, pos, null);
+        onDestroy(world, pos, null);
     }
 
     @Override
@@ -275,9 +279,14 @@ public class BlockScreen extends WDBlockContainer {
         for(Vector3i neighbor: neighbors) {
             if(world.getBlockState(neighbor.toBlock()).getBlock() instanceof BlockScreen) {
                 for(BlockSide bs: BlockSide.values())
-                    destroySide(world, neighbor.clone(), bs, override);
+                    destroySide(world, neighbor.clone(), bs, override, (whoDidThisShit instanceof EntityPlayer) ? ((EntityPlayer) whoDidThisShit) : null);
             }
         }
+    }
+
+    @Override
+    public EnumPushReaction getMobilityFlag(IBlockState state) {
+        return EnumPushReaction.IGNORE;
     }
 
 }
