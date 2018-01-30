@@ -50,6 +50,8 @@ public class TileEntityScreen extends TileEntity {
         public int otherRights;
         public IBrowser browser;
         public ArrayList<ItemStack> upgrades;
+        public boolean doTurnOnAnim;
+        public long turnOnTime;
 
         public static boolean isYouTubeURL(String url) {
             return url.matches(YT_REGEX1) || url.matches(YT_REGEX2);

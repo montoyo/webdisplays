@@ -69,7 +69,7 @@ public class WebDisplays {
 
     //Config
     public static final double PAD_RATIO = 59.0 / 30.0;
-    public String homePage = "https://google.com"; //TODO: Read from config
+    public String homePage = "mod://webdisplays/main.html"; //TODO: Read from config
     public double padResX;
     public double padResY;
     private int lastPadId = 0;

@@ -42,6 +42,8 @@ public class ScreenRenderer extends TileEntitySpecialRenderer<TileEntityScreen> 
             if(scr.browser == null) {
                 scr.browser = ((ClientProxy) WebDisplays.PROXY).getMCEF().createBrowser(scr.url);
                 scr.browser.resize(scr.resolution.x, scr.resolution.y);
+                scr.doTurnOnAnim = true;
+                scr.turnOnTime = System.currentTimeMillis();
             }
 
             tmpi.set(scr.side.right);
@@ -84,9 +86,22 @@ public class ScreenRenderer extends TileEntitySpecialRenderer<TileEntityScreen> 
                     break;
             }
 
+            if(scr.doTurnOnAnim) {
+                long lt = System.currentTimeMillis() - scr.turnOnTime;
+                float ft = ((float) lt) / 100.0f;
+
+                if(ft >= 1.0f) {
+                    ft = 1.0f;
+                    scr.doTurnOnAnim = false;
+                }
+
+                glScalef(ft, ft, 1.0f);
+            }
+
             float sw = ((float) scr.size.x) * 0.5f - 2.f / 16.f;
             float sh = ((float) scr.size.y) * 0.5f - 2.f / 16.f;
 
+            //TODO: Use tesselator
             glBindTexture(GL_TEXTURE_2D, scr.browser.getTextureID());
             glBegin(GL_QUADS);
             glColor4f(1.f, 1.f, 1.f, 1.f); glTexCoord2f(0.f, 1.f); glVertex3f(-sw, -sh, 0.505f);
