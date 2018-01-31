@@ -2,6 +2,7 @@
 This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The text below is my "TODO" list.
 
 ### Missing features
+* Crafts: upgrades, laser pointer, peripherals
 * Screen upgrade: redstone input
 * Screen upgrade: redstone output
 * ~~Peripheral: ComputerCraft interface~~ (CC not up to date)
@@ -10,6 +11,7 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * Read config (see "Config elements" below)
 
 ### TODO
+* REDSTONE INPUT OPTIMIZATIONssss!!!
 * Achievements (minePad 2 and all that stuff)
 * Top/bottom screen orientation
 * GuiSetURL2 missing buttons
@@ -23,6 +25,8 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * Enhance crafts
 * Enhance models
 * minePad item texture seems to be transparent in some corners...
+* Change mod name to WD2
+* Put a limit on screen resolution
 
 ### Config elements
 * Site blacklist

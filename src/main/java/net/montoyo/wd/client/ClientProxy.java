@@ -31,9 +31,7 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.montoyo.mcef.api.IBrowser;
-import net.montoyo.mcef.api.IDisplayHandler;
-import net.montoyo.mcef.api.MCEFApi;
+import net.montoyo.mcef.api.*;
 import net.montoyo.wd.SharedProxy;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.block.BlockScreen;
@@ -53,7 +51,7 @@ import net.montoyo.wd.utilities.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class ClientProxy extends SharedProxy implements IResourceManagerReloadListener, IDisplayHandler {
+public class ClientProxy extends SharedProxy implements IResourceManagerReloadListener, IDisplayHandler, IJSQueryHandler {
 
     public class PadData {
 
@@ -75,6 +73,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     private ArrayList<ResourceModelPair> modelBakers = new ArrayList<>();
     private net.montoyo.mcef.api.API mcef;
     private MinePadRenderer minePadRenderer;
+    private JSQueryDispatcher jsDispatcher;
     private LaserPointerRenderer laserPointerRenderer;
 
     //Laser pointer
@@ -106,6 +105,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     public void init() {
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityScreen.class, new ScreenRenderer());
         mcef = MCEFApi.getAPI();
+        jsDispatcher = new JSQueryDispatcher(this);
         minePadRenderer = new MinePadRenderer();
         laserPointerRenderer = new LaserPointerRenderer();
     }
@@ -118,6 +118,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
             throw new RuntimeException("MCEF is missing");
 
         mcef.registerDisplayHandler(this);
+        mcef.registerJSQueryHandler(this);
     }
 
     @Override
@@ -237,6 +238,46 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
     @Override
     public void onStatusMessage(IBrowser browser, String value) {
+    }
+
+    /**************************************** JS HANDLER METHODS ****************************************/
+
+    @Override
+    public boolean handleQuery(IBrowser browser, long queryId, String query, boolean persistent, IJSQueryCallback cb) {
+        if(browser != null && persistent && query != null && cb != null) {
+            query = query.toLowerCase();
+
+            if(query.startsWith("webdisplays_")) {
+                query = query.substring(12);
+
+                String args;
+                int parenthesis = query.indexOf('(');
+                if(parenthesis < 0)
+                    args = null;
+                else {
+                    if(query.indexOf(')') != query.length() - 1) {
+                        cb.failure(400, "Malformed request");
+                        return true;
+                    }
+
+                    args = query.substring(parenthesis + 1, query.length() - 1);
+                    query = query.substring(0, parenthesis);
+                }
+
+                if(jsDispatcher.canHandleQuery(query))
+                    jsDispatcher.enqueueQuery(browser, query, args, cb);
+                else
+                    cb.failure(404, "Unknown WebDisplays query");
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public void cancelQuery(IBrowser browser, long queryId) {
     }
 
     /**************************************** EVENT METHODS ****************************************/
@@ -368,6 +409,9 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
             if(!raycastHit)
                 deselectScreen();
+
+            //Handle JS queries
+            jsDispatcher.handleQueries();
         }
     }
 
@@ -482,6 +526,29 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
     public net.montoyo.mcef.api.API getMCEF() {
         return mcef;
+    }
+
+    public static final class ScreenSidePair {
+
+        public TileEntityScreen tes;
+        public BlockSide side;
+
+    }
+
+    public boolean findScreenFromBrowser(IBrowser browser, ScreenSidePair pair) {
+        for(TileEntityScreen tes: screenTracking) {
+            for(int i = 0; i < tes.screenCount(); i++) {
+                TileEntityScreen.Screen scr = tes.getScreen(i);
+
+                if(scr.browser == browser) {
+                    pair.tes = tes;
+                    pair.side = scr.side;
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
 }

@@ -4,6 +4,7 @@
 
 package net.montoyo.wd.block;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.material.EnumPushReaction;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -29,6 +30,7 @@ import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.common.property.Properties;
 import net.montoyo.wd.WebDisplays;
+import net.montoyo.wd.core.DefaultUpgrade;
 import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.core.IUpgrade;
 import net.montoyo.wd.data.SetURLData;
@@ -186,6 +188,23 @@ public class BlockScreen extends WDBlockContainer {
 
         te.addScreen(side, size, null, !created).setOwner(player);
         return true;
+    }
+
+    @Override
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block, BlockPos source) {
+        if(block != this && !world.isRemote) { //I'm worried this could blow up, hopefully this won't create a bug or something
+            for(BlockSide side: BlockSide.values()) {
+                Vector3i vec = new Vector3i(pos);
+                Multiblock.findOrigin(world, vec, side, null);
+
+                TileEntityScreen tes = (TileEntityScreen) world.getTileEntity(vec.toBlock());
+                if(tes != null && tes.hasUpgrade(side, WebDisplays.INSTANCE.itemUpgrade, DefaultUpgrade.REDSTONE_INPUT.ordinal())) {
+                    EnumFacing facing = EnumFacing.VALUES[side.reverse().ordinal()]; //Opposite face
+                    vec.sub(pos.getX(), pos.getY(), pos.getZ()).neg();
+                    tes.updateJSRedstone(side, new Vector2i(vec.dot(side.right), vec.dot(side.up)), world.getRedstonePower(pos, facing));
+                }
+            }
+        }
     }
 
     public static boolean hit2pixels(BlockSide side, BlockPos bpos, Vector3i pos, TileEntityScreen.Screen scr, float hitX, float hitY, float hitZ, Vector2i dst) {

@@ -199,6 +199,10 @@ public final class Vector3i {
         return this;
     }
 
+    public int dot(Vector3i vec) {
+        return x * vec.x + y * vec.y + z * vec.z;
+    }
+
     public Vector3f toFloat() {
         return new Vector3f((float) x, (float) y, (float) z);
     }

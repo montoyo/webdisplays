@@ -30,6 +30,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     public static final int UPDATE_MOUSE = 3;
     public static final int UPDATE_TYPE = 4;
     public static final int UPDATE_UPGRADES = 5;
+    public static final int UPDATE_JS_REDSTONE = 6;
 
     public static final int MOUSE_CLICK = 0;
     public static final int MOUSE_UP = 1;
@@ -40,11 +41,11 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     private BlockSide side;
     private int action;
     private String url;
-    private Vector2i resolution;
+    private Vector2i vec2i;
     private int mouseEvent;
-    private Vector2i mouse;
     private String text;
     private ItemStack[] upgrades;
+    private int redstoneLevel;
 
     public CMessageScreenUpdate() {
     }
@@ -64,7 +65,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         ret.pos = new Vector3i(tes.getPos());
         ret.side = side;
         ret.action = UPDATE_RESOLUTION;
-        ret.resolution = res;
+        ret.vec2i = res;
 
         return ret;
     }
@@ -75,7 +76,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         ret.side = side;
         ret.action = UPDATE_MOUSE;
         ret.mouseEvent = mouseEvent;
-        ret.mouse = pos;
+        ret.vec2i = pos;
 
         return ret;
     }
@@ -111,6 +112,17 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         return ret;
     }
 
+    public static CMessageScreenUpdate jsRedstone(TileEntityScreen tes, BlockSide side, Vector2i vec, int level) {
+        CMessageScreenUpdate ret = new CMessageScreenUpdate();
+        ret.pos = new Vector3i(tes.getPos());
+        ret.side = side;
+        ret.action = UPDATE_JS_REDSTONE;
+        ret.vec2i = vec;
+        ret.redstoneLevel = level;
+
+        return ret;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
         pos = new Vector3i(buf);
@@ -123,9 +135,9 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
             mouseEvent = buf.readByte();
 
             if(mouseEvent != MOUSE_UP)
-                mouse = new Vector2i(buf);
+                vec2i = new Vector2i(buf);
         } else if(action == UPDATE_RESOLUTION)
-            resolution = new Vector2i(buf);
+            vec2i = new Vector2i(buf);
         else if(action == UPDATE_TYPE)
             text = ByteBufUtils.readUTF8String(buf);
         else if(action == UPDATE_UPGRADES) {
@@ -133,6 +145,9 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
 
             for(int i = 0; i < upgrades.length; i++)
                 upgrades[i] = ByteBufUtils.readItemStack(buf);
+        } else if(action == UPDATE_JS_REDSTONE) {
+            vec2i = new Vector2i(buf);
+            redstoneLevel = buf.readByte();
         }
     }
 
@@ -148,9 +163,9 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
             buf.writeByte(mouseEvent);
 
             if(mouseEvent != MOUSE_UP)
-                mouse.writeTo(buf);
+                vec2i.writeTo(buf);
         } else if(action == UPDATE_RESOLUTION)
-            resolution.writeTo(buf);
+            vec2i.writeTo(buf);
         else if(action == UPDATE_TYPE)
             ByteBufUtils.writeUTF8String(buf, text);
         else if(action == UPDATE_UPGRADES) {
@@ -158,6 +173,9 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
 
             for(ItemStack is: upgrades)
                 ByteBufUtils.writeItemStack(buf, is);
+        } else if(action == UPDATE_JS_REDSTONE) {
+            vec2i.writeTo(buf);
+            buf.writeByte(redstoneLevel);
         }
     }
 
@@ -179,15 +197,17 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         if(action == UPDATE_URL)
             tes.setScreenURL(side, url);
         else if(action == UPDATE_MOUSE)
-            tes.handleMouseEvent(side, mouseEvent, mouse);
+            tes.handleMouseEvent(side, mouseEvent, vec2i);
         else if(action == UPDATE_DELETE)
             tes.removeScreen(side);
         else if(action == UPDATE_RESOLUTION)
-            tes.setResolution(side, resolution);
+            tes.setResolution(side, vec2i);
         else if(action == UPDATE_TYPE)
             tes.type(side, text, null);
         else if(action == UPDATE_UPGRADES)
             tes.updateUpgrades(side, upgrades);
+        else if(action == UPDATE_JS_REDSTONE)
+            tes.updateJSRedstone(side, vec2i, redstoneLevel);
         else
             Log.warning("===> TODO"); //TODO
     }

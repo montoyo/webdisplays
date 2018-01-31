@@ -29,9 +29,7 @@ import net.montoyo.wd.data.ScreenConfigData;
 import net.montoyo.wd.net.CMessageAddScreen;
 import net.montoyo.wd.net.CMessageScreenUpdate;
 import net.montoyo.wd.net.SMessageRequestTEData;
-import net.montoyo.wd.net.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
-import org.lwjgl.Sys;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -417,6 +415,20 @@ public class TileEntityScreen extends TileEntity {
                 scr.lastMousePos.y = vec.y;
             }
         }
+    }
+
+    public void updateJSRedstone(BlockSide side, Vector2i vec, int redstoneLevel) {
+        Screen scr = getScreen(side);
+        if(scr == null) {
+            Log.error("Called updateJSRedstone on non-existing side %s", side.toString());
+            return;
+        }
+
+        if(world.isRemote) {
+            if(scr.browser != null)
+                scr.browser.runJS("if(typeof webdisplaysRedstoneCallback == \"function\") webdisplaysRedstoneCallback(" + vec.x + ", " + vec.y + ", " + redstoneLevel + ");", "");
+        } else if(scr.upgrades.stream().anyMatch((is) -> is.getItem() == WebDisplays.INSTANCE.itemUpgrade && is.getMetadata() == DefaultUpgrade.REDSTONE_INPUT.ordinal()))
+            WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.jsRedstone(this, side, vec, redstoneLevel), point());
     }
 
     @Override
