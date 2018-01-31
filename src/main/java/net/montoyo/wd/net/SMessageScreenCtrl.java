@@ -16,6 +16,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
+import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.core.MissingPermissionException;
 import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.entity.TileEntityScreen;
@@ -35,6 +36,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     public static final int CTRL_LASER_DOWN = 8;
     public static final int CTRL_LASER_MOVE = 9;
     public static final int CTRL_LASER_UP = 10;
+    public static final int CTRL_JS_REQUEST = 11;
 
     private int ctrl;
     private int dim;
@@ -49,6 +51,9 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     private String text;
     private BlockPos soundPos;
     private ItemStack toRemove;
+    private int jsReqID;
+    private JSServerRequest jsReqType;
+    private Object[] jsReqData;
 
     public SMessageScreenCtrl() {
     }
@@ -130,6 +135,19 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         return ret;
     }
 
+    public static SMessageScreenCtrl jsRequest(TileEntityScreen tes, BlockSide side, int reqId, JSServerRequest reqType, Object ... data) {
+        SMessageScreenCtrl ret = new SMessageScreenCtrl();
+        ret.ctrl = CTRL_JS_REQUEST;
+        ret.pos = new Vector3i(tes.getPos());
+        ret.dim = tes.getWorld().provider.getDimension();
+        ret.side = side;
+        ret.jsReqID = reqId;
+        ret.jsReqType = reqType;
+        ret.jsReqData = data;
+
+        return ret;
+    }
+
     private static boolean isVec2Ctrl(int msg) {
         return msg == CTRL_SET_RESOLUTION || msg == CTRL_LASER_DOWN || msg == CTRL_LASER_MOVE;
     }
@@ -159,6 +177,13 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
             soundPos = new BlockPos(sx, sy, sz);
         } else if(ctrl == CTRL_REMOVE_UPGRADE)
             toRemove = ByteBufUtils.readItemStack(buf);
+        else if(ctrl == CTRL_JS_REQUEST) {
+            jsReqID = buf.readInt();
+            jsReqType = JSServerRequest.fromID(buf.readByte());
+
+            if(jsReqType != null)
+                jsReqData = jsReqType.deserialize(buf);
+        }
     }
 
     @Override
@@ -184,6 +209,13 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
             buf.writeInt(soundPos.getZ());
         } else if(ctrl == CTRL_REMOVE_UPGRADE)
             ByteBufUtils.writeItemStack(buf, toRemove);
+        else if(ctrl == CTRL_JS_REQUEST) {
+            buf.writeInt(jsReqID);
+            buf.writeByte(jsReqType.ordinal());
+
+            if(!jsReqType.serialize(buf, jsReqData))
+                throw new RuntimeException("Could not serialize CTRL_JS_REQUEST " + jsReqType);
+        }
     }
 
     @Override
@@ -248,7 +280,12 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
             tes.laserDownMove(side, player, vec2i, ctrl == CTRL_LASER_DOWN);
         else if(ctrl == CTRL_LASER_UP)
             tes.laserUp(side, player);
-        else
+        else if(ctrl == CTRL_JS_REQUEST) {
+            if(jsReqType == null || jsReqData == null)
+                Log.warning("Caught invalid JS request from player %s (UUID %s)", player.getName(), player.getGameProfile().getId().toString());
+            else
+                tes.handleJSRequest(player, side, jsReqID, jsReqType, jsReqData);
+        } else
             Log.info("SMessageScreenCtrl: TODO"); //TODO: other ctrl messages
     }
 

@@ -12,21 +12,21 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.montoyo.mcef.api.IBrowser;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.block.BlockScreen;
 import net.montoyo.wd.core.DefaultUpgrade;
 import net.montoyo.wd.core.IUpgrade;
+import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.data.ScreenConfigData;
 import net.montoyo.wd.net.CMessageAddScreen;
+import net.montoyo.wd.net.CMessageJSResponse;
 import net.montoyo.wd.net.CMessageScreenUpdate;
 import net.montoyo.wd.net.SMessageRequestTEData;
 import net.montoyo.wd.utilities.*;
@@ -53,6 +53,7 @@ public class TileEntityScreen extends TileEntity {
         public long turnOnTime;
         public EntityPlayer laserUser;
         public final Vector2i lastMousePos = new Vector2i();
+        public NibbleArray redstoneStatus; //null on client
 
         public static Screen deserialize(NBTTagCompound tag) {
             Screen ret = new Screen();
@@ -151,6 +152,37 @@ public class TileEntityScreen extends TileEntity {
             return friends.stream().anyMatch((f) -> f.uuid.equals(uuid)) ? friendRights : otherRights;
         }
 
+        public void setupRedstoneStatus(World world, BlockPos start) {
+            if(world.isRemote) {
+                Log.warning("Called Screen.setupRedstoneStatus() on client.");
+                return;
+            }
+
+            if(redstoneStatus != null) {
+                Log.warning("Called Screen.setupRedstoneStatus() on server, but redstone status is non-null");
+                return;
+            }
+
+            redstoneStatus = new NibbleArray(size.x * size.y);
+            final BlockPos.MutableBlockPos mbp = new BlockPos.MutableBlockPos();
+            final Vector3i vec1 = new Vector3i(start);
+            final Vector3i vec2 = new Vector3i();
+            final EnumFacing facing = EnumFacing.VALUES[side.reverse().ordinal()];
+
+            for(int y = 0; y < size.y; y++) {
+                final int base = y * size.x;
+                vec2.set(vec1);
+
+                for(int x = 0; x < size.x; x++) {
+                    vec2.toBlock(mbp);
+                    redstoneStatus.set(base + x, world.getRedstonePower(mbp, facing));
+                    vec2.add(side.right.x, side.right.y, side.right.z);
+                }
+
+                vec1.add(side.up.x, side.up.y, side.up.z);
+            }
+        }
+
     }
 
     private ArrayList<Screen> screens = new ArrayList<>();
@@ -231,9 +263,11 @@ public class TileEntityScreen extends TileEntity {
         } else
             ret.resolution = resolution;
 
-        if(sendUpdate && !world.isRemote) {
-            CMessageAddScreen msg = new CMessageAddScreen(this, ret);
-            WebDisplays.NET_HANDLER.sendToAllAround(msg, point());
+        if(!world.isRemote) {
+            ret.setupRedstoneStatus(world, pos);
+
+            if(sendUpdate)
+                WebDisplays.NET_HANDLER.sendToAllAround(new CMessageAddScreen(this, ret), point());
         }
 
         screens.add(ret);
@@ -427,8 +461,45 @@ public class TileEntityScreen extends TileEntity {
         if(world.isRemote) {
             if(scr.browser != null)
                 scr.browser.runJS("if(typeof webdisplaysRedstoneCallback == \"function\") webdisplaysRedstoneCallback(" + vec.x + ", " + vec.y + ", " + redstoneLevel + ");", "");
-        } else if(scr.upgrades.stream().anyMatch((is) -> is.getItem() == WebDisplays.INSTANCE.itemUpgrade && is.getMetadata() == DefaultUpgrade.REDSTONE_INPUT.ordinal()))
-            WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.jsRedstone(this, side, vec, redstoneLevel), point());
+        } else {
+            boolean sendMsg = false;
+
+            if(scr.redstoneStatus == null) {
+                scr.setupRedstoneStatus(world, pos);
+                sendMsg = true;
+            } else {
+                int idx = vec.y * scr.size.x + vec.x;
+
+                if(scr.redstoneStatus.get(idx) != redstoneLevel) {
+                    scr.redstoneStatus.set(idx, redstoneLevel);
+                    sendMsg = true;
+                }
+            }
+
+            if(sendMsg)
+                WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.jsRedstone(this, side, vec, redstoneLevel), point());
+        }
+    }
+
+    public void handleJSRequest(EntityPlayerMP src, BlockSide side, int reqId, JSServerRequest req, Object[] data) {
+        if(world.isRemote) {
+            Log.error("Called handleJSRequest client-side");
+            return;
+        }
+
+        Screen scr = getScreen(side);
+        if(scr == null) {
+            Log.error("Called handleJSRequest on non-existing side %s", side.toString());
+            WebDisplays.NET_HANDLER.sendTo(new CMessageJSResponse(reqId, req, 403, "Invalid side"), src);
+            return;
+        }
+
+        if(scr.upgrades.stream().noneMatch((is) -> is.getItem() == WebDisplays.INSTANCE.itemUpgrade && is.getMetadata() == DefaultUpgrade.REDSTONE_OUTPUT.ordinal())) {
+            WebDisplays.NET_HANDLER.sendTo(new CMessageJSResponse(reqId, req, 403, "Missing upgrade"), src);
+            return;
+        }
+
+        //Meh, TODO
     }
 
     @Override

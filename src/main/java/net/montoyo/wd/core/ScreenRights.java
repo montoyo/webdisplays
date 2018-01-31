@@ -4,7 +4,7 @@
 
 package net.montoyo.wd.core;
 
-public class ScreenRights {
+public abstract class ScreenRights {
 
     public static final int CHANGE_URL = 1;
     public static final int CLICK = 2;

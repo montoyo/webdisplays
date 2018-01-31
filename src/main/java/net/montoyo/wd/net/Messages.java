@@ -26,6 +26,7 @@ public class Messages {
         l.add(CMessageACResult.class);
         l.add(SMessagePadCtrl.class);
         l.add(SMessageRedstoneCtrl.class);
+        l.add(CMessageJSResponse.class);
 
         messages = l.toArray(new Class[0]);
     }

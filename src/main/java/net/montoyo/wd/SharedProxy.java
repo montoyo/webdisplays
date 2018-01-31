@@ -9,6 +9,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.server.FMLServerHandler;
 import net.montoyo.mcef.utilities.Log;
+import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.utilities.BlockSide;
@@ -63,6 +64,14 @@ public class SharedProxy {
 
     public void openMinePadGui(int padId) {
         Log.error("Called SharedProxy.openMinePadGui() on server side...");
+    }
+
+    public void handleJSResponseSuccess(int reqId, JSServerRequest type, byte[] data) {
+        Log.error("Called SharedProxy.handleJSResponseSuccess() on server side...");
+    }
+
+    public void handleJSResponseError(int reqId, JSServerRequest type, int errCode, String err) {
+        Log.error("Called SharedProxy.handleJSResponseError() on server side...");
     }
 
 }

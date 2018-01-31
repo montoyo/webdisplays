@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<style type="text/css">
+		body {
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+		}
+		
+		#content {
+			margin: 0;
+			padding: 0;
+		}
+	
+		#content td {
+			margin: 0;
+			padding: 0;
+			text-align: center;
+			text-valign: middle;
+		}
+		
+		#content tr {
+			margin: 0;
+			padding: 0;
+		}
+		
+		.border_left {
+			border-left: 1px solid black;
+		}
+		
+		.border_top {
+			border-top: 1px solid black;
+		}
+		
+		.redstone_on {
+			background-color: rgb(255, 0, 0);
+		}
+	</style>
+	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript" src="wdlib.js"></script>
+	<script type="text/javascript">
+		var screenW = 1;
+		var screenH = 1;
+		var screenData = [ 0 ];
+		var gotSize = false;
+		var gotData = false;
+	
+		function generateTable() {
+			var ppp = $(window).width() / (screenW - 0.25);
+			var border = Math.floor(ppp * 0.125);
+			ppp = Math.floor(ppp);
+		
+			for(y = 0; y < screenH; y++) {
+				var line = "<tr>";
+				for(x = 0; x < screenW; x++) {
+					var classes = [];
+					var cw = ppp;
+					var ch = ppp;
+					var value = screenData[(screenH - y - 1) * screenW + x];
+					
+					if(x > 0)
+						classes.push("border_left");
+						
+					if(x <= 0 || x >= screenW - 1)
+						cw -= border;
+						
+					if(y > 0)
+						classes.push("border_top");
+						
+					if(y <= 0 || y >= screenH - 1)
+						ch -= border;
+						
+					if(value > 0)
+						classes.push("redstone_on");
+				
+					line += "<td id=\"cell_" + x + "_" + y + "\" class=\"" + classes.join(" ") + "\" style=\"width: " + cw + "px; height: " + ch + "px;\">" + value + "</td>";
+				}
+					
+				line += "</tr>";
+				$("#content").append(line);
+			}
+		}
+		
+		/* This function has to be named that way */
+		function webdisplaysRedstoneCallback(x, y, value) {
+			y = screenH - y - 1; //Flip Y axis
+			var elem = $("#cell_" + x + "_" + y);
+			
+			elem.html("" + value);
+			
+			if(value > 0 && !elem.hasClass("redstone_on"))
+				elem.addClass("redstone_on");
+			else if(value <= 0 && elem.hasClass("redstone_on"))
+				elem.removeClass("redstone_on");
+		}
+	
+		$(function() {
+			wdGetSize(function(w, h) {
+				screenW = w;
+				screenH = h;
+				
+				if(gotData)
+					generateTable();
+				else
+					gotSize = true;
+			});
+			
+			wdGetRedstoneArray(function(array) {
+				screenData = array;
+				
+				if(gotSize)
+					generateTable();
+				else
+					gotData = true;
+			});
+		});
+	</script>
+</head>
+<body>
+	<table id="content" cellspacing="0" cellpadding="0">
+	</table>
+</body>
+</html>

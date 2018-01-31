@@ -192,7 +192,7 @@ public class BlockScreen extends WDBlockContainer {
 
     @Override
     public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block, BlockPos source) {
-        if(block != this && !world.isRemote) { //I'm worried this could blow up, hopefully this won't create a bug or something
+        if(block != this && !world.isRemote) {
             for(BlockSide side: BlockSide.values()) {
                 Vector3i vec = new Vector3i(pos);
                 Multiblock.findOrigin(world, vec, side, null);

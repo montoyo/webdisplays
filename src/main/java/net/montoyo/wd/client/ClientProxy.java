@@ -42,6 +42,7 @@ import net.montoyo.wd.client.gui.WDScreen;
 import net.montoyo.wd.client.gui.loading.GuiLoader;
 import net.montoyo.wd.client.renderers.*;
 import net.montoyo.wd.core.DefaultUpgrade;
+import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.SMessagePadCtrl;
@@ -198,6 +199,29 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
         if(pd != null && pd.view != null)
             mc.displayGuiScreen(new GuiMinePad(pd));
+    }
+
+    @Override
+    public void handleJSResponseSuccess(int reqId, JSServerRequest type, byte[] data) {
+        JSQueryDispatcher.ServerQuery q = jsDispatcher.fulfillQuery(reqId);
+
+        if(q == null)
+            Log.warning("Received success response for invalid query ID %d of type %s", reqId, type.toString());
+        else {
+            if(type == JSServerRequest.WHATEVER) {
+            } else
+                Log.warning("Received success response for query ID %d, but type is invalid", reqId);
+        }
+    }
+
+    @Override
+    public void handleJSResponseError(int reqId, JSServerRequest type, int errCode, String err) {
+        JSQueryDispatcher.ServerQuery q = jsDispatcher.fulfillQuery(reqId);
+
+        if(q == null)
+            Log.warning("Received error response for invalid query ID %d of type %s", reqId, type.toString());
+        else
+            q.error(errCode, err);
     }
 
     /**************************************** RESOURCE MANAGER METHODS ****************************************/
