@@ -200,13 +200,13 @@ public class BlockScreen extends WDBlockContainer {
 
     @Override
     public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block, BlockPos source) {
-        if(block != this && !world.isRemote) {
+        if(block != this && !world.isRemote && !state.getValue(emitting)) {
             for(BlockSide side: BlockSide.values()) {
                 Vector3i vec = new Vector3i(pos);
                 Multiblock.findOrigin(world, vec, side, null);
 
                 TileEntityScreen tes = (TileEntityScreen) world.getTileEntity(vec.toBlock());
-                if(tes != null && tes.hasUpgrade(side, WebDisplays.INSTANCE.itemUpgrade, DefaultUpgrade.REDSTONE_INPUT.ordinal())) {
+                if(tes != null && tes.hasUpgrade(side, DefaultUpgrade.REDSTONE_INPUT)) {
                     EnumFacing facing = EnumFacing.VALUES[side.reverse().ordinal()]; //Opposite face
                     vec.sub(pos.getX(), pos.getY(), pos.getZ()).neg();
                     tes.updateJSRedstone(side, new Vector2i(vec.dot(side.right), vec.dot(side.up)), world.getRedstonePower(pos, facing));

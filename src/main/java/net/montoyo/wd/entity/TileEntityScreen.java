@@ -8,7 +8,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -500,7 +499,7 @@ public class TileEntityScreen extends TileEntity {
             return;
         }
 
-        if(scr.upgrades.stream().noneMatch((is) -> is.getItem() == WebDisplays.INSTANCE.itemUpgrade && is.getMetadata() == DefaultUpgrade.REDSTONE_OUTPUT.ordinal())) {
+        if(scr.upgrades.stream().noneMatch(DefaultUpgrade.REDSTONE_OUTPUT::matches)) {
             WebDisplays.NET_HANDLER.sendTo(new CMessageJSResponse(reqId, req, 403, "Missing upgrade"), src);
             return;
         }
@@ -817,13 +816,12 @@ public class TileEntityScreen extends TileEntity {
         return scr.upgrades.stream().anyMatch((otherStack) -> itemAsUpgrade.isSameUpgrade(is, otherStack));
     }
 
-    //Special version of hasUpgrade(BlockSide, ItemStack) that matches only the item and the meta
-    public boolean hasUpgrade(BlockSide side, Item item, int meta) {
+    public boolean hasUpgrade(BlockSide side, DefaultUpgrade du) {
         Screen scr = getScreen(side);
         if(scr == null)
             return false;
 
-        return scr.upgrades.stream().anyMatch((otherStack) -> otherStack.getItem() == item && otherStack.getMetadata() == meta);
+        return scr.upgrades.stream().anyMatch(du::matches);
     }
 
     public void removeUpgrade(BlockSide side, ItemStack is, @Nullable EntityPlayer player) {
@@ -891,7 +889,7 @@ public class TileEntityScreen extends TileEntity {
         if((scr.rightsFor(ply) & ScreenRights.CLICK) == 0)
             return null; //Don't output an error, it can 'legally' happen
 
-        if(scr.upgrades.stream().noneMatch((is) -> is.getItem() == WebDisplays.INSTANCE.itemUpgrade && is.getMetadata() == DefaultUpgrade.LASER_MOUSE.ordinal())) {
+        if(scr.upgrades.stream().noneMatch(DefaultUpgrade.LASER_MOUSE::matches)) {
             Log.error("Called laser operation on side %s, but it's missing the laser sensor upgrade", side.toString());
             return null;
         }

@@ -5,6 +5,7 @@
 package net.montoyo.wd.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
@@ -14,6 +15,7 @@ import net.montoyo.mcef.api.IJSQueryCallback;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.core.DefaultUpgrade;
 import net.montoyo.wd.core.IScreenQueryHandler;
+import net.montoyo.wd.core.IUpgrade;
 import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.SMessageScreenCtrl;
@@ -89,6 +91,7 @@ public final class JSQueryDispatcher {
     private final ClientProxy.ScreenSidePair lookupResult = new ClientProxy.ScreenSidePair();
     private final HashMap<String, IScreenQueryHandler> handlers = new HashMap<>();
     private final ArrayList<ServerQuery> serverQueries = new ArrayList<>();
+    private final Minecraft mc = Minecraft.getMinecraft();
 
     public JSQueryDispatcher(ClientProxy proxy) {
         this.proxy = proxy;
@@ -226,7 +229,7 @@ public final class JSQueryDispatcher {
         });
 
         register("GetRedstoneAt", (cb, tes, side, args) -> {
-            if(!tes.hasUpgrade(side, WebDisplays.INSTANCE.itemUpgrade, DefaultUpgrade.REDSTONE_INPUT.ordinal())) {
+            if(!tes.hasUpgrade(side, DefaultUpgrade.REDSTONE_INPUT)) {
                 cb.failure(403, "Missing upgrade");
                 return;
             }
@@ -247,7 +250,7 @@ public final class JSQueryDispatcher {
         });
 
         register("GetRedstoneArray", (cb, tes, side, args) -> {
-            if(tes.hasUpgrade(side, WebDisplays.INSTANCE.itemUpgrade, DefaultUpgrade.REDSTONE_INPUT.ordinal())) {
+            if(tes.hasUpgrade(side, DefaultUpgrade.REDSTONE_INPUT)) {
                 final Vector2i size = tes.getScreen(side).size;
                 final EnumFacing facing = EnumFacing.VALUES[side.reverse().ordinal()];
                 final BlockPos.MutableBlockPos mbp = new BlockPos.MutableBlockPos();
@@ -276,8 +279,8 @@ public final class JSQueryDispatcher {
         });
 
         register("ClearRedstone", (cb, tes, side, args) -> {
-            if(tes.hasUpgrade(side, WebDisplays.INSTANCE.itemUpgrade, DefaultUpgrade.REDSTONE_OUTPUT.ordinal())) {
-                if(tes.getScreen(side).owner.uuid.equals(Minecraft.getMinecraft().player.getGameProfile().getId()))
+            if(tes.hasUpgrade(side, DefaultUpgrade.REDSTONE_OUTPUT)) {
+                if(tes.getScreen(side).owner.uuid.equals(mc.player.getGameProfile().getId()))
                     makeServerQuery(tes, side, cb, JSServerRequest.CLEAR_REDSTONE);
                 else
                     cb.success("{\"status\":\"notOwner\"}");
@@ -291,12 +294,12 @@ public final class JSQueryDispatcher {
                 return;
             }
 
-            if(!tes.hasUpgrade(side, WebDisplays.INSTANCE.itemUpgrade, DefaultUpgrade.REDSTONE_OUTPUT.ordinal())) {
+            if(!tes.hasUpgrade(side, DefaultUpgrade.REDSTONE_OUTPUT)) {
                 cb.failure(403, "Missing upgrade");
                 return;
             }
 
-            if(!tes.getScreen(side).owner.uuid.equals(Minecraft.getMinecraft().player.getGameProfile().getId())) {
+            if(!tes.getScreen(side).owner.uuid.equals(mc.player.getGameProfile().getId())) {
                 cb.success("{\"status\":\"notOwner\"}");
                 return;
             }
@@ -312,6 +315,37 @@ public final class JSQueryDispatcher {
             }
 
             makeServerQuery(tes, side, cb, JSServerRequest.SET_REDSTONE_AT, x, y, state);
+        });
+
+        register("GetLocation", (cb, tes, side, args) -> {
+            if(!tes.hasUpgrade(side, DefaultUpgrade.GPS)) {
+                cb.failure(403, "Missing upgrade");
+                return;
+            }
+
+            BlockPos bp = tes.getPos();
+            cb.success("{\"x\":" + bp.getX() + ",\"y\":" + bp.getY() + ",\"z\":" + bp.getZ() + ",\"side\":\"" + side + "\"}");
+        });
+
+        register("GetUpgrades", (cb, tes, side, args) -> {
+            final StringBuilder sb = new StringBuilder("{\"upgrades\":[");
+            final ArrayList<ItemStack> upgrades = tes.getScreen(side).upgrades;
+
+            for(int i = 0; i < upgrades.size(); i++) {
+                if(i > 0)
+                    sb.append(',');
+
+                sb.append('\"');
+                sb.append(((IUpgrade) upgrades.get(i).getItem()).getJSName(upgrades.get(i)));
+                sb.append('\"');
+            }
+
+            cb.success(sb.append("]}").toString());
+        });
+
+        register("IsOwner", (cb, tes, side, args) -> {
+            boolean res = (tes.getScreen(side).owner != null && tes.getScreen(side).owner.uuid.equals(mc.player.getGameProfile().getId()));
+            cb.success("{\"isOwner\":" + (res ? "true}" : "false}"));
         });
     }
 

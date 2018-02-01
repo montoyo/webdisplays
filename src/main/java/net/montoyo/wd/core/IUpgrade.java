@@ -17,5 +17,6 @@ public interface IUpgrade {
     void onInstall(@Nonnull TileEntityScreen tes, @Nonnull BlockSide screenSide, @Nullable EntityPlayer player, @Nonnull ItemStack is);
     boolean onRemove(@Nonnull TileEntityScreen tes, @Nonnull BlockSide screenSide, @Nullable EntityPlayer player, @Nonnull ItemStack is); //Return true to prevent dropping
     boolean isSameUpgrade(@Nonnull ItemStack myStack, @Nonnull ItemStack otherStack); //myStack.getItem() is an instance of this class
+    String getJSName(@Nonnull ItemStack is); //modname:upgradename
 
 }

@@ -411,7 +411,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
                         Multiblock.findOrigin(mc.world, pos, side, null);
                         TileEntityScreen te = (TileEntityScreen) mc.world.getTileEntity(pos.toBlock());
 
-                        if(te != null && te.hasUpgrade(side, WebDisplays.INSTANCE.itemUpgrade, DefaultUpgrade.LASER_MOUSE.ordinal())) { //hasUpgrade returns false is there's no screen on side 'side'
+                        if(te != null && te.hasUpgrade(side, DefaultUpgrade.LASER_MOUSE)) { //hasUpgrade returns false is there's no screen on side 'side'
                             //Since rights aren't synchronized, let the server check them for us...
                             TileEntityScreen.Screen scr = te.getScreen(side);
 

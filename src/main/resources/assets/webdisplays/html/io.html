@@ -52,6 +52,7 @@
 		var screenData = [ 0 ];
 		var gotSize = false;
 		var gotData = false;
+		var hasRedOutput = false;
 	
 		function generateTable() {
 			var ppp = $(window).width() / (screenW - 0.25);
@@ -126,18 +127,30 @@
 				else
 					gotData = true;
 			});
+			
+			wdGetUpgrades(function(upgrades) {
+				for(i = 0; i < upgrades.length; i++) {
+					if(upgrades[i] == "webdisplays:redoutput") {
+						hasRedOutput = true;
+						wdClearRedstone();
+						break;
+					}
+				}
+			});
 		});
 		
 		function wdToggle(x, y) {
-			var elem = $("#cell_" + x + "_" + y);
-			y = screenH - y - 1;
-			
-			if(elem.hasClass("redstone_override")) {
-				elem.removeClass("redstone_override");
-				wdSetRedstoneAt(x, y, false);
-			} else {
-				elem.addClass("redstone_override");
-				wdSetRedstoneAt(x, y, true);
+			if(hasRedOutput) {
+				var elem = $("#cell_" + x + "_" + y);
+				y = screenH - y - 1;
+				
+				if(elem.hasClass("redstone_override")) {
+					elem.removeClass("redstone_override");
+					wdSetRedstoneAt(x, y, false);
+				} else {
+					elem.addClass("redstone_override");
+					wdSetRedstoneAt(x, y, true);
+				}
 			}
 		}
 	</script>

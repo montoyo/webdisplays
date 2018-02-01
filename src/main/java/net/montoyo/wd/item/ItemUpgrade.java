@@ -76,4 +76,15 @@ public class ItemUpgrade extends Item implements IUpgrade {
         }
     }
 
+    @Override
+    public String getJSName(@Nonnull ItemStack is) {
+        int meta = is.getMetadata();
+        DefaultUpgrade[] upgrades = DefaultUpgrade.values();
+
+        if(meta < 0 || meta >= upgrades.length)
+            return "webdisplays:wtf";
+        else
+            return "webdisplays:" + upgrades[meta].getName();
+    }
+
 }
