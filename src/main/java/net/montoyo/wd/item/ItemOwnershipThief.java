@@ -58,13 +58,14 @@ public class ItemOwnershipThief extends Item {
                 if(te == null || !(te instanceof TileEntityScreen))
                     return EnumActionResult.SUCCESS;
 
-                TileEntityScreen.Screen scr = ((TileEntityScreen) te).getScreen(side);
+                TileEntityScreen tes = (TileEntityScreen) te;
+                TileEntityScreen.Screen scr = tes.getScreen(side);
                 if(scr == null)
                     return EnumActionResult.SUCCESS;
 
                 Log.warning("Owner of screen at %d %d %d, side %s was changed from %s (UUID %s) to %s (UUID %s)", bp.getX(), bp.getY(), bp.getZ(), side.toString(), scr.owner.name, scr.owner.uuid.toString(), player.getName(), player.getGameProfile().getId().toString());
-                scr.setOwner(player);
                 player.setHeldItem(hand, ItemStack.EMPTY);
+                tes.setOwner(side, player);
                 Util.toast(player, TextFormatting.AQUA, "newOwner");
                 return EnumActionResult.SUCCESS;
             }

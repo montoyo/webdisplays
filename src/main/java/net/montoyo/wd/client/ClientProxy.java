@@ -208,8 +208,9 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         if(q == null)
             Log.warning("Received success response for invalid query ID %d of type %s", reqId, type.toString());
         else {
-            if(type == JSServerRequest.WHATEVER) {
-            } else
+            if(type == JSServerRequest.CLEAR_REDSTONE || type == JSServerRequest.SET_REDSTONE_AT)
+                q.success("{\"status\":\"success\"}");
+            else
                 Log.warning("Received success response for query ID %d, but type is invalid", reqId);
         }
     }

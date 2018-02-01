@@ -16,6 +16,7 @@ import net.montoyo.wd.utilities.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class GuiScreenConfig extends WDScreen {
 
@@ -98,10 +99,9 @@ public class GuiScreenConfig extends WDScreen {
     private CheckBox[] friendBoxes;
     private CheckBox[] otherBoxes;
 
-    public GuiScreenConfig(TileEntityScreen tes, BlockSide side, NameUUIDPair owner, NameUUIDPair[] friends, int fr, int or) {
+    public GuiScreenConfig(TileEntityScreen tes, BlockSide side, NameUUIDPair[] friends, int fr, int or) {
         this.tes = tes;
         this.side = side;
-        this.owner = owner;
         this.friends = friends;
         friendRights = fr;
         otherRights = or;
@@ -128,12 +128,16 @@ public class GuiScreenConfig extends WDScreen {
 
         TileEntityScreen.Screen scr = tes.getScreen(side);
         if(scr != null) {
+            owner = scr.owner;
             tfResX.setText("" + scr.resolution.x);
             tfResY.setText("" + scr.resolution.y);
 
             //Hopefully upgrades have been synchronized...
             ugUpgrades.setUpgrades(scr.upgrades);
         }
+
+        if(owner == null)
+            owner = new NameUUIDPair("???", UUID.randomUUID());
 
         lblOwner.setLabel(lblOwner.getLabel() + owner.name);
         for(NameUUIDPair f : friends)

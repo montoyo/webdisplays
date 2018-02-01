@@ -42,7 +42,8 @@ import javax.annotation.Nullable;
 public class BlockScreen extends WDBlockContainer {
 
     public static final PropertyBool hasTE = PropertyBool.create("haste");
-    private static final IProperty[] properties = new IProperty[] { hasTE };
+    public static final PropertyBool emitting = PropertyBool.create("emitting");
+    private static final IProperty[] properties = new IProperty[] { hasTE, emitting };
     public static final IUnlistedProperty<Integer>[] sideFlags = new IUnlistedProperty[6];
     static {
         for(int i = 0; i < sideFlags.length; i++)
@@ -96,12 +97,19 @@ public class BlockScreen extends WDBlockContainer {
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        return getDefaultState().withProperty(hasTE, meta != 0);
+        return getDefaultState().withProperty(hasTE, (meta & 1) != 0).withProperty(emitting, (meta & 2) != 0);
     }
 
     @Override
     public int getMetaFromState(IBlockState state) {
-        return state.getValue(hasTE) ? 1 : 0;
+        int ret = 0;
+        if(state.getValue(hasTE))
+            ret |= 1;
+
+        if(state.getValue(emitting))
+            ret |= 2;
+
+        return ret;
     }
 
     @Override
@@ -181,12 +189,12 @@ public class BlockScreen extends WDBlockContainer {
 
         if(te == null) {
             BlockPos bp = pos.toBlock();
-            world.setBlockState(bp, getDefaultState().withProperty(hasTE, true));
+            world.setBlockState(bp, world.getBlockState(bp).withProperty(hasTE, true));
             te = (TileEntityScreen) world.getTileEntity(bp);
             created = true;
         }
 
-        te.addScreen(side, size, null, !created).setOwner(player);
+        te.addScreen(side, size, null, player, !created);
         return true;
     }
 
@@ -243,7 +251,7 @@ public class BlockScreen extends WDBlockContainer {
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World world, int meta) {
-        return meta == 0 ? null : new TileEntityScreen();
+        return ((meta & 1) == 0) ? null : new TileEntityScreen();
     }
 
     /************************************************* DESTRUCTION HANDLING *************************************************/
@@ -265,7 +273,7 @@ public class BlockScreen extends WDBlockContainer {
 
         if(te != null && te instanceof TileEntityScreen) {
             ((TileEntityScreen) te).onDestroy(source);
-            world.setBlockState(bp, getDefaultState().withProperty(hasTE, false)); //Destroy tile entity
+            world.setBlockState(bp, world.getBlockState(bp).withProperty(hasTE, false)); //Destroy tile entity.
         }
     }
 
@@ -306,6 +314,16 @@ public class BlockScreen extends WDBlockContainer {
     @Override
     public EnumPushReaction getMobilityFlag(IBlockState state) {
         return EnumPushReaction.IGNORE;
+    }
+
+    @Override
+    public int getWeakPower(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+        return state.getValue(emitting) ? 15 : 0;
+    }
+
+    @Override
+    public boolean canProvidePower(IBlockState state) {
+        return state.getValue(emitting);
     }
 
 }

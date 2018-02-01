@@ -4,6 +4,7 @@
 
 package net.montoyo.wd.entity;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -140,10 +141,6 @@ public class TileEntityScreen extends TileEntity {
             return tag;
         }
 
-        public void setOwner(EntityPlayer ply) {
-            owner = new NameUUIDPair(ply.getGameProfile());
-        }
-
         public int rightsFor(EntityPlayer ply) {
             final UUID uuid = ply.getGameProfile().getId();
             if(owner.uuid.equals(uuid))
@@ -238,7 +235,7 @@ public class TileEntityScreen extends TileEntity {
         return new NetworkRegistry.TargetPoint(world.provider.getDimension(), (double) pos.getX(), (double) pos.getY(), (double) pos.getZ(), 64.0);
     }
 
-    public Screen addScreen(BlockSide side, Vector2i size, Vector2i resolution, boolean sendUpdate) {
+    public Screen addScreen(BlockSide side, Vector2i size, @Nullable Vector2i resolution, @Nullable EntityPlayer owner, boolean sendUpdate) {
         for(Screen scr: screens) {
             if(scr.side == side)
                 return scr;
@@ -252,6 +249,9 @@ public class TileEntityScreen extends TileEntity {
         ret.friendRights = ScreenRights.DEFAULTS;
         ret.otherRights = ScreenRights.DEFAULTS;
         ret.upgrades = new ArrayList<>();
+
+        if(owner != null)
+            ret.owner = new NameUUIDPair(owner.getGameProfile());
 
         if(resolution == null || resolution.x < 1 || resolution.y < 1) {
             float psx = ((float) size.x) * 16.f - 4.f;
@@ -494,12 +494,57 @@ public class TileEntityScreen extends TileEntity {
             return;
         }
 
+        if(!scr.owner.uuid.equals(src.getGameProfile().getId())) {
+            Log.warning("Player %s (UUID %s) tries to use the redstone output API on a screen he doesn't own!", src.getName(), src.getGameProfile().getId().toString());
+            WebDisplays.NET_HANDLER.sendTo(new CMessageJSResponse(reqId, req, 403, "Only the owner can do that"), src);
+            return;
+        }
+
         if(scr.upgrades.stream().noneMatch((is) -> is.getItem() == WebDisplays.INSTANCE.itemUpgrade && is.getMetadata() == DefaultUpgrade.REDSTONE_OUTPUT.ordinal())) {
             WebDisplays.NET_HANDLER.sendTo(new CMessageJSResponse(reqId, req, 403, "Missing upgrade"), src);
             return;
         }
 
-        //Meh, TODO
+        if(req == JSServerRequest.CLEAR_REDSTONE) {
+            final BlockPos.MutableBlockPos mbp = new BlockPos.MutableBlockPos();
+            final Vector3i vec1 = new Vector3i(pos);
+            final Vector3i vec2 = new Vector3i();
+
+            for(int y = 0; y < scr.size.y; y++) {
+                vec2.set(vec1);
+
+                for(int x = 0; x < scr.size.x; x++) {
+                    vec2.toBlock(mbp);
+
+                    IBlockState bs = world.getBlockState(mbp);
+                    if(bs.getValue(BlockScreen.emitting))
+                        world.setBlockState(mbp, bs.withProperty(BlockScreen.emitting, false));
+
+                    vec2.add(side.right.x, side.right.y, side.right.z);
+                }
+
+                vec1.add(side.up.x, side.up.y, side.up.z);
+            }
+
+            WebDisplays.NET_HANDLER.sendTo(new CMessageJSResponse(reqId, req, new byte[0]), src);
+        } else if(req == JSServerRequest.SET_REDSTONE_AT) {
+            int x = (Integer) data[0];
+            int y = (Integer) data[1];
+            boolean state = (Boolean) data[2];
+
+            if(x < 0 || x >= scr.size.x || y < 0 || y >= scr.size.y)
+                WebDisplays.NET_HANDLER.sendTo(new CMessageJSResponse(reqId, req, 403, "Out of range"), src);
+            else {
+                BlockPos bp = (new Vector3i(pos)).addMul(side.right, x).addMul(side.up, y).toBlock();
+                IBlockState bs = world.getBlockState(bp);
+
+                if(bs.getValue(BlockScreen.emitting) != state)
+                    world.setBlockState(bp, bs.withProperty(BlockScreen.emitting, state));
+
+                WebDisplays.NET_HANDLER.sendTo(new CMessageJSResponse(reqId, req, new byte[0]), src);
+            }
+        } else
+            WebDisplays.NET_HANDLER.sendTo(new CMessageJSResponse(reqId, req, 400, "Invalid request"), src);
     }
 
     @Override
@@ -715,6 +760,9 @@ public class TileEntityScreen extends TileEntity {
 
         scr.upgrades.clear();
         Collections.addAll(scr.upgrades, upgrades);
+
+        if(scr.browser != null)
+            scr.browser.runJS("if(typeof webdisplaysUpgradesChanged == \"function\") webdisplaysUpgradesChanged();", "");
     }
 
     private static String safeName(ItemStack is) {
@@ -889,6 +937,28 @@ public class TileEntityScreen extends TileEntity {
 
             scr.upgrades.clear();
         }
+    }
+
+    public void setOwner(BlockSide side, EntityPlayer newOwner) {
+        if(world.isRemote) {
+            Log.error("Called TileEntityScreen.setOwner() on client...");
+            return;
+        }
+
+        if(newOwner == null) {
+            Log.error("Called TileEntityScreen.setOwner() with null owner");
+            return;
+        }
+
+        Screen scr = getScreen(side);
+        if(scr == null) {
+            Log.error("Called TileEntityScreen.setOwner() on invalid screen on side %s", side.toString());
+            return;
+        }
+
+        scr.owner = new NameUUIDPair(newOwner.getGameProfile());
+        WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.owner(this, side, scr.owner), point());
+        checkLaserUserRights(scr);
     }
 
 }

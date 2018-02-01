@@ -36,3 +36,12 @@ function wdGetRedstoneArray(callback) {
 		callback(resp.levels);
 	});
 }
+
+function wdClearRedstone() {
+	wdExecRequest("ClearRedstone", function(resp) { /* console.log(resp.status); */ });
+}
+
+function wdSetRedstoneAt(x, y, state) {
+	var istate = state ? 1 : 0;
+	wdExecRequest("SetRedstoneAt(" + x + "," + y + "," + istate + ")", function(resp) { /* console.log(resp.status); */ });
+}

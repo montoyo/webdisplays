@@ -12,6 +12,7 @@
 		#content {
 			margin: 0;
 			padding: 0;
+			table-layout: fixed;
 		}
 	
 		#content td {
@@ -19,6 +20,7 @@
 			padding: 0;
 			text-align: center;
 			text-valign: middle;
+			font-size: 4vw;
 		}
 		
 		#content tr {
@@ -36,6 +38,10 @@
 		
 		.redstone_on {
 			background-color: rgb(255, 0, 0);
+		}
+		
+		.redstone_override {
+			background-color: rgb(0, 100, 255) !important;
 		}
 	</style>
 	<script type="text/javascript" src="jquery.js"></script>
@@ -75,7 +81,7 @@
 					if(value > 0)
 						classes.push("redstone_on");
 				
-					line += "<td id=\"cell_" + x + "_" + y + "\" class=\"" + classes.join(" ") + "\" style=\"width: " + cw + "px; height: " + ch + "px;\">" + value + "</td>";
+					line += "<td id=\"cell_" + x + "_" + y + "\" class=\"" + classes.join(" ") + "\" style=\"width: " + cw + "px; height: " + ch + "px;\" onclick=\"wdToggle(" + x + ", " + y + ")\">" + value + "</td>";
 				}
 					
 				line += "</tr>";
@@ -94,6 +100,11 @@
 				elem.addClass("redstone_on");
 			else if(value <= 0 && elem.hasClass("redstone_on"))
 				elem.removeClass("redstone_on");
+		}
+		
+		/* This function also has to be named that way */
+		function webdisplaysUpgradesChanged() {
+			location.reload();
 		}
 	
 		$(function() {
@@ -116,6 +127,19 @@
 					gotData = true;
 			});
 		});
+		
+		function wdToggle(x, y) {
+			var elem = $("#cell_" + x + "_" + y);
+			y = screenH - y - 1;
+			
+			if(elem.hasClass("redstone_override")) {
+				elem.removeClass("redstone_override");
+				wdSetRedstoneAt(x, y, false);
+			} else {
+				elem.addClass("redstone_override");
+				wdSetRedstoneAt(x, y, true);
+			}
+		}
 	</script>
 </head>
 <body>

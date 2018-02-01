@@ -9,7 +9,8 @@ import net.montoyo.wd.utilities.Util;
 
 public enum JSServerRequest {
 
-    WHATEVER;
+    CLEAR_REDSTONE,
+    SET_REDSTONE_AT(Integer.class, Integer.class, Boolean.class);
 
     private final Class[] requestTypes;
 

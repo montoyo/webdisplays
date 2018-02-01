@@ -13,10 +13,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.wd.SharedProxy;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.entity.TileEntityScreen;
-import net.montoyo.wd.utilities.BlockSide;
-import net.montoyo.wd.utilities.Log;
-import net.montoyo.wd.utilities.Vector2i;
-import net.montoyo.wd.utilities.Vector3i;
+import net.montoyo.wd.utilities.*;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -31,6 +28,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     public static final int UPDATE_TYPE = 4;
     public static final int UPDATE_UPGRADES = 5;
     public static final int UPDATE_JS_REDSTONE = 6;
+    public static final int UPDATE_OWNER = 7;
 
     public static final int MOUSE_CLICK = 0;
     public static final int MOUSE_UP = 1;
@@ -46,6 +44,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     private String text;
     private ItemStack[] upgrades;
     private int redstoneLevel;
+    private NameUUIDPair owner;
 
     public CMessageScreenUpdate() {
     }
@@ -123,6 +122,16 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         return ret;
     }
 
+    public static CMessageScreenUpdate owner(TileEntityScreen tes, BlockSide side, NameUUIDPair owner) {
+        CMessageScreenUpdate ret = new CMessageScreenUpdate();
+        ret.pos = new Vector3i(tes.getPos());
+        ret.side = side;
+        ret.action = UPDATE_OWNER;
+        ret.owner = owner;
+
+        return ret;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
         pos = new Vector3i(buf);
@@ -148,7 +157,8 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         } else if(action == UPDATE_JS_REDSTONE) {
             vec2i = new Vector2i(buf);
             redstoneLevel = buf.readByte();
-        }
+        } else if(action == UPDATE_OWNER)
+            owner = new NameUUIDPair(buf);
     }
 
     @Override
@@ -176,7 +186,8 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         } else if(action == UPDATE_JS_REDSTONE) {
             vec2i.writeTo(buf);
             buf.writeByte(redstoneLevel);
-        }
+        } else if(action == UPDATE_OWNER)
+            owner.writeTo(buf);
     }
 
     @Override
@@ -208,7 +219,12 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
             tes.updateUpgrades(side, upgrades);
         else if(action == UPDATE_JS_REDSTONE)
             tes.updateJSRedstone(side, vec2i, redstoneLevel);
-        else
+        else if(action == UPDATE_OWNER) {
+            TileEntityScreen.Screen scr = tes.getScreen(side);
+
+            if(scr != null)
+                scr.owner = owner;
+        } else
             Log.warning("===> TODO"); //TODO
     }
 

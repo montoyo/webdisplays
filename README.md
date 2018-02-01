@@ -3,15 +3,13 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 
 ### Missing features
 * Crafts: upgrades, laser pointer, peripherals
-* Screen upgrade: redstone input
-* Screen upgrade: redstone output
 * ~~Peripheral: ComputerCraft interface~~ (CC not up to date)
 * Peripheral: OpenComputers interface
 * Server blocks (to store some of the player's web pages)
 * Read config (see "Config elements" below)
 
 ### TODO
-* REDSTONE INPUT OPTIMIZATIONssss!!!
+* GPS Upgrade
 * Achievements (minePad 2 and all that stuff)
 * Top/bottom screen orientation
 * GuiSetURL2 missing buttons

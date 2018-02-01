@@ -4,6 +4,7 @@
 
 package net.montoyo.wd.client;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
@@ -23,6 +24,7 @@ import net.montoyo.wd.utilities.Vector3i;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 @SideOnly(Side.CLIENT)
@@ -271,6 +273,45 @@ public final class JSQueryDispatcher {
                 cb.success(resp.append("]}").toString());
             } else
                 cb.failure(403, "Missing upgrade");
+        });
+
+        register("ClearRedstone", (cb, tes, side, args) -> {
+            if(tes.hasUpgrade(side, WebDisplays.INSTANCE.itemUpgrade, DefaultUpgrade.REDSTONE_OUTPUT.ordinal())) {
+                if(tes.getScreen(side).owner.uuid.equals(Minecraft.getMinecraft().player.getGameProfile().getId()))
+                    makeServerQuery(tes, side, cb, JSServerRequest.CLEAR_REDSTONE);
+                else
+                    cb.success("{\"status\":\"notOwner\"}");
+            } else
+                cb.failure(403, "Missing upgrade");
+        });
+
+        register("SetRedstoneAt", (cb, tes, side, args) -> {
+            if(args.length != 3 || !Arrays.stream(args).allMatch((obj) -> obj instanceof Double)) {
+                cb.failure(400, "Wrong arguments");
+                return;
+            }
+
+            if(!tes.hasUpgrade(side, WebDisplays.INSTANCE.itemUpgrade, DefaultUpgrade.REDSTONE_OUTPUT.ordinal())) {
+                cb.failure(403, "Missing upgrade");
+                return;
+            }
+
+            if(!tes.getScreen(side).owner.uuid.equals(Minecraft.getMinecraft().player.getGameProfile().getId())) {
+                cb.success("{\"status\":\"notOwner\"}");
+                return;
+            }
+
+            int x = ((Double) args[0]).intValue();
+            int y = ((Double) args[1]).intValue();
+            boolean state = ((Double) args[2]) > 0.0;
+
+            Vector2i size = tes.getScreen(side).size;
+            if(x < 0 || x >= size.x || y < 0 || y >= size.y) {
+                cb.failure(403, "Out of range");
+                return;
+            }
+
+            makeServerQuery(tes, side, cb, JSServerRequest.SET_REDSTONE_AT, x, y, state);
         });
     }
 

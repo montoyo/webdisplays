@@ -13,10 +13,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.wd.SharedProxy;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.entity.TileEntityScreen;
-import net.montoyo.wd.utilities.BlockSide;
-import net.montoyo.wd.utilities.Log;
-import net.montoyo.wd.utilities.Vector2i;
-import net.montoyo.wd.utilities.Vector3i;
+import net.montoyo.wd.utilities.*;
 
 import java.util.ArrayList;
 
@@ -58,6 +55,7 @@ public class CMessageAddScreen implements IMessage, Runnable {
             screens[i].size = new Vector2i(buf);
             screens[i].url = ByteBufUtils.readUTF8String(buf);
             screens[i].resolution = new Vector2i(buf);
+            screens[i].owner = new NameUUIDPair(buf);
             screens[i].upgrades = new ArrayList<>();
 
             int numUpgrades = buf.readByte();
@@ -77,6 +75,7 @@ public class CMessageAddScreen implements IMessage, Runnable {
             scr.size.writeTo(buf);
             ByteBufUtils.writeUTF8String(buf, scr.url);
             scr.resolution.writeTo(buf);
+            scr.owner.writeTo(buf);
             buf.writeByte(scr.upgrades.size());
 
             for(ItemStack is: scr.upgrades)
@@ -99,9 +98,10 @@ public class CMessageAddScreen implements IMessage, Runnable {
             tes.clear();
 
         for(TileEntityScreen.Screen entry: screens) {
-            TileEntityScreen.Screen scr = tes.addScreen(entry.side, entry.size, entry.resolution, false);
+            TileEntityScreen.Screen scr = tes.addScreen(entry.side, entry.size, entry.resolution, null, false);
             scr.url = entry.url;
             scr.upgrades = entry.upgrades;
+            scr.owner = entry.owner;
 
             if(scr.browser != null)
                 scr.browser.loadURL(entry.url);

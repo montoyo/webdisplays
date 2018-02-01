@@ -24,7 +24,6 @@ public class ScreenConfigData extends GuiData {
     public boolean onlyUpdate;
     public Vector3i pos;
     public BlockSide side;
-    public NameUUIDPair owner;
     public NameUUIDPair[] friends;
     public int friendRights;
     public int otherRights;
@@ -35,7 +34,6 @@ public class ScreenConfigData extends GuiData {
     public ScreenConfigData(Vector3i pos, BlockSide side, TileEntityScreen.Screen scr) {
         this.pos = pos;
         this.side = side;
-        owner = scr.owner;
         friends = scr.friends.toArray(new NameUUIDPair[0]);
         friendRights = scr.friendRights;
         otherRights = scr.otherRights;
@@ -67,7 +65,7 @@ public class ScreenConfigData extends GuiData {
             return null;
         }
 
-        return new GuiScreenConfig((TileEntityScreen) te, side, owner, friends, friendRights, otherRights);
+        return new GuiScreenConfig((TileEntityScreen) te, side, friends, friendRights, otherRights);
     }
 
     @Override
