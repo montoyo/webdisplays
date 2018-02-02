@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DDD",
+    "DMD",
+    "DDD"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond_block"
+    },
+    "M": {
+      "item": "webdisplays:minepad",
+      "data": 0
+    }
+  },
+  "result": {
+    "item": "webdisplays:minepad",
+    "data": 1
+  }
+}

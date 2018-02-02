@@ -30,6 +30,7 @@
     }
   },
   "result": {
-    "item": "webdisplays:minepad"
+    "item": "webdisplays:minepad",
+    "data": 0
   }
 }

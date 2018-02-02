@@ -328,6 +328,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     public void onRegisterModels(ModelRegistryEvent ev) {
         final WebDisplays wd = WebDisplays.INSTANCE;
 
+        //I hope I'm doing this right because it doesn't seem like it...
         registerItemModel(wd.blockScreen.getItem(), 0, "inventory");
         ModelLoader.setCustomModelResourceLocation(wd.blockPeripheral.getItem(), 0, new ModelResourceLocation("webdisplays:kb_inv", "normal"));
         registerItemModel(wd.blockPeripheral.getItem(), 1, "facing=2,type=ccinterface");
@@ -338,6 +339,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         registerItemModel(wd.itemOwnerThief, 0, "normal");
         registerItemModel(wd.itemLinker, 0, "normal");
         registerItemModel(wd.itemMinePad, 0, "normal");
+        registerItemModel(wd.itemMinePad, 1, "normal");
         registerItemModel(wd.itemLaserPointer, 0, "normal");
 
         DefaultUpgrade[] upgrades = DefaultUpgrade.values();

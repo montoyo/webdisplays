@@ -33,6 +33,7 @@ public class ItemMinePad2 extends Item {
         setRegistryName("minepad");
         setMaxStackSize(1);
         setFull3D();
+        setMaxDamage(0);
         setCreativeTab(WebDisplays.CREATIVE_TAB);
     }
 
@@ -97,6 +98,15 @@ public class ItemMinePad2 extends Item {
         }
 
         return false;
+    }
+
+    @Override
+    public String getUnlocalizedName(ItemStack stack) {
+        String ret = getUnlocalizedName();
+        if(stack.getMetadata() > 0)
+            ret += "2";
+
+        return ret;
     }
 
 }
