@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "D",
+    "C",
+    "B"
+  ],
+  "key": {
+    "D": {
+      "item": "webdisplays:craftcomp",
+      "data": 5
+    },
+    "C": {
+      "item": "webdisplays:craftcomp",
+      "data": 3
+    },
+    "B": {
+      "item": "minecraft:wooden_button"
+    }
+  },
+  "result": {
+    "item": "webdisplays:laserpointer",
+    "count": 1
+  }
+}

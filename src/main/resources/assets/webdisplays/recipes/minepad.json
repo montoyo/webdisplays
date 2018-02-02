@@ -1,9 +1,9 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "PRP",
-    "PGP",
-    "DBD"
+    "PPP",
+    "RGB",
+    "DCD"
   ],
   "key": {
     "P": {
@@ -23,6 +23,10 @@
     },
     "D": {
       "item": "minecraft:diamond"
+    },
+    "C": {
+      "item": "webdisplays:craftcomp",
+      "data": 4
     }
   },
   "result": {

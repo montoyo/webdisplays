@@ -4,6 +4,7 @@
 
 package net.montoyo.wd.item;
 
+import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
@@ -50,6 +51,7 @@ public class ItemUpgrade extends Item implements IUpgrade {
     }
 
     @Override
+    @Nonnull
     public String getUnlocalizedName(ItemStack stack) {
         int meta = stack.getMetadata();
         DefaultUpgrade[] names = DefaultUpgrade.values();
@@ -63,11 +65,11 @@ public class ItemUpgrade extends Item implements IUpgrade {
 
     @Override
     public void addInformation(ItemStack is, @Nullable World world, List<String> tt, ITooltipFlag ttFlags) {
-        tt.add(I18n.format("item.webdisplays.upgrade.name"));
+        tt.add("" + ChatFormatting.ITALIC + I18n.format("item.webdisplays.upgrade.name"));
     }
 
     @Override
-    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
+    public void getSubItems(@Nonnull CreativeTabs tab, @Nonnull NonNullList<ItemStack> items) {
         if(isInCreativeTab(tab)) {
             int cnt = DefaultUpgrade.values().length;
 

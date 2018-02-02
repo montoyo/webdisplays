@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [ "UR" ],
+  "key": {
+    "U": {
+      "item": "webdisplays:craftcomp",
+      "data": 1
+    },
+    "R": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "result": {
+    "item": "webdisplays:upgrade",
+    "data": 2,
+    "count": 1
+  }
+}

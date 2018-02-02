@@ -1,14 +1,15 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [ "P" ],
+  "pattern": [ "BBB" ],
   "key": {
-    "P": {
-      "item": "minecraft:stone_pressure_plate"
+    "B": {
+      "item": "webdisplays:craftcomp",
+      "data": 3
     }
   },
   "result": {
     "item": "webdisplays:craftcomp",
-    "data": 0,
-    "count": 9
+    "data": 4,
+    "count": 1
   }
 }

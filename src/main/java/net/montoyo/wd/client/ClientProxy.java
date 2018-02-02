@@ -41,6 +41,7 @@ import net.montoyo.wd.client.gui.GuiSetURL2;
 import net.montoyo.wd.client.gui.WDScreen;
 import net.montoyo.wd.client.gui.loading.GuiLoader;
 import net.montoyo.wd.client.renderers.*;
+import net.montoyo.wd.core.CraftComponent;
 import net.montoyo.wd.core.DefaultUpgrade;
 import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.data.GuiData;
@@ -336,13 +337,16 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         registerItemModel(wd.itemScreenCfg, 0, "normal");
         registerItemModel(wd.itemOwnerThief, 0, "normal");
         registerItemModel(wd.itemLinker, 0, "normal");
-        registerItemModel(wd.itemStoneKey, 0, "normal");
         registerItemModel(wd.itemMinePad, 0, "normal");
         registerItemModel(wd.itemLaserPointer, 0, "normal");
 
         DefaultUpgrade[] upgrades = DefaultUpgrade.values();
         for(int i = 0; i < upgrades.length; i++)
             ModelLoader.setCustomModelResourceLocation(wd.itemUpgrade, i, new ModelResourceLocation("webdisplays:upgrade_" + upgrades[i].getName(), "normal"));
+
+        CraftComponent[] components = CraftComponent.values();
+        for(int i = 0; i < components.length; i++)
+            ModelLoader.setCustomModelResourceLocation(wd.itemCraftComp, i, new ModelResourceLocation("webdisplays:craftcomp_" + components[i].getName(), "normal"));
     }
 
     @SubscribeEvent

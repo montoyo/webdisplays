@@ -1,0 +1,13 @@
+{
+  "display": {
+    "icon": { "item": "webdisplays:minepad" },
+    "title": { "translate": "advancements.webdisplays.padbreak.title" },
+    "description": { "translate": "advancements.webdisplays.padbreak.description" }
+  },
+  "parent": "webdisplays:webdisplays/minepad",
+  "criteria": {
+    "pad_break": {
+      "trigger": "webdisplays:pad_break"
+    }
+  }
+}

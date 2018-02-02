@@ -3,7 +3,7 @@
   "pattern": [
     "PPP",
     "RGB",
-    "PPP"
+    "LLL"
   ],
   "key": {
     "P": {
@@ -20,6 +20,10 @@
     "B": {
       "item": "minecraft:dye",
       "data": 4
+    },
+    "L": {
+      "item": "webdisplays:craftcomp",
+      "data": 6
     }
   },
   "result": {

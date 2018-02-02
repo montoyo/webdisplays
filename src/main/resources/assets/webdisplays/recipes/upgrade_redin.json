@@ -1,21 +1,18 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "KKK",
-    "KRK",
-    "KKK"
-  ],
+  "pattern": [ "UR" ],
   "key": {
-    "K": {
+    "U": {
       "item": "webdisplays:craftcomp",
-      "data": 0
+      "data": 1
     },
     "R": {
       "item": "minecraft:redstone"
     }
   },
   "result": {
-    "item": "webdisplays:peripheral",
-    "data": 0
+    "item": "webdisplays:upgrade",
+    "data": 1,
+    "count": 1
   }
 }

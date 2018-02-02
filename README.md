@@ -2,13 +2,13 @@
 This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The text below is my "TODO" list.
 
 ### Missing features
-* Crafts: upgrades, laser pointer, peripherals
 * ~~Peripheral: ComputerCraft interface~~ (CC not up to date)
 * Peripheral: OpenComputers interface
 * Server blocks (to store some of the player's web pages)
 * Read config (see "Config elements" below)
 
 ### TODO
+* Center camera to screen when using keyboard
 * Achievements (minePad 2 and all that stuff)
 * Top/bottom screen orientation
 * GuiSetURL2 missing buttons

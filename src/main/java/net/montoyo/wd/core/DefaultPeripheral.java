@@ -10,6 +10,8 @@ import net.montoyo.wd.entity.TileEntityPeripheralBase;
 import net.montoyo.wd.entity.TileEntityRCtrl;
 import net.montoyo.wd.entity.TileEntityRedCtrl;
 
+import javax.annotation.Nonnull;
+
 public enum DefaultPeripheral implements IStringSerializable {
 
     KEYBOARD("keyboard", TileEntityKeyboard.class),                 //WITH FACING (< 3)
@@ -34,6 +36,7 @@ public enum DefaultPeripheral implements IStringSerializable {
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return name;
     }

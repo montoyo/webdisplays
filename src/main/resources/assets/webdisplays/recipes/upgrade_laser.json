@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [ "UL" ],
+  "key": {
+    "U": {
+      "item": "webdisplays:craftcomp",
+      "data": 1
+    },
+    "L": {
+      "item": "webdisplays:craftcomp",
+      "data": 5
+    }
+  },
+  "result": {
+    "item": "webdisplays:upgrade",
+    "data": 0,
+    "count": 1
+  }
+}

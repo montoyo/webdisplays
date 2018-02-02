@@ -4,12 +4,16 @@
 
 package net.montoyo.wd;
 
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -23,6 +27,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.montoyo.wd.block.BlockKeyboardRight;
 import net.montoyo.wd.block.BlockPeripheral;
 import net.montoyo.wd.block.BlockScreen;
+import net.montoyo.wd.core.Criterion;
 import net.montoyo.wd.core.DefaultPeripheral;
 import net.montoyo.wd.core.WDCreativeTab;
 import net.montoyo.wd.entity.TileEntityScreen;
@@ -32,6 +37,11 @@ import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
 
 import java.io.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.UUID;
 
 @Mod(modid = "webdisplays", version = WebDisplays.MOD_VERSION, dependencies = "required-after:mcef;")
 public class WebDisplays {
@@ -56,16 +66,19 @@ public class WebDisplays {
     public ItemScreenConfigurator itemScreenCfg;
     public ItemOwnershipThief itemOwnerThief;
     public ItemLinker itemLinker;
-    public Item itemStoneKey;
     public ItemMinePad2 itemMinePad;
     public ItemUpgrade itemUpgrade;
     public ItemLaserPointer itemLaserPointer;
+    public ItemCraftComponent itemCraftComp;
 
     //Sounds
     public SoundEvent soundTyping;
     public SoundEvent soundUpgradeAdd;
     public SoundEvent soundUpgradeDel;
     public SoundEvent soundScreenCfg;
+
+    //Criterions
+    public Criterion criterionPadBreak;
 
     //Config
     public static final double PAD_RATIO = 59.0 / 30.0;
@@ -78,7 +91,11 @@ public class WebDisplays {
     public void onPreInit(FMLPreInitializationEvent ev) {
         CREATIVE_TAB = new WDCreativeTab();
 
-        //TODO: Read configuration
+        //Criterions
+        criterionPadBreak = new Criterion("pad_break");
+        registerTrigger(criterionPadBreak);
+
+        //Read configuration TODO
         final int padHeight = 480;
         padResY = (double) padHeight;
         padResX = padResY * PAD_RATIO;
@@ -99,11 +116,7 @@ public class WebDisplays {
         itemMinePad = new ItemMinePad2();
         itemUpgrade = new ItemUpgrade();
         itemLaserPointer = new ItemLaserPointer();
-
-        itemStoneKey = new Item();
-        itemStoneKey.setCreativeTab(CREATIVE_TAB);
-        itemStoneKey.setUnlocalizedName("webdisplays.stonekey");
-        itemStoneKey.setRegistryName("stonekey");
+        itemCraftComp = new ItemCraftComponent();
 
         PROXY.preInit();
         MinecraftForge.EVENT_BUS.register(this);
@@ -137,7 +150,7 @@ public class WebDisplays {
     @SubscribeEvent
     public void onRegisterItems(RegistryEvent.Register<Item> ev) {
         ev.getRegistry().registerAll(blockScreen.getItem(), blockPeripheral.getItem());
-        ev.getRegistry().registerAll(itemScreenCfg, itemOwnerThief, itemLinker, itemStoneKey, itemMinePad, itemUpgrade, itemLaserPointer);
+        ev.getRegistry().registerAll(itemScreenCfg, itemOwnerThief, itemLinker, itemMinePad, itemUpgrade, itemLaserPointer, itemCraftComp);
     }
 
     @SubscribeEvent
@@ -191,6 +204,27 @@ public class WebDisplays {
         }
     }
 
+    @SubscribeEvent
+    public void onToss(ItemTossEvent ev) {
+        if(!ev.getEntityItem().world.isRemote) {
+            ItemStack is = ev.getEntityItem().getItem();
+
+            if(is.getItem() == itemMinePad) {
+                NBTTagCompound tag = is.getTagCompound();
+
+                if(tag == null) {
+                    tag = new NBTTagCompound();
+                    is.setTagCompound(tag);
+                }
+
+                UUID thrower = ev.getPlayer().getGameProfile().getId();
+                tag.setLong("ThrowerMSB", thrower.getMostSignificantBits());
+                tag.setLong("ThrowerLSB", thrower.getLeastSignificantBits());
+                tag.setDouble("ThrowHeight", ev.getPlayer().posY + ev.getPlayer().getEyeHeight());
+            }
+        }
+    }
+
     public static int getNextAvailablePadID() {
         return INSTANCE.lastPadId++;
     }
@@ -204,4 +238,22 @@ public class WebDisplays {
         return ret;
     }
 
+    private static void registerTrigger(Criterion ... criteria) {
+        Method[] methods = CriteriaTriggers.class.getDeclaredMethods();
+        Optional<Method> register = Arrays.stream(methods).filter(m -> Modifier.isPrivate(m.getModifiers()) && Modifier.isStatic(m.getModifiers()) && m.getParameterTypes().length == 1).findAny();
+        if(!register.isPresent())
+            throw new RuntimeException("Could not register advancement criterion triggers");
+
+        try {
+            Method m = register.get();
+            m.setAccessible(true);
+
+            for(Criterion c: criteria)
+                m.invoke(null, c);
+        } catch(Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
 }
+
