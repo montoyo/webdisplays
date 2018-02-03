@@ -30,6 +30,7 @@ import net.montoyo.wd.net.CMessageJSResponse;
 import net.montoyo.wd.net.CMessageScreenUpdate;
 import net.montoyo.wd.net.SMessageRequestTEData;
 import net.montoyo.wd.utilities.*;
+import net.montoyo.wd.utilities.Rotation;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -41,6 +42,7 @@ public class TileEntityScreen extends TileEntity {
         public BlockSide side;
         public Vector2i size;
         public Vector2i resolution;
+        public Rotation rotation = Rotation.ROT_0;
         public String url;
         private VideoType videoType;
         public NameUUIDPair owner;
@@ -60,6 +62,7 @@ public class TileEntityScreen extends TileEntity {
             ret.side = BlockSide.values()[tag.getByte("Side")];
             ret.size = new Vector2i(tag.getInteger("Width"), tag.getInteger("Height"));
             ret.resolution = new Vector2i(tag.getInteger("ResolutionX"), tag.getInteger("ResolutionY"));
+            ret.rotation = Rotation.values()[tag.getByte("Rotation")];
             ret.url = tag.getString("URL");
             ret.videoType = VideoType.getTypeFromURL(ret.url);
 
@@ -109,6 +112,7 @@ public class TileEntityScreen extends TileEntity {
             tag.setInteger("Height", size.y);
             tag.setInteger("ResolutionX", resolution.x);
             tag.setInteger("ResolutionY", resolution.y);
+            tag.setByte("Rotation", (byte) rotation.ordinal());
             tag.setString("URL", url);
 
             if(owner == null)
@@ -353,7 +357,7 @@ public class TileEntityScreen extends TileEntity {
 
         if(!world.isRemote) {
             if(screens.isEmpty()) //No more screens: remove tile entity
-                world.setBlockState(getPos(), WebDisplays.INSTANCE.blockScreen.getDefaultState().withProperty(BlockScreen.hasTE, false));
+                world.setBlockState(pos, WebDisplays.INSTANCE.blockScreen.getDefaultState().withProperty(BlockScreen.hasTE, false));
             else
                 markDirty();
         }
@@ -374,7 +378,7 @@ public class TileEntityScreen extends TileEntity {
         scr.resolution = res;
 
         if(world.isRemote) {
-            WebDisplays.PROXY.screenUpdateResolutionInGui(new Vector3i(getPos()), side, res);
+            WebDisplays.PROXY.screenUpdateResolutionInGui(new Vector3i(pos), side, res);
 
             if(scr.browser != null) {
                 scr.browser.close();
@@ -638,7 +642,7 @@ public class TileEntityScreen extends TileEntity {
         super.validate();
 
         if(world.isRemote)
-            Log.info("===> TES(  VALIDATE) %s", getPos().toString());
+            Log.info("===> TES(  VALIDATE) %s", pos.toString());
     }*/
 
     @Override
@@ -646,7 +650,7 @@ public class TileEntityScreen extends TileEntity {
         super.invalidate();
 
         if(world.isRemote) {
-            Log.info("===> TES(INVALIDATE) %s", getPos().toString());
+            Log.info("===> TES(INVALIDATE) %s", pos.toString());
             onChunkUnload();
         }
     }
@@ -801,6 +805,7 @@ public class TileEntityScreen extends TileEntity {
         WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.upgrade(this, side), point());
         itemAsUpgrade.onInstall(this, side, player, isCopy);
         playSoundAt(WebDisplays.INSTANCE.soundUpgradeAdd, pos, 1.0f, 1.0f);
+        markDirty();
         return true;
     }
 
@@ -854,6 +859,7 @@ public class TileEntityScreen extends TileEntity {
             scr.upgrades.remove(idxToRemove);
             WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.upgrade(this, side), point());
             playSoundAt(WebDisplays.INSTANCE.soundUpgradeDel, pos, 1.0f, 1.0f);
+            markDirty();
         } else
             Log.warning("Tried to remove non-existing upgrade %s to screen %s at %s", safeName(is), side.toString(), pos.toString());
     }
@@ -957,6 +963,31 @@ public class TileEntityScreen extends TileEntity {
         scr.owner = new NameUUIDPair(newOwner.getGameProfile());
         WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.owner(this, side, scr.owner), point());
         checkLaserUserRights(scr);
+        markDirty();
+    }
+
+    public void setRotation(BlockSide side, Rotation rot) {
+        Screen scr = getScreen(side);
+        if(scr == null) {
+            Log.error("Trying to change rotation of invalid screen on side %s", side.toString());
+            return;
+        }
+
+        if(world.isRemote) {
+            boolean oldWasVertical = scr.rotation.isVertical;
+            scr.rotation = rot;
+
+            WebDisplays.PROXY.screenUpdateRotationInGui(new Vector3i(pos), side, rot);
+
+            if(scr.browser != null && oldWasVertical != rot.isVertical) {
+                scr.browser.close();
+                scr.browser = null; //Will be re-created by renderer
+            }
+        } else {
+            scr.rotation = rot;
+            WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.rotation(this, side, rot), point());
+            markDirty();
+        }
     }
 
 }

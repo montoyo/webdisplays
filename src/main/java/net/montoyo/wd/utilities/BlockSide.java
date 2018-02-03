@@ -45,4 +45,9 @@ public enum BlockSide {
         return div * 2 + rest;
     }
 
+    public static BlockSide fromInt(int s) {
+        BlockSide[] values = values();
+        return (s < 0 || s >= values.length) ? null : values[s];
+    }
+
 }

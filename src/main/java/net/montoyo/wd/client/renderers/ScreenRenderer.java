@@ -14,6 +14,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.ClientProxy;
 import net.montoyo.wd.entity.TileEntityScreen;
+import net.montoyo.wd.utilities.Rotation;
 import net.montoyo.wd.utilities.Vector3f;
 import net.montoyo.wd.utilities.Vector3i;
 
@@ -41,7 +42,12 @@ public class ScreenRenderer extends TileEntitySpecialRenderer<TileEntityScreen> 
             TileEntityScreen.Screen scr = te.getScreen(i);
             if(scr.browser == null) {
                 scr.browser = ((ClientProxy) WebDisplays.PROXY).getMCEF().createBrowser(scr.url);
-                scr.browser.resize(scr.resolution.x, scr.resolution.y);
+
+                if(scr.rotation.isVertical)
+                    scr.browser.resize(scr.resolution.y, scr.resolution.x);
+                else
+                    scr.browser.resize(scr.resolution.x, scr.resolution.y);
+
                 scr.doTurnOnAnim = true;
                 scr.turnOnTime = System.currentTimeMillis();
             }
@@ -98,8 +104,17 @@ public class ScreenRenderer extends TileEntitySpecialRenderer<TileEntityScreen> 
                 glScalef(ft, ft, 1.0f);
             }
 
+            if(!scr.rotation.isNull)
+                glRotatef(scr.rotation.angle, 0.0f, 0.0f, 1.0f);
+
             float sw = ((float) scr.size.x) * 0.5f - 2.f / 16.f;
             float sh = ((float) scr.size.y) * 0.5f - 2.f / 16.f;
+
+            if(scr.rotation.isVertical) {
+                float tmp = sw;
+                sw = sh;
+                sh = tmp;
+            }
 
             //TODO: Use tesselator
             glBindTexture(GL_TEXTURE_2D, scr.browser.getTextureID());

@@ -15,10 +15,7 @@ import net.montoyo.wd.core.HasAdvancement;
 import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
-import net.montoyo.wd.utilities.BlockSide;
-import net.montoyo.wd.utilities.NameUUIDPair;
-import net.montoyo.wd.utilities.Vector2i;
-import net.montoyo.wd.utilities.Vector3i;
+import net.montoyo.wd.utilities.*;
 
 import javax.annotation.Nonnull;
 
@@ -61,6 +58,9 @@ public class SharedProxy {
     }
 
     public void screenUpdateResolutionInGui(Vector3i pos, BlockSide side, Vector2i res) {
+    }
+
+    public void screenUpdateRotationInGui(Vector3i pos, BlockSide side, Rotation rot) {
     }
 
     public void displaySetPadURLGui(String padURL) {

@@ -37,6 +37,24 @@ function wdIsOwner(callback) {
 	});
 }
 
+function wdGetRotation(callback) {
+	//Rotation: 0 is 0deg, 1 is 90deg, 2 is 180deg, and 3 is 270deg
+	//Rotations are counter-clockwise (trigonometric direction)
+
+	wdExecRequest("GetRotation", function(resp) {
+		callback(resp.rotation);
+	});
+}
+
+function wdGetSide(callback) {
+	//Side: 0 is Bottom, 1 is Top, 2 is North, 3 is South, 4 is West and 5 is East
+	//FYI: North is Z-, South Z+, West is X- and East X+
+
+	wdExecRequest("GetSide", function(resp) {
+		callback(resp.side);
+	});
+}
+
 //Requires upgrade: webdisplays:redinput
 function wdGetRedstoneAt(x, y, callback) {
 	wdExecRequest("GetRedstoneAt(" + x + "," + y + ")", function(resp) {

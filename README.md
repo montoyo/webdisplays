@@ -7,7 +7,6 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * Read config (see "Config elements" below)
 
 ### TODO
-* Center camera to screen when using keyboard
 * Top/bottom screen orientation
 * GuiSetURL2 missing buttons
 * Automatically add protocol to URLs
@@ -32,3 +31,5 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * Plugin API
 * The Shop
 * CC Interface, if CC gets updated...
+* Center camera to screen when using keyboard
+

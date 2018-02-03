@@ -37,6 +37,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     public static final int CTRL_LASER_MOVE = 9;
     public static final int CTRL_LASER_UP = 10;
     public static final int CTRL_JS_REQUEST = 11;
+    public static final int CTRL_SET_ROTATION = 12;
 
     private int ctrl;
     private int dim;
@@ -54,6 +55,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     private int jsReqID;
     private JSServerRequest jsReqType;
     private Object[] jsReqData;
+    private Rotation rotation;
 
     public SMessageScreenCtrl() {
     }
@@ -97,6 +99,14 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         pos = new Vector3i(tes.getPos());
         this.side = side;
         toRemove = toRem;
+    }
+
+    public SMessageScreenCtrl(TileEntityScreen tes, BlockSide side, Rotation rot) {
+        ctrl = CTRL_SET_ROTATION;
+        dim = tes.getWorld().provider.getDimension();
+        pos = new Vector3i(tes.getPos());
+        this.side = side;
+        rotation = rot;
     }
 
     public static SMessageScreenCtrl type(TileEntityScreen tes, BlockSide side, String text, BlockPos soundPos) {
@@ -157,7 +167,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         ctrl = buf.readByte();
         dim = buf.readInt();
         pos = new Vector3i(buf);
-        side = BlockSide.values()[buf.readByte()];
+        side = BlockSide.fromInt(buf.readByte());
 
         if(ctrl == CTRL_SET_URL)
             url = ByteBufUtils.readUTF8String(buf);
@@ -183,7 +193,8 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
 
             if(jsReqType != null)
                 jsReqData = jsReqType.deserialize(buf);
-        }
+        } else if(ctrl == CTRL_SET_ROTATION)
+            rotation = Rotation.values()[buf.readByte() & 3];
     }
 
     @Override
@@ -215,11 +226,17 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
 
             if(!jsReqType.serialize(buf, jsReqData))
                 throw new RuntimeException("Could not serialize CTRL_JS_REQUEST " + jsReqType);
-        }
+        } else if(ctrl == CTRL_SET_ROTATION)
+            buf.writeByte(rotation.ordinal());
     }
 
     @Override
     public void run() {
+        if(side == null) {
+            Log.warning("Caught invalid packet from %s (UUID %s) referencing an invalid block side", player.getName(), player.getGameProfile().getId().toString());
+            return;
+        }
+
         try {
             runUnsafe();
         } catch(MissingPermissionException e) {
@@ -242,7 +259,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
 
         TileEntity te = world.getTileEntity(bp);
         if(te == null || !(te instanceof TileEntityScreen)) {
-            Log.error("TileEntity at %s is not a screen; can't change url!", pos.toString());
+            Log.error("TileEntity at %s is not a screen; can't control it!", pos.toString());
             return;
         }
 
@@ -262,11 +279,14 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
             tes.removeFriend(player, side, friend);
         } else if(ctrl == CTRL_SET_RIGHTS) {
             TileEntityScreen.Screen scr = tes.getScreen(side);
-            int fr = scr.owner.uuid.equals(player.getGameProfile().getId()) ? friendRights : scr.friendRights;
-            int or = (scr.rightsFor(player) & ScreenRights.MANAGE_OTHER_RIGHTS) == 0 ? scr.otherRights : otherRights;
 
-            if(scr.friendRights != fr || scr.otherRights != or)
-                tes.setRights(player, side, fr, or);
+            if(scr != null) {
+                int fr = scr.owner.uuid.equals(player.getGameProfile().getId()) ? friendRights : scr.friendRights;
+                int or = (scr.rightsFor(player) & ScreenRights.MANAGE_OTHER_RIGHTS) == 0 ? scr.otherRights : otherRights;
+
+                if(scr.friendRights != fr || scr.otherRights != or)
+                    tes.setRights(player, side, fr, or);
+            }
         } else if(ctrl == CTRL_SET_RESOLUTION) {
             checkPermission(tes, ScreenRights.CHANGE_RESOLUTION);
             tes.setResolution(side, vec2i);
@@ -285,6 +305,9 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
                 Log.warning("Caught invalid JS request from player %s (UUID %s)", player.getName(), player.getGameProfile().getId().toString());
             else
                 tes.handleJSRequest(player, side, jsReqID, jsReqType, jsReqData);
+        } else if(ctrl == CTRL_SET_ROTATION) {
+            checkPermission(tes, ScreenRights.CHANGE_RESOLUTION);
+            tes.setRotation(side, rotation);
         } else
             Log.info("SMessageScreenCtrl: TODO"); //TODO: other ctrl messages
     }

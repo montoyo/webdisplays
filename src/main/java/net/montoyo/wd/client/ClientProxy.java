@@ -203,6 +203,16 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     }
 
     @Override
+    public void screenUpdateRotationInGui(Vector3i pos, BlockSide side, Rotation rot) {
+        if(mc.currentScreen != null && mc.currentScreen instanceof GuiScreenConfig) {
+            GuiScreenConfig gsc = (GuiScreenConfig) mc.currentScreen;
+
+            if(gsc.isScreen(pos, side))
+                gsc.updateRotation(rot);
+        }
+    }
+
+    @Override
     public void displaySetPadURLGui(String padURL) {
         mc.displayGuiScreen(new GuiSetURL2(padURL));
     }
@@ -288,7 +298,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     /**************************************** RESOURCE MANAGER METHODS ****************************************/
 
     @Override
-    public void onResourceManagerReload(IResourceManager rm) {
+    public void onResourceManagerReload(@Nonnull IResourceManager rm) {
         Log.info("Resource manager reload: clearing GUI cache...");
         GuiLoader.clearCache();
     }

@@ -5,6 +5,7 @@
 package net.montoyo.wd.client.gui;
 
 import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.gui.controls.*;
@@ -27,6 +28,7 @@ public class GuiScreenConfig extends WDScreen {
     private NameUUIDPair[] friends;
     private int friendRights;
     private int otherRights;
+    private Rotation rotation = Rotation.ROT_0;
 
     //Autocomplete handling
     private boolean waitingAC;
@@ -96,6 +98,9 @@ public class GuiScreenConfig extends WDScreen {
     @FillControl
     private UpgradeGroup ugUpgrades;
 
+    @FillControl
+    private Button btnChangeRot;
+
     private CheckBox[] friendBoxes;
     private CheckBox[] otherBoxes;
 
@@ -129,6 +134,8 @@ public class GuiScreenConfig extends WDScreen {
         TileEntityScreen.Screen scr = tes.getScreen(side);
         if(scr != null) {
             owner = scr.owner;
+            rotation = scr.rotation;
+
             tfResX.setText("" + scr.resolution.x);
             tfResY.setText("" + scr.resolution.y);
 
@@ -139,7 +146,7 @@ public class GuiScreenConfig extends WDScreen {
         if(owner == null)
             owner = new NameUUIDPair("???", UUID.randomUUID());
 
-        lblOwner.setLabel(lblOwner.getLabel() + owner.name);
+        lblOwner.setLabel(lblOwner.getLabel() + ' ' + owner.name);
         for(NameUUIDPair f : friends)
             lstFriends.addElementRaw(f.name, f);
 
@@ -147,8 +154,13 @@ public class GuiScreenConfig extends WDScreen {
         updateRights(friendRights, friendRights, friendBoxes, true);
         updateRights(otherRights, otherRights, otherBoxes, true);
         updateMyRights();
+        updateRotationStr();
 
         mc.getSoundHandler().playSound(PositionedSoundRecord.getRecord(WebDisplays.INSTANCE.soundScreenCfg, 1.0f, 1.0f));
+    }
+
+    private void updateRotationStr() {
+        btnChangeRot.setLabel(I18n.format("webdisplays.gui.screencfg.rot" + rotation.getAngleAsInt()));
     }
 
     private void addFriend(String name) {
@@ -188,6 +200,10 @@ public class GuiScreenConfig extends WDScreen {
             addFriend(tfFriend.getText().trim());
         else if(ev.getSource() == btnSetRes)
             clickSetRes();
+        else if(ev.getSource() == btnChangeRot) {
+            Rotation[] rots = Rotation.values();
+            WebDisplays.NET_HANDLER.sendToServer(new SMessageScreenCtrl(tes, side, rots[(rotation.ordinal() + 1) % rots.length]));
+        }
     }
 
     @GuiSubscribe
@@ -419,6 +435,7 @@ public class GuiScreenConfig extends WDScreen {
         flag = (myRights & ScreenRights.CHANGE_RESOLUTION) == 0;
         tfResX.setDisabled(flag);
         tfResY.setDisabled(flag);
+        btnChangeRot.setDisabled(flag);
 
         if(flag)
             btnSetRes.setDisabled(true);
@@ -431,6 +448,11 @@ public class GuiScreenConfig extends WDScreen {
         tfResX.setText("" + res.x);
         tfResY.setText("" + res.y);
         btnSetRes.setDisabled(true);
+    }
+
+    public void updateRotation(Rotation rot) {
+        rotation = rot;
+        updateRotationStr();
     }
 
 }

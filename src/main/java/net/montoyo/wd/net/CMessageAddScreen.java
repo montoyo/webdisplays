@@ -55,6 +55,7 @@ public class CMessageAddScreen implements IMessage, Runnable {
             screens[i].size = new Vector2i(buf);
             screens[i].url = ByteBufUtils.readUTF8String(buf);
             screens[i].resolution = new Vector2i(buf);
+            screens[i].rotation = Rotation.values()[buf.readByte() & 3];
             screens[i].owner = new NameUUIDPair(buf);
             screens[i].upgrades = new ArrayList<>();
 
@@ -75,6 +76,7 @@ public class CMessageAddScreen implements IMessage, Runnable {
             scr.size.writeTo(buf);
             ByteBufUtils.writeUTF8String(buf, scr.url);
             scr.resolution.writeTo(buf);
+            buf.writeByte(scr.rotation.ordinal());
             scr.owner.writeTo(buf);
             buf.writeByte(scr.upgrades.size());
 
@@ -99,9 +101,10 @@ public class CMessageAddScreen implements IMessage, Runnable {
 
         for(TileEntityScreen.Screen entry: screens) {
             TileEntityScreen.Screen scr = tes.addScreen(entry.side, entry.size, entry.resolution, null, false);
+            scr.rotation = entry.rotation;
             scr.url = entry.url;
-            scr.upgrades = entry.upgrades;
             scr.owner = entry.owner;
+            scr.upgrades = entry.upgrades;
 
             if(scr.browser != null)
                 scr.browser.loadURL(entry.url);

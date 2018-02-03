@@ -347,6 +347,9 @@ public final class JSQueryDispatcher {
             boolean res = (tes.getScreen(side).owner != null && tes.getScreen(side).owner.uuid.equals(mc.player.getGameProfile().getId()));
             cb.success("{\"isOwner\":" + (res ? "true}" : "false}"));
         });
+
+        register("GetRotation", (cb, tes, side, args) -> cb.success("{\"rotation\":" + tes.getScreen(side).rotation.ordinal() + "}"));
+        register("GetSide", (cb, tes, side, args) -> cb.success("{\"side\":" + tes.getScreen(side).side.ordinal() + "}"));
     }
 
 }

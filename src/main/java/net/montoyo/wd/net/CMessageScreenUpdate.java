@@ -29,6 +29,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     public static final int UPDATE_UPGRADES = 5;
     public static final int UPDATE_JS_REDSTONE = 6;
     public static final int UPDATE_OWNER = 7;
+    public static final int UPDATE_ROTATION = 8;
 
     public static final int MOUSE_CLICK = 0;
     public static final int MOUSE_UP = 1;
@@ -45,6 +46,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     private ItemStack[] upgrades;
     private int redstoneLevel;
     private NameUUIDPair owner;
+    private Rotation rotation;
 
     public CMessageScreenUpdate() {
     }
@@ -132,6 +134,16 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         return ret;
     }
 
+    public static CMessageScreenUpdate rotation(TileEntityScreen tes, BlockSide side, Rotation rot) {
+        CMessageScreenUpdate ret = new CMessageScreenUpdate();
+        ret.pos = new Vector3i(tes.getPos());
+        ret.side = side;
+        ret.action = UPDATE_ROTATION;
+        ret.rotation = rot;
+
+        return ret;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
         pos = new Vector3i(buf);
@@ -159,6 +171,8 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
             redstoneLevel = buf.readByte();
         } else if(action == UPDATE_OWNER)
             owner = new NameUUIDPair(buf);
+        else if(action == UPDATE_ROTATION)
+            rotation = Rotation.values()[buf.readByte() & 3];
     }
 
     @Override
@@ -188,6 +202,8 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
             buf.writeByte(redstoneLevel);
         } else if(action == UPDATE_OWNER)
             owner.writeTo(buf);
+        else if(action == UPDATE_ROTATION)
+            buf.writeByte(rotation.ordinal());
     }
 
     @Override
@@ -224,7 +240,9 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
 
             if(scr != null)
                 scr.owner = owner;
-        } else
+        } else if(action == UPDATE_ROTATION)
+            tes.setRotation(side, rotation);
+        else
             Log.warning("===> TODO"); //TODO
     }
 
