@@ -1,0 +1,13 @@
+{
+  "display": {
+    "icon": { "item": "minecraft:skull", "data": 3, "nbt": "{SkullOwner:\"MHF_Ocelot\"}" },
+    "title": { "translate": "advancements.webdisplays.keyboardcat.title" },
+    "description": { "translate": "advancements.webdisplays.keyboardcat.description" }
+  },
+  "parent": "webdisplays:webdisplays/link_peripheral",
+  "criteria": {
+    "keyboard_cat": {
+      "trigger": "webdisplays:keyboard_cat"
+    }
+  }
+}

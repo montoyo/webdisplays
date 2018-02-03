@@ -1,16 +1,17 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "QIQ",
-    "I I",
-    "QIQ"
+    " Q ",
+    "QEQ",
+    " Q "
   ],
   "key": {
     "Q": {
       "item": "minecraft:quartz"
     },
-    "I": {
-      "item": "minecraft:iron_nugget"
+    "E": {
+      "item": "webdisplays:craftcomp",
+      "data": 7
     }
   },
   "result": {

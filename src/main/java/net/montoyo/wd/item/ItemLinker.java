@@ -8,6 +8,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -73,9 +74,12 @@ public class ItemLinker extends Item {
                 Vector3i tePos = new Vector3i(tag.getInteger("ScreenX"), tag.getInteger("ScreenY"), tag.getInteger("ScreenZ"));
                 BlockSide scrSide = BlockSide.values()[tag.getByte("ScreenSide")];
 
-                if(target.connect(world, pos_, state, tePos, scrSide))
+                if(target.connect(world, pos_, state, tePos, scrSide)) {
                     Util.toast(player, TextFormatting.AQUA, "linked");
-                else
+
+                    if(player instanceof EntityPlayerMP)
+                        WebDisplays.INSTANCE.criterionLinkPeripheral.trigger(((EntityPlayerMP) player).getAdvancements());
+                } else
                     Util.toast(player, "linkError");
 
                 stack.setTagCompound(null);

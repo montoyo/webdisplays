@@ -20,7 +20,8 @@ public enum DefaultUpgrade {
         name = n;
     }
 
-    public String getName() {
+    @Override
+    public String toString() {
         return name;
     }
 

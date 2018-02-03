@@ -1,0 +1,13 @@
+{
+  "display": {
+    "icon": { "item": "webdisplays:craftcomp", "data": 1 },
+    "title": { "translate": "advancements.webdisplays.upgrade.title" },
+    "description": { "translate": "advancements.webdisplays.upgrade.description" }
+  },
+  "parent": "webdisplays:webdisplays/pad_break",
+  "criteria": {
+    "upgrade_screen": {
+      "trigger": "webdisplays:upgrade_screen"
+    }
+  }
+}

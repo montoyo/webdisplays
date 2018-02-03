@@ -5,10 +5,13 @@
 package net.montoyo.wd;
 
 import com.mojang.authlib.GameProfile;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.server.FMLServerHandler;
 import net.montoyo.mcef.utilities.Log;
+import net.montoyo.wd.core.HasAdvancement;
 import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
@@ -16,6 +19,8 @@ import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.NameUUIDPair;
 import net.montoyo.wd.utilities.Vector2i;
 import net.montoyo.wd.utilities.Vector3i;
+
+import javax.annotation.Nonnull;
 
 public class SharedProxy {
 
@@ -72,6 +77,15 @@ public class SharedProxy {
 
     public void handleJSResponseError(int reqId, JSServerRequest type, int errCode, String err) {
         Log.error("Called SharedProxy.handleJSResponseError() on server side...");
+    }
+
+    @Nonnull
+    public HasAdvancement hasClientPlayerAdvancement(@Nonnull ResourceLocation rl) {
+        return HasAdvancement.DONT_KNOW;
+    }
+
+    public MinecraftServer getServer() {
+        return FMLServerHandler.instance().getServer();
     }
 
 }

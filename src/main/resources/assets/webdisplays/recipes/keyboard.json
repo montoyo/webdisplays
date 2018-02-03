@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "KKK",
-    "KRK",
+    "KPK",
     "KKK"
   ],
   "key": {
@@ -10,12 +10,14 @@
       "item": "webdisplays:craftcomp",
       "data": 0
     },
-    "R": {
-      "item": "minecraft:redstone"
+    "P": {
+      "item": "webdisplays:craftcomp",
+      "data": 2
     }
   },
   "result": {
     "item": "webdisplays:peripheral",
-    "data": 0
+    "data": 0,
+    "count": 1
   }
 }

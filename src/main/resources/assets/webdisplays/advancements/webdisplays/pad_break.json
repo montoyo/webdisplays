@@ -1,6 +1,6 @@
 {
   "display": {
-    "icon": { "item": "webdisplays:minepad" },
+    "icon": { "item": "webdisplays:advicon", "data": 1 },
     "title": { "translate": "advancements.webdisplays.padbreak.title" },
     "description": { "translate": "advancements.webdisplays.padbreak.description" }
   },
@@ -9,5 +9,17 @@
     "pad_break": {
       "trigger": "webdisplays:pad_break"
     }
+  },
+  "rewards": {
+    "recipes": [
+      "webdisplays:extcard",
+      "webdisplays:upgrade",
+      "webdisplays:laserdiode",
+      "webdisplays:laserpointer",
+      "webdisplays:upgrade_gps",
+      "webdisplays:upgrade_laser",
+      "webdisplays:upgrade_redin",
+      "webdisplays:upgrade_redout"
+    ]
   }
 }

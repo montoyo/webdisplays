@@ -1,0 +1,13 @@
+{
+  "display": {
+    "icon": { "item": "webdisplays:linker" },
+    "title": { "translate": "advancements.webdisplays.linkperipheral.title" },
+    "description": { "translate": "advancements.webdisplays.linkperipheral.description" }
+  },
+  "parent": "webdisplays:webdisplays/screen",
+  "criteria": {
+    "link_peripheral": {
+      "trigger": "webdisplays:link_peripheral"
+    }
+  }
+}

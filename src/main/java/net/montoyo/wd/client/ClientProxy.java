@@ -5,9 +5,12 @@
 package net.montoyo.wd.client;
 
 import com.mojang.authlib.GameProfile;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.multiplayer.ClientAdvancementManager;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResourceManager;
@@ -17,9 +20,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -41,17 +46,19 @@ import net.montoyo.wd.client.gui.GuiSetURL2;
 import net.montoyo.wd.client.gui.WDScreen;
 import net.montoyo.wd.client.gui.loading.GuiLoader;
 import net.montoyo.wd.client.renderers.*;
-import net.montoyo.wd.core.CraftComponent;
 import net.montoyo.wd.core.DefaultUpgrade;
+import net.montoyo.wd.core.HasAdvancement;
 import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
+import net.montoyo.wd.item.ItemMulti;
 import net.montoyo.wd.net.SMessagePadCtrl;
 import net.montoyo.wd.net.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import javax.annotation.Nonnull;
+import java.lang.reflect.Field;
+import java.util.*;
 
 public class ClientProxy extends SharedProxy implements IResourceManagerReloadListener, IDisplayHandler, IJSQueryHandler {
 
@@ -77,6 +84,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     private MinePadRenderer minePadRenderer;
     private JSQueryDispatcher jsDispatcher;
     private LaserPointerRenderer laserPointerRenderer;
+    private Field advancementToProgress;
 
     //Laser pointer
     private TileEntityScreen pointedScreen;
@@ -121,6 +129,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
         mcef.registerDisplayHandler(this);
         mcef.registerJSQueryHandler(this);
+        findAdvancementToProgressField();
     }
 
     @Override
@@ -200,6 +209,46 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
         if(pd != null && pd.view != null)
             mc.displayGuiScreen(new GuiMinePad(pd));
+    }
+
+    @Override
+    @Nonnull
+    public HasAdvancement hasClientPlayerAdvancement(@Nonnull ResourceLocation rl) {
+        if(advancementToProgress != null && mc.player != null && mc.player.connection != null) {
+            ClientAdvancementManager cam = mc.player.connection.getAdvancementManager();
+            Advancement adv = cam.getAdvancementList().getAdvancement(rl);
+            Map map;
+
+            if(adv == null)
+                return HasAdvancement.DONT_KNOW;
+
+            try {
+                map = (Map) advancementToProgress.get(cam);
+            } catch(Throwable t) {
+                t.printStackTrace();
+                advancementToProgress = null;
+                return HasAdvancement.DONT_KNOW;
+            }
+
+            Object progress = map.get(adv);
+            if(progress == null)
+                return HasAdvancement.NO;
+
+            if(!(progress instanceof AdvancementProgress)) {
+                Log.warning("The ClientAdvancementManager.advancementToProgress map does not contain AdvancementProgress instances");
+                advancementToProgress = null; //It's wrong
+                return HasAdvancement.DONT_KNOW;
+            }
+
+            return ((AdvancementProgress) progress).isDone() ? HasAdvancement.YES : HasAdvancement.NO;
+        }
+
+        return HasAdvancement.DONT_KNOW;
+    }
+
+    @Override
+    public MinecraftServer getServer() {
+        return mc.getIntegratedServer();
     }
 
     @Override
@@ -341,14 +390,9 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         registerItemModel(wd.itemMinePad, 0, "normal");
         registerItemModel(wd.itemMinePad, 1, "normal");
         registerItemModel(wd.itemLaserPointer, 0, "normal");
-
-        DefaultUpgrade[] upgrades = DefaultUpgrade.values();
-        for(int i = 0; i < upgrades.length; i++)
-            ModelLoader.setCustomModelResourceLocation(wd.itemUpgrade, i, new ModelResourceLocation("webdisplays:upgrade_" + upgrades[i].getName(), "normal"));
-
-        CraftComponent[] components = CraftComponent.values();
-        for(int i = 0; i < components.length; i++)
-            ModelLoader.setCustomModelResourceLocation(wd.itemCraftComp, i, new ModelResourceLocation("webdisplays:craftcomp_" + components[i].getName(), "normal"));
+        registerItemMultiModels(wd.itemUpgrade);
+        registerItemMultiModels(wd.itemCraftComp);
+        registerItemMultiModels(wd.itemAdvIcon);
     }
 
     @SubscribeEvent
@@ -535,6 +579,13 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(item.getRegistryName(), variant));
     }
 
+    private void registerItemMultiModels(ItemMulti item) {
+        Enum[] values = item.getEnumValues();
+
+        for(int i = 0; i < values.length; i++)
+            ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName().toString() + '_' + values[i], "normal"));
+    }
+
     private void updatePad(int id, NBTTagCompound tag, boolean isSelected) {
         PadData pd = padMap.get(id);
 
@@ -580,6 +631,22 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         }
 
         return false;
+    }
+
+    private void findAdvancementToProgressField() {
+        Field[] fields = ClientAdvancementManager.class.getDeclaredFields();
+
+        Arrays.stream(fields).filter(f -> f.getType() == Map.class).findAny().ifPresent(f -> {
+            try {
+                f.setAccessible(true);
+                advancementToProgress = f;
+            } catch(Throwable t) {
+                t.printStackTrace();
+            }
+        });
+
+        if(advancementToProgress == null)
+            Log.warning("ClientAdvancementManager.advancementToProgress field could not be found");
     }
 
 }

@@ -20,6 +20,7 @@
     }
   },
   "result": {
-    "item": "webdisplays:linker"
+    "item": "webdisplays:linker",
+    "count": 1
   }
 }

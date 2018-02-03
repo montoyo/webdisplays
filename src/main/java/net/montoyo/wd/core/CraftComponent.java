@@ -4,6 +4,9 @@
 
 package net.montoyo.wd.core;
 
+import net.minecraft.item.ItemStack;
+import net.montoyo.wd.WebDisplays;
+
 public enum CraftComponent {
 
     STONE_KEY("stonekey"),
@@ -12,7 +15,9 @@ public enum CraftComponent {
     BATTERY_CELL("batcell"),
     BATTERY_PACK("batpack"),
     LASER_DIODE("laserdiode"),
-    BACKLIGHT("backlight");
+    BACKLIGHT("backlight"),
+    EXTENSION_CARD("extcard"),
+    BAD_EXTENSION_CARD("badextcard");
 
     private final String name;
 
@@ -20,8 +25,13 @@ public enum CraftComponent {
         name = n;
     }
 
-    public String getName() {
+    @Override
+    public String toString() {
         return name;
+    }
+
+    public ItemStack makeItemStack() {
+        return new ItemStack(WebDisplays.INSTANCE.itemCraftComp, 1, ordinal());
     }
 
 }

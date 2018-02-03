@@ -151,6 +151,8 @@ public class BlockScreen extends WDBlockContainer {
                         heldItem.shrink(1);
 
                     Util.toast(player, TextFormatting.AQUA, "upgradeOk");
+                    if(player instanceof EntityPlayerMP)
+                        WebDisplays.INSTANCE.criterionUpgradeScreen.trigger(((EntityPlayerMP) player).getAdvancements());
                 } else
                     Util.toast(player, "upgradeError");
 

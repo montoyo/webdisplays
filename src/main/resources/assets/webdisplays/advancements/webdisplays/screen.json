@@ -6,7 +6,7 @@
   },
   "parent": "webdisplays:webdisplays/root",
   "criteria": {
-    "has_glass_pane": {
+    "has_screen": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [ { "item": "webdisplays:screen" } ]
@@ -17,11 +17,13 @@
     "recipes": [
       "webdisplays:linker",
       "webdisplays:screencfg",
+      "webdisplays:peripheral",
       "webdisplays:rctrl",
-      "webdisplays:ccinterface",
       "webdisplays:ocinterface",
       "webdisplays:redctrl1",
-      "webdisplays:redctrl2"
+      "webdisplays:redctrl2",
+      "webdisplays:stonekey",
+      "webdisplays:keyboard"
     ]
   }
 }

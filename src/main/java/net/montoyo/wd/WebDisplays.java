@@ -4,12 +4,17 @@
 
 package net.montoyo.wd;
 
+import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.Block;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
@@ -21,15 +26,14 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.montoyo.wd.block.BlockKeyboardRight;
 import net.montoyo.wd.block.BlockPeripheral;
 import net.montoyo.wd.block.BlockScreen;
-import net.montoyo.wd.core.Criterion;
-import net.montoyo.wd.core.DefaultPeripheral;
-import net.montoyo.wd.core.WDCreativeTab;
+import net.montoyo.wd.core.*;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.item.*;
 import net.montoyo.wd.net.Messages;
@@ -56,6 +60,7 @@ public class WebDisplays {
 
     public static SimpleNetworkWrapper NET_HANDLER;
     public static WDCreativeTab CREATIVE_TAB;
+    public static final ResourceLocation ADV_PAD_BREAK = new ResourceLocation("webdisplays", "webdisplays/pad_break");
 
     //Blocks
     public BlockScreen blockScreen;
@@ -70,6 +75,7 @@ public class WebDisplays {
     public ItemUpgrade itemUpgrade;
     public ItemLaserPointer itemLaserPointer;
     public ItemCraftComponent itemCraftComp;
+    public ItemMulti itemAdvIcon;
 
     //Sounds
     public SoundEvent soundTyping;
@@ -79,6 +85,9 @@ public class WebDisplays {
 
     //Criterions
     public Criterion criterionPadBreak;
+    public Criterion criterionUpgradeScreen;
+    public Criterion criterionLinkPeripheral;
+    public Criterion criterionKeyboardCat;
 
     //Config
     public static final double PAD_RATIO = 59.0 / 30.0;
@@ -86,6 +95,7 @@ public class WebDisplays {
     public double padResX;
     public double padResY;
     private int lastPadId = 0;
+    public boolean doHardRecipe = true;
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent ev) {
@@ -93,7 +103,10 @@ public class WebDisplays {
 
         //Criterions
         criterionPadBreak = new Criterion("pad_break");
-        registerTrigger(criterionPadBreak);
+        criterionUpgradeScreen = new Criterion("upgrade_screen");
+        criterionLinkPeripheral = new Criterion("link_peripheral");
+        criterionKeyboardCat = new Criterion("keyboard_cat");
+        registerTrigger(criterionPadBreak, criterionUpgradeScreen, criterionLinkPeripheral, criterionKeyboardCat);
 
         //Read configuration TODO
         final int padHeight = 480;
@@ -117,6 +130,10 @@ public class WebDisplays {
         itemUpgrade = new ItemUpgrade();
         itemLaserPointer = new ItemLaserPointer();
         itemCraftComp = new ItemCraftComponent();
+
+        itemAdvIcon = new ItemMulti(AdvancementIcon.class);
+        itemAdvIcon.setUnlocalizedName("webdisplays.advicon");
+        itemAdvIcon.setRegistryName("advicon");
 
         PROXY.preInit();
         MinecraftForge.EVENT_BUS.register(this);
@@ -150,7 +167,7 @@ public class WebDisplays {
     @SubscribeEvent
     public void onRegisterItems(RegistryEvent.Register<Item> ev) {
         ev.getRegistry().registerAll(blockScreen.getItem(), blockPeripheral.getItem());
-        ev.getRegistry().registerAll(itemScreenCfg, itemOwnerThief, itemLinker, itemMinePad, itemUpgrade, itemLaserPointer, itemCraftComp);
+        ev.getRegistry().registerAll(itemScreenCfg, itemOwnerThief, itemLinker, itemMinePad, itemUpgrade, itemLaserPointer, itemCraftComp, itemAdvIcon);
     }
 
     @SubscribeEvent
@@ -223,6 +240,27 @@ public class WebDisplays {
                 tag.setDouble("ThrowHeight", ev.getPlayer().posY + ev.getPlayer().getEyeHeight());
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onPlayerCraft(PlayerEvent.ItemCraftedEvent ev) {
+        if(doHardRecipe && ev.crafting.getItem() == itemCraftComp && ev.crafting.getMetadata() == CraftComponent.EXTENSION_CARD.ordinal()) {
+            if((ev.player instanceof EntityPlayerMP && !hasPlayerAdvancement((EntityPlayerMP) ev.player, ADV_PAD_BREAK)) || PROXY.hasClientPlayerAdvancement(ADV_PAD_BREAK) != HasAdvancement.YES) {
+                ev.crafting.setItemDamage(CraftComponent.BAD_EXTENSION_CARD.ordinal());
+
+                if(!ev.player.world.isRemote)
+                    ev.player.world.playSound(null, ev.player.posX, ev.player.posY, ev.player.posZ, SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.MASTER, 1.0f, 1.0f);
+            }
+        }
+    }
+
+    private boolean hasPlayerAdvancement(EntityPlayerMP ply, ResourceLocation rl) {
+        MinecraftServer server = PROXY.getServer();
+        if(server == null)
+            return false;
+
+        Advancement adv = server.getAdvancementManager().getAdvancement(rl);
+        return adv != null && ply.getAdvancements().getProgress(adv).isDone();
     }
 
     public static int getNextAvailablePadID() {

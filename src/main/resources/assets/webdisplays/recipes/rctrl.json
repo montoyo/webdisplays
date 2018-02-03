@@ -1,12 +1,13 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    " E ",
+    " P ",
     "BBB"
   ],
   "key": {
-    "E": {
-      "item": "minecraft:ender_pearl"
+    "P": {
+      "item": "webdisplays:craftcomp",
+      "data": 2
     },
     "B": {
       "item": "minecraft:wooden_button"

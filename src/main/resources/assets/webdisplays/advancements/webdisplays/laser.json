@@ -1,0 +1,16 @@
+{
+  "display": {
+    "icon": { "item": "webdisplays:laserpointer" },
+    "title": { "translate": "advancements.webdisplays.laser.title" },
+    "description": { "translate": "advancements.webdisplays.laser.description" }
+  },
+  "parent": "webdisplays:webdisplays/pad_break",
+  "criteria": {
+    "has_laser": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [ { "item": "webdisplays:laserpointer" } ]
+      }
+    }
+  }
+}

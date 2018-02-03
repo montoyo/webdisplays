@@ -7,11 +7,8 @@ package net.montoyo.wd.item;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.core.DefaultUpgrade;
@@ -23,13 +20,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemUpgrade extends Item implements IUpgrade {
+public class ItemUpgrade extends ItemMulti implements IUpgrade {
 
     public ItemUpgrade() {
+        super(DefaultUpgrade.class);
         setUnlocalizedName("webdisplays.upgrade");
         setRegistryName("upgrade");
-        setHasSubtypes(true);
-        setMaxDamage(0);
         setCreativeTab(WebDisplays.CREATIVE_TAB);
     }
 
@@ -51,31 +47,8 @@ public class ItemUpgrade extends Item implements IUpgrade {
     }
 
     @Override
-    @Nonnull
-    public String getUnlocalizedName(ItemStack stack) {
-        int meta = stack.getMetadata();
-        DefaultUpgrade[] names = DefaultUpgrade.values();
-        String ret = getUnlocalizedName();
-
-        if(meta >= 0 && meta < names.length)
-            return ret + '.' + names[meta].getName();
-        else
-            return ret;
-    }
-
-    @Override
     public void addInformation(ItemStack is, @Nullable World world, List<String> tt, ITooltipFlag ttFlags) {
         tt.add("" + ChatFormatting.ITALIC + I18n.format("item.webdisplays.upgrade.name"));
-    }
-
-    @Override
-    public void getSubItems(@Nonnull CreativeTabs tab, @Nonnull NonNullList<ItemStack> items) {
-        if(isInCreativeTab(tab)) {
-            int cnt = DefaultUpgrade.values().length;
-
-            for(int i = 0; i < cnt; i++)
-                items.add(new ItemStack(this, 1, i));
-        }
     }
 
     @Override
@@ -86,7 +59,7 @@ public class ItemUpgrade extends Item implements IUpgrade {
         if(meta < 0 || meta >= upgrades.length)
             return "webdisplays:wtf";
         else
-            return "webdisplays:" + upgrades[meta].getName();
+            return "webdisplays:" + upgrades[meta];
     }
 
 }

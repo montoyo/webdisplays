@@ -1,6 +1,6 @@
 {
   "display": {
-    "icon": { "item": "webdisplays:screen" },
+    "icon": { "item": "webdisplays:advicon", "data": 0 },
     "title": { "translate": "advancements.webdisplays.root.title" },
     "description": { "translate": "advancements.webdisplays.root.description" },
     "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",

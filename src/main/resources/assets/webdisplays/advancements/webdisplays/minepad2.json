@@ -1,0 +1,16 @@
+{
+  "display": {
+    "icon": { "item": "webdisplays:advicon", "data": 2 },
+    "title": { "translate": "advancements.webdisplays.minepad2.title" },
+    "description": { "translate": "advancements.webdisplays.minepad2.description" }
+  },
+  "parent": "webdisplays:webdisplays/minepad",
+  "criteria": {
+    "has_minepad2": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [ { "item": "webdisplays:minepad", "data": 1 } ]
+      }
+    }
+  }
+}
