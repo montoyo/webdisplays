@@ -240,10 +240,35 @@ public class BlockScreen extends WDBlockContainer {
             if(side != BlockSide.BOTTOM)
                 cy = 1.f - cy;
 
+            switch(scr.rotation) {
+                case ROT_90:
+                    cy = 1.0f - cy;
+                    break;
+
+                case ROT_180:
+                    cx = 1.0f - cx;
+                    cy = 1.0f - cy;
+                    break;
+
+                case ROT_270:
+                    cx = 1.0f - cx;
+                    break;
+
+                default:
+                    break;
+            }
+
             cx *= (float) scr.resolution.x;
             cy *= (float) scr.resolution.y;
-            dst.x = (int) cx;
-            dst.y = (int) cy;
+
+            if(scr.rotation.isVertical) {
+                dst.x = (int) cy;
+                dst.y = (int) cx;
+            } else {
+                dst.x = (int) cx;
+                dst.y = (int) cy;
+            }
+
             return true;
         }
 

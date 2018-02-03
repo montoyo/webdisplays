@@ -7,7 +7,6 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * Read config (see "Config elements" below)
 
 ### TODO
-* Top/bottom screen orientation
 * GuiSetURL2 missing buttons
 * Automatically add protocol to URLs
 * Using the remote control tool too far away (with a chunk loader ofc) may trigger distance guard in SMessageScreenCtrl

@@ -4,6 +4,7 @@
 
 package net.montoyo.wd.item;
 
+import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -31,6 +32,7 @@ import net.montoyo.wd.utilities.Multiblock;
 import net.montoyo.wd.utilities.Util;
 import net.montoyo.wd.utilities.Vector3i;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
@@ -44,17 +46,15 @@ public class ItemLinker extends Item {
     }
 
     @Override
+    @Nonnull
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos_, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if(player.isSneaking())
-            return EnumActionResult.PASS;
-
         if(world.isRemote)
             return EnumActionResult.SUCCESS;
 
         ItemStack stack = player.getHeldItem(hand);
-        if(stack.hasTagCompound()) {
-            NBTTagCompound tag = stack.getTagCompound();
+        NBTTagCompound tag = stack.getTagCompound();
 
+        if(tag != null) {
             if(tag.hasKey("ScreenX") && tag.hasKey("ScreenY") && tag.hasKey("ScreenZ") && tag.hasKey("ScreenSide")) {
                 IBlockState state = world.getBlockState(pos_);
                 IPeripheral target;
@@ -64,7 +64,12 @@ public class ItemLinker extends Item {
                 else {
                     TileEntity te = world.getTileEntity(pos_);
                     if(te == null || !(te instanceof IPeripheral)) {
-                        Util.toast(player, "peripheral");
+                        if(player.isSneaking()) {
+                            Util.toast(player, TextFormatting.GOLD, "linkAbort");
+                            stack.setTagCompound(null);
+                        } else
+                            Util.toast(player, "peripheral");
+
                         return EnumActionResult.SUCCESS;
                     }
 
@@ -108,7 +113,7 @@ public class ItemLinker extends Item {
         else if((scr.rightsFor(player) & ScreenRights.MANAGE_UPGRADES) == 0)
             Util.toast(player, "restrictions");
         else {
-            NBTTagCompound tag = new NBTTagCompound();
+            tag = new NBTTagCompound();
             tag.setInteger("ScreenX", pos.x);
             tag.setInteger("ScreenY", pos.y);
             tag.setInteger("ScreenZ", pos.z);
@@ -124,13 +129,17 @@ public class ItemLinker extends Item {
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tt, ITooltipFlag ttFlag) {
-        if(stack.hasTagCompound()) {
-            NBTTagCompound tag = stack.getTagCompound();
+        NBTTagCompound tag = stack.getTagCompound();
 
+        if(tag != null) {
             if(tag.hasKey("ScreenX") && tag.hasKey("ScreenY") && tag.hasKey("ScreenZ") && tag.hasKey("ScreenSide")) {
+                BlockSide side = BlockSide.fromInt(tag.getByte("ScreenSide"));
+                if(side == null)
+                    side = BlockSide.BOTTOM;
+
                 tt.add(I18n.format("webdisplays.linker.selectPeripheral"));
                 tt.add(I18n.format("webdisplays.linker.posInfo", tag.getInteger("ScreenX"), tag.getInteger("ScreenY"), tag.getInteger("ScreenZ")));
-                tt.add(I18n.format("webdisplays.linker.sideInfo", BlockSide.values()[tag.getByte("ScreenSide")].toString()));
+                tt.add(I18n.format("webdisplays.linker.sideInfo", I18n.format("webdisplays.side." + side.toString().toLowerCase())));
                 return;
             }
         }
