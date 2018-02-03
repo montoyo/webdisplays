@@ -10,6 +10,7 @@ import net.montoyo.wd.client.gui.controls.Button;
 import net.montoyo.wd.client.gui.controls.TextField;
 import net.montoyo.wd.client.gui.loading.FillControl;
 import net.montoyo.wd.net.SMessageRedstoneCtrl;
+import net.montoyo.wd.utilities.Util;
 import net.montoyo.wd.utilities.Vector3i;
 
 public class GuiRedstoneCtrl extends WDScreen {
@@ -48,8 +49,11 @@ public class GuiRedstoneCtrl extends WDScreen {
 
     @GuiSubscribe
     public void onClick(Button.ClickEvent ev) {
-        if(ev.getSource() == btnOk)
-            WebDisplays.NET_HANDLER.sendToServer(new SMessageRedstoneCtrl(dimension, pos, tfRisingEdge.getText(), tfFallingEdge.getText()));
+        if(ev.getSource() == btnOk) {
+            String rising = Util.addProtocol(tfRisingEdge.getText());
+            String falling = Util.addProtocol(tfFallingEdge.getText());
+            WebDisplays.NET_HANDLER.sendToServer(new SMessageRedstoneCtrl(dimension, pos, rising, falling));
+        }
 
         mc.displayGuiScreen(null);
     }

@@ -12,11 +12,11 @@ import java.io.IOException;
 
 public class Button extends Control {
 
-    private final GuiButton btn;
-    private boolean selected = false;
-    private boolean shiftDown = false;
-    private int originalColor = 0;
-    private int shiftColor = 0;
+    protected final GuiButton btn;
+    protected boolean selected = false;
+    protected boolean shiftDown = false;
+    protected int originalColor = 0;
+    protected int shiftColor = 0;
 
     public static class ClickEvent extends Event<Button> {
 
@@ -50,7 +50,9 @@ public class Button extends Control {
         if(mouseButton == 0 && btn.mousePressed(mc, mouseX, mouseY)) {
             selected = true;
             btn.playPressSound(mc.getSoundHandler());
-            parent.actionPerformed(new ClickEvent(this));
+
+            if(!onClick())
+                parent.actionPerformed(new ClickEvent(this));
         }
     }
 
@@ -187,13 +189,17 @@ public class Button extends Control {
         btn.x = json.getInt("x", 0);
         btn.y = json.getInt("y", 0);
         btn.width = json.getInt("width", 200);
-        btn.displayString = tr(json.getString("label", ""));
-        btn.enabled = !json.getBool("disabled", false);
-        btn.visible = json.getBool("visible", true);
+        btn.displayString = tr(json.getString("label", btn.displayString));
+        btn.enabled = !json.getBool("disabled", !btn.enabled);
+        btn.visible = json.getBool("visible", btn.visible);
 
-        originalColor = json.getColor("color", 0);
-        shiftColor = json.getColor("shiftColor", 0);
+        originalColor = json.getColor("color", originalColor);
+        shiftColor = json.getColor("shiftColor", shiftColor);
         btn.packedFGColour = originalColor;
+    }
+
+    protected boolean onClick() {
+        return false;
     }
 
 }

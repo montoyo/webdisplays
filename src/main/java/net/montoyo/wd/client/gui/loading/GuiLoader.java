@@ -43,6 +43,7 @@ public class GuiLoader {
         register(TextField.class);
         register(Icon.class);
         register(UpgradeGroup.class);
+        register(YTButton.class);
     }
 
     public static Control create(JsonOWrapper json) {

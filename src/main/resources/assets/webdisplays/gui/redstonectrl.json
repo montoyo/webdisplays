@@ -15,7 +15,15 @@
       "name": "tfRisingEdge",
       "x": 20,
       "y": 0,
-      "width": 280
+      "width": 280,
+      "maxLength": 65535
+    },
+    {
+      "type": "YTButton",
+      "x": 305,
+      "y": 0,
+      "width": 20,
+      "urlField": "tfRisingEdge"
     },
     {
       "type": "Icon",
@@ -32,7 +40,15 @@
       "name": "tfFallingEdge",
       "x": 20,
       "y": 24,
-      "width": 280
+      "width": 280,
+      "maxLength": 65535
+    },
+    {
+      "type": "YTButton",
+      "x": 305,
+      "y": 24,
+      "width": 20,
+      "urlField": "tfFallingEdge"
     },
     {
       "type": "Button",

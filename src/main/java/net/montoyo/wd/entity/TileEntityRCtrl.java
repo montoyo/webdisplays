@@ -36,7 +36,7 @@ public class TileEntityRCtrl extends TileEntityPeripheralBase {
             return true;
         }
 
-        (new SetURLData(screenPos, screenSide, scr.url)).sendTo((EntityPlayerMP) player);
+        (new SetURLData(screenPos, screenSide, scr.url, pos)).sendTo((EntityPlayerMP) player);
         return true;
     }
 

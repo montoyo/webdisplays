@@ -6,6 +6,7 @@ package net.montoyo.wd.data;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -20,6 +21,8 @@ public class SetURLData extends GuiData {
     public Vector3i pos;
     public BlockSide side;
     public String url;
+    public boolean isRemote;
+    public Vector3i remoteLocation;
 
     public SetURLData() {
     }
@@ -28,6 +31,16 @@ public class SetURLData extends GuiData {
         this.pos = pos;
         this.side = side;
         this.url = url;
+        isRemote = false;
+        remoteLocation = new Vector3i();
+    }
+
+    public SetURLData(Vector3i pos, BlockSide side, String url, BlockPos rl) {
+        this.pos = pos;
+        this.side = side;
+        this.url = url;
+        isRemote = true;
+        remoteLocation = new Vector3i(rl);
     }
 
     @SideOnly(Side.CLIENT)
@@ -39,7 +52,7 @@ public class SetURLData extends GuiData {
             return null;
         }
 
-        return new GuiSetURL2((TileEntityScreen) te, side, url);
+        return new GuiSetURL2((TileEntityScreen) te, side, url, isRemote ? remoteLocation : null);
     }
 
     @Override

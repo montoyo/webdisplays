@@ -9,6 +9,7 @@ import net.montoyo.wd.client.gui.loading.JsonOWrapper;
 import org.lwjgl.input.Keyboard;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class TextField extends Control {
 
@@ -75,6 +76,12 @@ public class TextField extends Control {
 
     }
 
+    public interface TextChangeListener {
+
+        void onTextChange(TextField tf, String oldContent, String newContent);
+
+    }
+
     public static final int DEFAULT_TEXT_COLOR = 14737632;
     public static final int DEFAULT_DISABLED_COLOR = 7368816;
 
@@ -82,6 +89,7 @@ public class TextField extends Control {
     private boolean enabled = true;
     private int textColor = DEFAULT_TEXT_COLOR;
     private int disabledColor = DEFAULT_DISABLED_COLOR;
+    private ArrayList<TextChangeListener> listeners = new ArrayList<>();
 
     public TextField() {
         field = new GuiTextField(0, font, 1, 1, 198, 20);
@@ -111,8 +119,12 @@ public class TextField extends Control {
 
             field.textboxKeyTyped(typedChar, keyCode);
 
-            if(enabled && field.isFocused() && !field.getText().equals(old))
+            if(enabled && field.isFocused() && !field.getText().equals(old)) {
+                for(TextChangeListener tcl : listeners)
+                    tcl.onTextChange(this, old, field.getText());
+
                 parent.actionPerformed(new TextChangedEvent(this, old));
+            }
         }
     }
 
@@ -127,7 +139,13 @@ public class TextField extends Control {
     }
 
     public void setText(String text) {
+        String old = field.getText();
         field.setText(text);
+
+        if(!old.equals(text)) {
+            for(TextChangeListener tcl : listeners)
+                tcl.onTextChange(this, old, text);
+        }
     }
 
     public void clear() {
@@ -256,6 +274,15 @@ public class TextField extends Control {
 
     public GuiTextField getMcField() {
         return field;
+    }
+
+    public void addTextChangeListener(TextChangeListener l) {
+        if(l != null && !listeners.contains(l))
+            listeners.add(l);
+    }
+
+    public void removeTextChangeListener(TextChangeListener l) {
+        listeners.remove(l);
     }
 
     @Override

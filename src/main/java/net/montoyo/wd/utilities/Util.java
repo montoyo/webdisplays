@@ -38,12 +38,12 @@ public abstract class Util {
             Object[] ray = (Object[]) f;
 
             bb.writeInt(ray.length);
-            for(Object o: ray)
+            for(Object o : ray)
                 serialize(bb, o);
         } else if(!cls.isPrimitive()) {
             Field[] fields = cls.getFields();
 
-            for(Field ff: fields) {
+            for(Field ff : fields) {
                 try {
                     if(ff.getAnnotation(DontSerialize.class) == null && !Modifier.isStatic(ff.getModifiers()))
                         serialize(bb, ff.get(f));
@@ -92,7 +92,7 @@ public abstract class Util {
                 throw new RuntimeException(String.format("Caught IllegalAccessException for class %s", cls.getName()));
             }
 
-            for(Field ff: fields) {
+            for(Field ff : fields) {
                 try {
                     if(ff.getAnnotation(DontSerialize.class) == null && !Modifier.isStatic(ff.getModifiers()))
                         ff.set(ret, unserialize(bb, ff.getType()));
@@ -123,7 +123,7 @@ public abstract class Util {
             Object[] ray = (Object[]) f;
             NBTTagList ret = new NBTTagList();
 
-            for(Object o: ray)
+            for(Object o : ray)
                 ret.appendTag(serialize(o));
 
             return ret;
@@ -197,17 +197,16 @@ public abstract class Util {
         return out;
     }
 
-    public static int scrambleKey(int idx)
-    {
+    public static int scrambleKey(int idx) {
         idx = idx * 0x9E3779B9;
         return idx ^ (idx >> 16);
     }
 
-    public static void toast(EntityPlayer player, String key, Object ... data) {
+    public static void toast(EntityPlayer player, String key, Object... data) {
         toast(player, TextFormatting.RED, key, data);
     }
 
-    public static void toast(EntityPlayer player, TextFormatting color, String key, Object ... data) {
+    public static void toast(EntityPlayer player, TextFormatting color, String key, Object... data) {
         ITextComponent root = new TextComponentString("[WebDisplays] ");
         root.setStyle((new Style()).setColor(color));
         root.appendSibling(new TextComponentTranslation("webdisplays.message." + key, data));
@@ -219,6 +218,10 @@ public abstract class Util {
         try {
             obj.getClass().getMethod("close").invoke(obj);
         } catch(Throwable t) {}
+    }
+
+    public static String addProtocol(String str) {
+        return str.contains("://") ? str : ("http://" + str);
     }
 
 }

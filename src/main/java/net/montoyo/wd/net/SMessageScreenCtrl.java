@@ -5,6 +5,8 @@
 package net.montoyo.wd.net;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -16,6 +18,9 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
+import net.montoyo.wd.WebDisplays;
+import net.montoyo.wd.block.BlockPeripheral;
+import net.montoyo.wd.core.DefaultPeripheral;
 import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.core.MissingPermissionException;
 import net.montoyo.wd.core.ScreenRights;
@@ -38,6 +43,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     public static final int CTRL_LASER_UP = 10;
     public static final int CTRL_JS_REQUEST = 11;
     public static final int CTRL_SET_ROTATION = 12;
+    public static final int CTRL_SET_URL_REMOTE = 13;
 
     private int ctrl;
     private int dim;
@@ -56,24 +62,23 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     private JSServerRequest jsReqType;
     private Object[] jsReqData;
     private Rotation rotation;
+    private Vector3i remoteLoc;
 
     public SMessageScreenCtrl() {
     }
 
-    public SMessageScreenCtrl(TileEntityScreen tes, BlockSide side, String url) {
-        ctrl = CTRL_SET_URL;
-        dim = tes.getWorld().provider.getDimension();
-        pos = new Vector3i(tes.getPos());
-        this.side = side;
-        this.url = url;
-    }
+    public static SMessageScreenCtrl setURL(TileEntityScreen tes, BlockSide side, String url, Vector3i remoteLocation) {
+        SMessageScreenCtrl ret = new SMessageScreenCtrl();
+        ret.ctrl = (remoteLocation == null) ? CTRL_SET_URL : CTRL_SET_URL_REMOTE;
+        ret.dim = tes.getWorld().provider.getDimension();
+        ret.pos = new Vector3i(tes.getPos());
+        ret.side = side;
+        ret.url = url;
 
-    public SMessageScreenCtrl(TileEntityScreen tes, BlockSide side) {
-        ctrl = CTRL_SHUT_DOWN;
-        dim = tes.getWorld().provider.getDimension();
-        pos = new Vector3i(tes.getPos());
-        this.side = side;
-        this.url = url;
+        if(remoteLocation != null)
+            ret.remoteLoc = remoteLocation;
+
+        return ret;
     }
 
     public SMessageScreenCtrl(TileEntityScreen tes, BlockSide side, NameUUIDPair friend, boolean del) {
@@ -195,6 +200,10 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
                 jsReqData = jsReqType.deserialize(buf);
         } else if(ctrl == CTRL_SET_ROTATION)
             rotation = Rotation.values()[buf.readByte() & 3];
+        else if(ctrl == CTRL_SET_URL_REMOTE) {
+            url = ByteBufUtils.readUTF8String(buf);
+            remoteLoc = new Vector3i(buf);
+        }
     }
 
     @Override
@@ -228,6 +237,10 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
                 throw new RuntimeException("Could not serialize CTRL_JS_REQUEST " + jsReqType);
         } else if(ctrl == CTRL_SET_ROTATION)
             buf.writeByte(rotation.ordinal());
+        else if(ctrl == CTRL_SET_URL_REMOTE) {
+            ByteBufUtils.writeUTF8String(buf, url);
+            remoteLoc.writeTo(buf);
+        }
     }
 
     @Override
@@ -254,8 +267,21 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         World world = player.world;
         BlockPos bp = pos.toBlock();
 
-        if(world.provider.getDimension() != dim || player.getDistanceSq(bp) > 512.0 * 512.0)
-            return; //Out of range
+        if(world.provider.getDimension() != dim)
+            return; //Out of range (dimension mismatch)
+
+        if(ctrl == CTRL_SET_URL_REMOTE) {
+            double reachDist = player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue();
+            BlockPos blockPos = remoteLoc.toBlock();
+
+            if(player.getDistanceSq(blockPos) > reachDist * reachDist)
+                return; //Out of range (player reach distance)
+
+            IBlockState bs = world.getBlockState(blockPos);
+            if(bs.getBlock() != WebDisplays.INSTANCE.blockPeripheral || bs.getValue(BlockPeripheral.type) != DefaultPeripheral.REMOTE_CONTROLLER)
+                return; //I call it hax...
+        } else if(player.getDistanceSq(bp) > 128.0 * 128.0)
+            return; //Out of range (range problem)
 
         TileEntity te = world.getTileEntity(bp);
         if(te == null || !(te instanceof TileEntityScreen)) {
@@ -265,12 +291,13 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
 
         TileEntityScreen tes = (TileEntityScreen) te;
 
-        if(ctrl == CTRL_SET_URL) {
+        if(ctrl == CTRL_SET_URL || ctrl == CTRL_SET_URL_REMOTE) {
             checkPermission(tes, ScreenRights.CHANGE_URL);
             tes.setScreenURL(side, url);
         } else if(ctrl == CTRL_SHUT_DOWN) {
-            checkPermission(tes, ScreenRights.CHANGE_URL);
-            tes.removeScreen(side);
+            //TODO
+            //checkPermission(tes, ScreenRights.CHANGE_URL);
+            //tes.removeScreen(side);
         } else if(ctrl == CTRL_ADD_FRIEND) {
             checkPermission(tes, ScreenRights.MANAGE_FRIEND_LIST);
             tes.addFriend(player, side, friend);

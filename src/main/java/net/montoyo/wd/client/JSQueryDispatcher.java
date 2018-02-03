@@ -19,10 +19,7 @@ import net.montoyo.wd.core.IUpgrade;
 import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.SMessageScreenCtrl;
-import net.montoyo.wd.utilities.BlockSide;
-import net.montoyo.wd.utilities.Log;
-import net.montoyo.wd.utilities.Vector2i;
-import net.montoyo.wd.utilities.Vector3i;
+import net.montoyo.wd.utilities.*;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -336,7 +333,7 @@ public final class JSQueryDispatcher {
                     sb.append(',');
 
                 sb.append('\"');
-                sb.append(((IUpgrade) upgrades.get(i).getItem()).getJSName(upgrades.get(i)));
+                sb.append(Util.addSlashes(((IUpgrade) upgrades.get(i).getItem()).getJSName(upgrades.get(i))));
                 sb.append('\"');
             }
 

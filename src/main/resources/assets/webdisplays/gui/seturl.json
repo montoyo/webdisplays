@@ -1,56 +1,53 @@
 {
-    "controls": [
-        {
-            "type": "Label",
-            "label": "$webdisplays.gui.seturl.url",
-            "x": 0,
-            "y": 0,
-            "shadowed": true
-        },
-        {
-            "type": "TextField",
-            "name": "tfURL",
-            "x": 0,
-            "y": 12,
-            "width": 272,
-            "maxLength": 65535
-        },
-        {
-            "type": "Button",
-            "name": "btnYT",
-            "label": "YT",
-            "x": 276,
-            "y": 13,
-            "width": 20,
-            "shiftColor": [ 255, 100, 100 ]
-        },
-        {
-            "type": "Button",
-            "name": "btnShutDown",
-            "label": "$webdisplays.gui.seturl.shutdown",
-            "x": 0,
-            "y": 38,
-            "width": 96,
-            "visible": "isPad",
-            "disabled": "1 - isPad"
-        },
-        {
-            "type": "Button",
-            "name": "btnCancel",
-            "label": "$webdisplays.gui.seturl.cancel",
-            "x": "isPad & 100 | 0",
-            "y": 38,
-            "width": "isPad & 96 | 146"
-        },
-        {
-            "type": "Button",
-            "name": "btnOk",
-            "label": "$webdisplays.gui.seturl.ok",
-            "x": "isPad & 200 | 150",
-            "y": 38,
-            "width": "isPad & 96 | 146"
-        }
-    ],
-
-    "center": true
+  "controls": [
+    {
+      "type": "Label",
+      "label": "$webdisplays.gui.seturl.url",
+      "x": 0,
+      "y": 0,
+      "shadowed": true
+    },
+    {
+      "type": "TextField",
+      "name": "tfURL",
+      "x": 0,
+      "y": 12,
+      "width": 272,
+      "maxLength": 65535
+    },
+    {
+      "type": "YTButton",
+      "x": 276,
+      "y": 13,
+      "width": 20,
+      "urlField": "tfURL"
+    },
+    {
+      "type": "Button",
+      "name": "btnShutDown",
+      "label": "$webdisplays.gui.seturl.shutdown",
+      "x": 0,
+      "y": 38,
+      "width": 96,
+      "visible": "isPad",
+      "disabled": "1 - isPad"
+    },
+    {
+      "type": "Button",
+      "name": "btnCancel",
+      "label": "$webdisplays.gui.seturl.cancel",
+      "x": "isPad & 100 | 0",
+      "y": 38,
+      "width": "isPad & 96 | 146"
+    },
+    {
+      "type": "Button",
+      "name": "btnOk",
+      "label": "$webdisplays.gui.seturl.ok",
+      "x": "isPad & 200 | 150",
+      "y": 38,
+      "width": "isPad & 96 | 146"
+    }
+  ],
+  "center": true
 }

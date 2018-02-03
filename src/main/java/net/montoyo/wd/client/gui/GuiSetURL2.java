@@ -13,7 +13,8 @@ import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.SMessagePadCtrl;
 import net.montoyo.wd.net.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.BlockSide;
-import net.montoyo.wd.utilities.Log;
+import net.montoyo.wd.utilities.Util;
+import net.montoyo.wd.utilities.Vector3i;
 
 import java.util.Map;
 
@@ -22,6 +23,7 @@ public class GuiSetURL2 extends WDScreen {
     //Screen data
     private TileEntityScreen tileEntity;
     private BlockSide screenSide;
+    private Vector3i remoteLocation;
 
     //Pad data
     private boolean isPad;
@@ -41,19 +43,17 @@ public class GuiSetURL2 extends WDScreen {
     @FillControl
     private Button btnOk;
 
-    @FillControl
-    private Button btnYT;
-
-    public GuiSetURL2(TileEntityScreen tes, BlockSide side, String url) {
+    public GuiSetURL2(TileEntityScreen tes, BlockSide side, String url, Vector3i rl) {
         tileEntity = tes;
         screenSide = side;
-        screenURL = url;
+        remoteLocation = rl;
         isPad = false;
+        screenURL = url;
     }
 
     public GuiSetURL2(String url) {
-        screenURL = url;
         isPad = true;
+        screenURL = url;
     }
 
     @Override
@@ -79,8 +79,7 @@ public class GuiSetURL2 extends WDScreen {
                 WebDisplays.NET_HANDLER.sendToServer(new SMessagePadCtrl(""));
 
             mc.displayGuiScreen(null);
-        } else
-            Log.info("GuiSetURL2: TODO"); //TODO
+        }
     }
 
     @GuiSubscribe
@@ -90,10 +89,12 @@ public class GuiSetURL2 extends WDScreen {
 
     private void validate(String url) {
         if(!url.isEmpty()) {
+            url = Util.addProtocol(url);
+
             if(isPad)
                 WebDisplays.NET_HANDLER.sendToServer(new SMessagePadCtrl(url));
             else
-                WebDisplays.NET_HANDLER.sendToServer(new SMessageScreenCtrl(tileEntity, screenSide, url));
+                WebDisplays.NET_HANDLER.sendToServer(SMessageScreenCtrl.setURL(tileEntity, screenSide, url, remoteLocation));
         }
 
         mc.displayGuiScreen(null);
