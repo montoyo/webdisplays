@@ -16,6 +16,7 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * minePad management: check GuiContainer.draggedStack for minePad
 * Change mod name to WD2
 * Put a limit on screen resolution
+* YT button (also add it to the redstone controller gui)
 
 ### Config elements
 * Site blacklist
@@ -25,6 +26,7 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * Browser language
 * Screen load/unload distance (max distance = 60.0)
 * Disable ownership thief item
+* Disable hard recipes
 
 ### Delayed things
 * Plugin API

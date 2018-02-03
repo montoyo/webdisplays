@@ -84,7 +84,11 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     private MinePadRenderer minePadRenderer;
     private JSQueryDispatcher jsDispatcher;
     private LaserPointerRenderer laserPointerRenderer;
-    private Field advancementToProgress;
+
+    //Client-side advancement hack
+    private final Field advancementToProgressField = findAdvancementToProgressField();
+    private ClientAdvancementManager lastAdvMgr;
+    private Map advancementToProgress;
 
     //Laser pointer
     private TileEntityScreen pointedScreen;
@@ -214,29 +218,35 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     @Override
     @Nonnull
     public HasAdvancement hasClientPlayerAdvancement(@Nonnull ResourceLocation rl) {
-        if(advancementToProgress != null && mc.player != null && mc.player.connection != null) {
+        if(advancementToProgressField != null && mc.player != null && mc.player.connection != null) {
             ClientAdvancementManager cam = mc.player.connection.getAdvancementManager();
             Advancement adv = cam.getAdvancementList().getAdvancement(rl);
-            Map map;
 
             if(adv == null)
                 return HasAdvancement.DONT_KNOW;
 
-            try {
-                map = (Map) advancementToProgress.get(cam);
-            } catch(Throwable t) {
-                t.printStackTrace();
-                advancementToProgress = null;
-                return HasAdvancement.DONT_KNOW;
+            if(lastAdvMgr != cam) {
+                lastAdvMgr = cam;
+
+                try {
+                    advancementToProgress = (Map) advancementToProgressField.get(cam);
+                } catch(Throwable t) {
+                    Log.warningEx("Could not get ClientAdvancementManager.advancementToProgress field", t);
+                    advancementToProgress = null;
+                    return HasAdvancement.DONT_KNOW;
+                }
             }
 
-            Object progress = map.get(adv);
+            if(advancementToProgress == null)
+                return HasAdvancement.DONT_KNOW;
+
+            Object progress = advancementToProgress.get(adv);
             if(progress == null)
                 return HasAdvancement.NO;
 
             if(!(progress instanceof AdvancementProgress)) {
                 Log.warning("The ClientAdvancementManager.advancementToProgress map does not contain AdvancementProgress instances");
-                advancementToProgress = null; //It's wrong
+                advancementToProgress = null; //Invalidate this: it's wrong
                 return HasAdvancement.DONT_KNOW;
             }
 
@@ -633,20 +643,22 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         return false;
     }
 
-    private void findAdvancementToProgressField() {
+    private static Field findAdvancementToProgressField() {
         Field[] fields = ClientAdvancementManager.class.getDeclaredFields();
+        Optional<Field> result = Arrays.stream(fields).filter(f -> f.getType() == Map.class).findAny();
 
-        Arrays.stream(fields).filter(f -> f.getType() == Map.class).findAny().ifPresent(f -> {
+        if(result.isPresent()) {
             try {
-                f.setAccessible(true);
-                advancementToProgress = f;
+                Field ret = result.get();
+                ret.setAccessible(true);
+                return ret;
             } catch(Throwable t) {
                 t.printStackTrace();
             }
-        });
+        }
 
-        if(advancementToProgress == null)
-            Log.warning("ClientAdvancementManager.advancementToProgress field could not be found");
+        Log.warning("ClientAdvancementManager.advancementToProgress field could not be found");
+        return null;
     }
 
 }
