@@ -11,6 +11,7 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * minePad management: check GuiContainer.draggedStack for minePad
 * Change mod name to WD2
 * Put a limit on screen resolution
+* Auto-find rotation for BOTTOM & TOP screens
 
 ### Config elements
 * Site blacklist
