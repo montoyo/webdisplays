@@ -6,6 +6,7 @@ package net.montoyo.wd.miniserv;
 
 public enum PacketID {
 
+    AUTHENTICATE,       //C->S and S->C
     PING,               //C->S and S->C
     BEGIN_FILE_UPLOAD,  //C->S
     FILE_PART,          //C->S and S->C

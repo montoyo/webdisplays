@@ -11,7 +11,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
-public class Messages {
+public abstract class Messages {
 
     private static DefaultHandler DEFAULT_HANDLER = new DefaultHandler();
     private static Class<? extends IMessage>[] messages;
@@ -27,6 +27,8 @@ public class Messages {
         l.add(SMessagePadCtrl.class);
         l.add(SMessageRedstoneCtrl.class);
         l.add(CMessageJSResponse.class);
+        l.add(SMessageMiniservConnect.class);
+        l.add(CMessageMiniservKey.class);
 
         messages = l.toArray(new Class[0]);
     }

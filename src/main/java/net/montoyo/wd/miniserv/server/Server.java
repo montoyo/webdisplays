@@ -5,6 +5,7 @@
 package net.montoyo.wd.miniserv.server;
 
 import net.montoyo.wd.utilities.Log;
+import net.montoyo.wd.utilities.Util;
 
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -32,8 +33,8 @@ public class Server extends Thread {
     public void start() {
         try {
             server = ServerSocketChannel.open();
+            server.bind(new InetSocketAddress(port));
             server.configureBlocking(false);
-            server.socket().bind(new InetSocketAddress(port));
 
             selector = Selector.open();
             server.register(selector, SelectionKey.OP_ACCEPT);
@@ -81,7 +82,9 @@ public class Server extends Thread {
                     clientMap.put(chan, toAdd);
                     clientList.add(toAdd);
                 }
-            } else if(key.isReadable()) {
+            }
+
+            if(key.isReadable()) {
                 ServerClient cli = clientMap.get(key.channel());
 
                 if(cli == null)
@@ -103,7 +106,9 @@ public class Server extends Thread {
                         cli.setShouldRemove();
                     }
                 }
-            } else if(key.isWritable()) {
+            }
+
+            if(key.isWritable()) {
                 ServerClient cli = clientMap.get(key.channel());
 
                 if(cli == null)
@@ -130,10 +135,7 @@ public class Server extends Thread {
     private void removeClient(ServerClient cli) {
         clientMap.remove(cli.getChannel());
         clientList.remove(cli);
-
-        try {
-            cli.getChannel().close();
-        } catch(Throwable t) {}
+        Util.silentClose(cli.getChannel());
     }
 
 }
