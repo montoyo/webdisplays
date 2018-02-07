@@ -53,4 +53,10 @@ public final class PacketWriter {
         needToWriteSize = true;
     }
 
+    public final void clear() {
+        packet = null;
+        pos = 0;
+        needToWriteSize = true;
+    }
+
 }

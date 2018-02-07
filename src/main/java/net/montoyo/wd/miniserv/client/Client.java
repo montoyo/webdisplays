@@ -4,6 +4,7 @@
 
 package net.montoyo.wd.miniserv.client;
 
+import net.minecraft.client.Minecraft;
 import net.montoyo.wd.miniserv.*;
 import net.montoyo.wd.net.SMessageMiniservConnect;
 import net.montoyo.wd.utilities.Log;
@@ -20,6 +21,8 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.security.*;
 import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayDeque;
+import java.util.UUID;
 
 public class Client extends AbstractClient implements Runnable {
 
@@ -36,10 +39,14 @@ public class Client extends AbstractClient implements Runnable {
     private KeyPair keyPair;
     private byte[] key;
     private SocketAddress address;
-    private boolean running = true;
+    private volatile boolean running;
+    private volatile boolean connected;
     private final ByteBuffer readBuffer = ByteBuffer.allocateDirect(8192);
-    private final Thread thread = new Thread(this);
-    private boolean authenticated = false;
+    private volatile Thread thread;
+    private final UUID clientUUID = Minecraft.getMinecraft().player.getGameProfile().getId();
+    private final ArrayDeque<ClientTask> tasks = new ArrayDeque<>();
+    private ClientTask currentTask;
+    private volatile boolean authenticated;
 
     public SMessageMiniservConnect beginConnection() {
         if(keyPair == null) {
@@ -74,7 +81,7 @@ public class Client extends AbstractClient implements Runnable {
         return false;
     }
 
-    public byte[] authenticate(byte[] challenge) {
+    private byte[] authenticate(byte[] challenge) {
         try {
             Mac mac = Mac.getInstance(KeyParameters.MAC_ALGORITHM);
             mac.init(new SecretKeySpec(key, KeyParameters.MAC_ALGORITHM));
@@ -89,25 +96,85 @@ public class Client extends AbstractClient implements Runnable {
     }
 
     public void start(SocketAddress addr) {
+        if(getRunning()) {
+            Log.warning("Called Client.start() twice");
+            return;
+        }
+
         address = addr;
+        thread = new Thread(this);
+        thread.setName("MiniServClient");
+        thread.setDaemon(true);
+
+        synchronized(this) {
+            running = true;
+            connected = false;
+        }
+
         thread.start();
+    }
+
+    public void stop() {
+        if(getRunning()) {
+            Thread thread = this.thread;
+            synchronized(this) {
+                running = false;
+
+                if(connected)
+                    selector.wakeup();
+            }
+
+            while(thread.isAlive()) {
+                try {
+                    thread.join();
+                } catch(InterruptedException ex) { }
+            }
+
+            Log.info("Miniserv client stopped");
+        }
+    }
+
+    private boolean getRunning() {
+        boolean ret;
+        synchronized(this) {
+            ret = running;
+        }
+
+        return ret;
     }
 
     @Override
     public void run() {
         try {
+            selector = Selector.open();
             socket = SocketChannel.open();
             socket.connect(address);
             socket.configureBlocking(false);
 
-            selector = Selector.open();
-            socket.register(selector, SelectionKey.OP_READ);
+            selKey = socket.register(selector, SelectionKey.OP_READ);
         } catch(IOException ex) {
             Log.errorEx("Couldn't start client", ex);
+
+            synchronized(this) {
+                running = false;
+            }
+
             return;
         }
 
-        while(running) {
+        synchronized(this) {
+            connected = true;
+        }
+
+        Log.info("Miniserv client connected!");
+
+        OutgoingPacket connPacket = new OutgoingPacket();
+        connPacket.writeByte(PacketID.INIT_CONN.ordinal());
+        connPacket.writeLong(clientUUID.getMostSignificantBits());
+        connPacket.writeLong(clientUUID.getLeastSignificantBits());
+        sendPacket(connPacket);
+
+        while(getRunning()) {
             try {
                 unsafeLoop();
             } catch(Throwable t) {
@@ -116,22 +183,51 @@ public class Client extends AbstractClient implements Runnable {
             }
         }
 
-        Util.silentClose(socket);
+        synchronized(this) {
+            connected = false;
+            running = false;
+            authenticated = false;
+        }
+
         Util.silentClose(selector);
+        Util.silentClose(socket);
+        selector = null;
+        socket = null;
+
+        if(currentTask != null) {
+            currentTask.abort();
+            currentTask.onFinished();
+            currentTask = null;
+        }
+
+        synchronized(tasks) {
+            ClientTask task;
+
+            while((task = tasks.poll()) != null) {
+                task.abort();
+                task.onFinished();
+            }
+        }
+
+        clearSendQueue();
+        thread = null;
     }
 
     private void unsafeLoop() throws Throwable {
         selector.select();
+
+        if(currentTask == null)
+            nextTask();
 
         for(SelectionKey key: selector.selectedKeys()) {
             if(key.isReadable()) {
                 readBuffer.clear();
                 int rd = socket.read(readBuffer);
 
-                if(rd <= 0) {
+                if(rd < 0) {
                     Log.warning("Connection was closed, stopping...");
                     running = false;
-                } else {
+                } else if(rd > 0) {
                     readBuffer.position(0);
                     readBuffer.limit(rd);
                     readyRead(readBuffer);
@@ -156,8 +252,78 @@ public class Client extends AbstractClient implements Runnable {
     }
 
     @PacketHandler(PacketID.AUTHENTICATE)
-    public void handleAuth(DataInputStream dis) {
-        //TODO: Do some stuff
+    public void handleAuth(DataInputStream dis) throws IOException {
+        int len = dis.readByte();
+        byte[] challenge = new byte[len];
+        dis.readFully(challenge);
+        byte[] mac = authenticate(challenge);
+
+        OutgoingPacket pkt = new OutgoingPacket();
+        pkt.writeByte(PacketID.AUTHENTICATE.ordinal());
+        pkt.writeByte(mac.length);
+        pkt.writeBytes(mac);
+        sendPacket(pkt);
+
+        Log.info("Miniserv client authenticated");
+
+        synchronized(this) {
+            authenticated = true;
+        }
+    }
+
+    @PacketHandler(PacketID.BEGIN_FILE_UPLOAD)
+    public void handleBeginUpload(DataInputStream dis) throws IOException {
+        if(currentTask instanceof ClientTaskUploadFile)
+            ((ClientTaskUploadFile) currentTask).onReceivedUploadStatus(dis.readByte());
+    }
+
+    @PacketHandler(PacketID.FILE_STATUS)
+    public void handleFileStatus(DataInputStream dis) throws IOException {
+        if(currentTask instanceof ClientTaskUploadFile)
+            ((ClientTaskUploadFile) currentTask).onUploadFinishedStatus(dis.readByte());
+    }
+
+    @PacketHandler(PacketID.GET_FILE)
+    public void handleGetFile(DataInputStream dis) throws IOException {
+        if(currentTask instanceof ClientTaskGetFile)
+            ((ClientTaskGetFile) currentTask).onGetFileResponse(dis.readByte());
+    }
+
+    @PacketHandler(PacketID.FILE_PART)
+    public void handleFilePart(DataInputStream dis) throws IOException {
+        if(currentTask instanceof ClientTaskGetFile) {
+            int len = dis.readShort() & 0xFFFF;
+            ((ClientTaskGetFile) currentTask).onData(getCurrentPacketRawData(), len);
+        }
+    }
+
+    public void nextTask() {
+        if(currentTask != null)
+            currentTask.onFinished();
+
+        synchronized(tasks) {
+            currentTask = tasks.poll();
+        }
+
+        if(currentTask != null)
+            currentTask.start();
+    }
+
+    public boolean addTask(ClientTask task) {
+        boolean cancel;
+        synchronized(this) {
+            cancel = !running || !authenticated;
+        }
+
+        if(cancel)
+            return false;
+
+        synchronized(tasks) {
+            tasks.offer(task);
+        }
+
+        selector.wakeup();
+        return true;
     }
 
 }

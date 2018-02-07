@@ -9,6 +9,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
+import net.montoyo.wd.miniserv.server.ClientManager;
+import net.montoyo.wd.miniserv.server.Server;
 
 @Message(messageId = 10, side = Side.SERVER)
 public class SMessageMiniservConnect implements IMessage {
@@ -26,29 +28,31 @@ public class SMessageMiniservConnect implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        int sz = buf.readByte() & 0xFF;
+        int sz = buf.readShort() & 0xFFFF;
         modulus = new byte[sz];
         buf.readBytes(modulus);
 
-        sz = buf.readByte() & 0xFF;
+        sz = buf.readShort() & 0xFFFF;
         exponent = new byte[sz];
         buf.readBytes(exponent);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        buf.writeByte(modulus.length);
+        buf.writeShort(modulus.length);
         buf.writeBytes(modulus);
-        buf.writeByte(exponent.length);
+        buf.writeShort(exponent.length);
         buf.writeBytes(exponent);
     }
 
     public static class Handler implements IMessageHandler<SMessageMiniservConnect, IMessage> {
 
         @Override
-        public IMessage onMessage(SMessageMiniservConnect message, MessageContext ctx) {
-            //TODO: Generate key
-            return null;
+        public IMessage onMessage(SMessageMiniservConnect msg, MessageContext ctx) {
+            ClientManager cliMgr = Server.getInstance().getClientManager();
+            byte[] encKey = cliMgr.encryptClientKey(ctx.getServerHandler().player.getGameProfile().getId(), msg.modulus, msg.exponent);
+
+            return encKey == null ? null : new CMessageMiniservKey(encKey);
         }
 
     }

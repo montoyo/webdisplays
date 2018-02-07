@@ -52,12 +52,15 @@ import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.item.ItemMulti;
+import net.montoyo.wd.miniserv.client.Client;
 import net.montoyo.wd.net.SMessagePadCtrl;
 import net.montoyo.wd.net.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.*;
 
 public class ClientProxy extends SharedProxy implements IResourceManagerReloadListener, IDisplayHandler, IJSQueryHandler {
@@ -84,6 +87,8 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     private MinePadRenderer minePadRenderer;
     private JSQueryDispatcher jsDispatcher;
     private LaserPointerRenderer laserPointerRenderer;
+    private int miniservPort;
+    private boolean msClientStarted;
 
     //Client-side advancement hack
     private final Field advancementToProgressField = findAdvancementToProgressField();
@@ -293,6 +298,34 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
             Log.warning("Received error response for invalid query ID %d of type %s", reqId, type.toString());
         else
             q.error(errCode, err);
+    }
+
+    @Override
+    public void setMiniservClientPort(int port) {
+        miniservPort = port;
+    }
+
+    @Override
+    public void startMiniServClient() {
+        if(miniservPort <= 0) {
+            Log.warning("Can't start miniserv client: miniserv is disabled");
+            return;
+        }
+
+        if(mc.player == null) {
+            Log.warning("Can't start miniserv client: player is null");
+            return;
+        }
+
+        SocketAddress saddr = mc.player.connection.getNetworkManager().channel().remoteAddress();
+        if(saddr == null || !(saddr instanceof InetSocketAddress)) {
+            Log.warning("Miniserv client: remote address is not inet, assuming local address");
+            saddr = new InetSocketAddress("127.0.0.1", 1234);
+        }
+
+        InetSocketAddress msAddr = new InetSocketAddress(((InetSocketAddress) saddr).getAddress(), miniservPort);
+        Client.getInstance().start(msAddr);
+        msClientStarted = true;
     }
 
     /**************************************** RESOURCE MANAGER METHODS ****************************************/
@@ -507,6 +540,12 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
             //Handle JS queries
             jsDispatcher.handleQueries();
+
+            //Stop miniserv client
+            if(mc.player == null && msClientStarted) {
+                msClientStarted = false;
+                Client.getInstance().stop();
+            }
         }
     }
 

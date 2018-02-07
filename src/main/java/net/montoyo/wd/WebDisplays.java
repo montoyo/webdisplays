@@ -22,9 +22,7 @@ import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -36,6 +34,9 @@ import net.montoyo.wd.block.BlockScreen;
 import net.montoyo.wd.core.*;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.item.*;
+import net.montoyo.wd.miniserv.client.Client;
+import net.montoyo.wd.miniserv.server.Server;
+import net.montoyo.wd.net.CMessageServerInfo;
 import net.montoyo.wd.net.Messages;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
@@ -183,7 +184,8 @@ public class WebDisplays {
         if(ev.getWorld().isRemote || ev.getWorld().provider.getDimension() != 0)
             return;
 
-        File f = new File(ev.getWorld().getSaveHandler().getWorldDirectory(), "wd_next.txt");
+        File worldDir = ev.getWorld().getSaveHandler().getWorldDirectory();
+        File f = new File(worldDir, "wd_next.txt");
 
         if(f.exists()) {
             try {
@@ -203,6 +205,10 @@ public class WebDisplays {
                 Log.warningEx("Could not read last minePad ID from %s. I'm afraid this might break all minePads.", t, f.getAbsolutePath());
             }
         }
+
+        Server sv = Server.getInstance();
+        sv.setDirectory(new File(worldDir, "wd_filehost"));
+        sv.start(); //TODO: Configure port
     }
 
     @SubscribeEvent
@@ -252,6 +258,23 @@ public class WebDisplays {
                     ev.player.world.playSound(null, ev.player.posX, ev.player.posY, ev.player.posZ, SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.MASTER, 1.0f, 1.0f);
             }
         }
+    }
+
+    @Mod.EventHandler
+    public void onServerStop(FMLServerStoppingEvent ev) {
+        Server.getInstance().stopServer();
+    }
+
+    @SubscribeEvent
+    public void onLogIn(PlayerEvent.PlayerLoggedInEvent ev) {
+        if(!ev.player.world.isRemote && ev.player instanceof EntityPlayerMP)
+            WebDisplays.NET_HANDLER.sendTo(new CMessageServerInfo(25566), (EntityPlayerMP) ev.player); //TODO: Port config
+    }
+
+    @SubscribeEvent
+    public void onLogOut(PlayerEvent.PlayerLoggedOutEvent ev) {
+        if(!ev.player.world.isRemote)
+            Server.getInstance().getClientManager().revokeClientKey(ev.player.getGameProfile().getId());
     }
 
     private boolean hasPlayerAdvancement(EntityPlayerMP ply, ResourceLocation rl) {

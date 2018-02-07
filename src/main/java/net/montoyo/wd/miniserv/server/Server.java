@@ -17,7 +17,7 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Server extends Thread {
+public class Server implements Runnable {
 
     private static Server instance;
 
@@ -37,40 +37,97 @@ public class Server extends Thread {
     private final ClientManager clientMgr = new ClientManager();
     private File directory;
     private long maxQuota = 1024 * 1024; //1 MiB max
+    private volatile boolean running;
+    private volatile Thread thread;
 
-    public Server() {
-        setDaemon(true);
-    }
-
-    @Override
     public void start() {
+        thread = new Thread(this);
+        thread.setName("MiniServServer");
+        thread.setDaemon(true);
+
         try {
             server = ServerSocketChannel.open();
             server.bind(new InetSocketAddress(port));
             server.configureBlocking(false);
+        } catch(Throwable t) {
+            t.printStackTrace();
+            Util.silentClose(server);
+            server = null;
+            return;
+        }
 
+        try {
             selector = Selector.open();
             server.register(selector, SelectionKey.OP_ACCEPT);
         } catch(Throwable t) {
             t.printStackTrace();
+            Util.silentClose(selector);
+            Util.silentClose(server);
+            selector = null;
+            server = null;
             return;
         }
 
-        super.start();
+        synchronized(this) {
+            running = true;
+        }
+
+        thread.start();
+    }
+
+    public void stopServer() {
+        if(getRunning()) {
+            Thread thread = this.thread;
+
+            synchronized(this) {
+                running = false;
+                selector.wakeup();
+            }
+
+            while(thread.isAlive()) {
+                try {
+                    thread.join();
+                } catch(InterruptedException ex) { }
+            }
+
+            Log.info("Miniserv server stopped");
+        }
+    }
+
+    private boolean getRunning() {
+        boolean ret;
+        synchronized(this) {
+            ret = running;
+        }
+
+        return ret;
     }
 
     @Override
     public void run() {
-        boolean running = true;
-
-        while(running) {
+        while(getRunning()) {
             try {
                 loopUnsafe();
             } catch(Throwable t) {
-                t.printStackTrace();
-                running = false;
+                Log.errorEx("Miniserv Server crashed", t);
+                break;
             }
         }
+
+        synchronized(this) {
+            running = false;
+        }
+
+        for(ServerClient cli: clientList)
+            Util.silentClose(cli.getChannel());
+
+        clientList.clear();
+        clientMap.clear();
+        Util.silentClose(selector);
+        Util.silentClose(server);
+        selector = null;
+        server = null;
+        thread = null;
     }
 
     private void loopUnsafe() throws Throwable {
@@ -89,9 +146,8 @@ public class Server extends Thread {
 
                 if(chan != null) {
                     chan.configureBlocking(false);
-                    chan.register(selector, SelectionKey.OP_READ);
-
                     ServerClient toAdd = new ServerClient(chan, selector);
+
                     clientMap.put(chan, toAdd);
                     clientList.add(toAdd);
                     toAdd.onConnect();
@@ -110,7 +166,7 @@ public class Server extends Thread {
 
                         if(read < 0)
                             cli.setShouldRemove(); //End of stream
-                        else {
+                        else if(read > 0) {
                             readBuffer.position(0);
                             readBuffer.limit(read);
                             cli.readyRead(readBuffer);

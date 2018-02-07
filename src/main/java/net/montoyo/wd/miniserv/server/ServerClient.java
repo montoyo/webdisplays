@@ -9,6 +9,8 @@ import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
 
 import java.io.*;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.UUID;
@@ -32,6 +34,10 @@ public class ServerClient extends AbstractClient {
     ServerClient(SocketChannel s, Selector ss) {
         socket = s;
         selector = ss;
+
+        try {
+            selKey = socket.register(selector, SelectionKey.OP_READ);
+        } catch(ClosedChannelException ex) {}
     }
 
     @Override
@@ -92,6 +98,7 @@ public class ServerClient extends AbstractClient {
 
         int len = dis.readByte() & 0xFF;
         byte[] mac = new byte[len];
+        dis.readFully(mac);
 
         if(Server.getInstance().getClientManager().verifyClient(uuid, challenge, mac)) {
             Log.info("Client with UUID %s authenticated successfully", uuid.toString());
@@ -136,21 +143,21 @@ public class ServerClient extends AbstractClient {
             OutgoingPacket rep = new OutgoingPacket();
             rep.writeByte(PacketID.BEGIN_FILE_UPLOAD.ordinal());
 
-            if(isFileNameInvalid(fname)) {
+            if(Util.isFileNameInvalid(fname)) {
                 Log.warning("Client %s tried to upload a file with a bad name", uuid.toString());
-                rep.writeByte(1);
+                rep.writeByte(Constants.FUPA_STATUS_BAD_NAME);
             } else if(size <= 0) {
                 Log.warning("Client %s tried to upload a file an invalid size", uuid.toString());
-                rep.writeByte(2);
+                rep.writeByte(Constants.FUPA_STATUS_INVALID_SIZE);
             } else if(quota + size > Server.getInstance().getMaxQuota())
-                rep.writeByte(3);
+                rep.writeByte(Constants.FUPA_STATUS_EXCEEDS_QUOTA);
             else if(currentFile != null || sendingFile)
-                rep.writeByte(4);
+                rep.writeByte(Constants.FUPA_STATUS_OCCUPIED);
             else {
                 File fle = new File(userDir, fname);
 
                 if(fle.exists())
-                    rep.writeByte(5);
+                    rep.writeByte(Constants.FUPA_STATUS_FILE_EXISTS);
                 else {
                     try {
                         currentFile = new FileOutputStream(fle);
@@ -160,7 +167,7 @@ public class ServerClient extends AbstractClient {
                         rep.writeByte(0); //OK
                     } catch(IOException ex) {
                         Log.warningEx("IOException while uploading file %s from user %s", ex, fname, uuid.toString());
-                        rep.writeByte(6);
+                        rep.writeByte(Constants.FUPA_STATUS_INTERNAL_ERROR);
                     }
                 }
             }
@@ -175,14 +182,14 @@ public class ServerClient extends AbstractClient {
             int len = dis.readShort() & 0xFFFF;
             if(len <= 0) {
                 //Aborted by user
-                finishUpload(1);
+                finishUpload(Constants.FUPA_STATUS_USER_ABORT);
                 return;
             }
 
             currentFileSize += (long) len;
             if(currentFileSize > currentFileExpectedSize) {
                 //Exceeded expected size
-                finishUpload(2);
+                finishUpload(Constants.FUPA_STATUS_LIER);
                 return;
             }
 
@@ -190,7 +197,7 @@ public class ServerClient extends AbstractClient {
                 currentFile.write(getCurrentPacketRawData(), 3, len);
             } catch(IOException ex) {
                 Log.warningEx("Client %s encountered an IOException while uploading some file", ex, uuid.toString());
-                finishUpload(3);
+                finishUpload(Constants.FUPA_STATUS_INTERNAL_ERROR);
                 currentFileSize -= (long) len;
                 return;
             }
@@ -210,8 +217,8 @@ public class ServerClient extends AbstractClient {
             OutgoingPacket rep = new OutgoingPacket();
             rep.writeByte(PacketID.GET_FILE.ordinal());
 
-            if(isFileNameInvalid(fname))
-                rep.writeByte(1);
+            if(Util.isFileNameInvalid(fname))
+                rep.writeByte(Constants.GETF_STATUS_BAD_NAME);
             else {
                 UUID user = new UUID(msb, lsb);
                 File fle = new File(Server.getInstance().getDirectory(), user.toString() + File.separatorChar + fname);
@@ -220,16 +227,12 @@ public class ServerClient extends AbstractClient {
                     rep.setOnFinishAction(new SendFileCallback(fle));
                     sendingFile = true;
                 } catch(FileNotFoundException ex) {
-                    rep.writeByte(2);
+                    rep.writeByte(Constants.GETF_STATUS_NOT_FOUND);
                 }
             }
 
             sendPacket(rep);
         }
-    }
-
-    private static boolean isFileNameInvalid(String fname) {
-        return fname.isEmpty() || fname.length() > 64 || fname.charAt(0) == '.' || fname.indexOf('/') >= 0 || fname.indexOf('\\') >= 0;
     }
 
     private void finishUpload(int status) {
@@ -274,7 +277,7 @@ public class ServerClient extends AbstractClient {
 
                     OutgoingPacket pkt = new OutgoingPacket();
                     pkt.writeByte(PacketID.GET_FILE.ordinal());
-                    pkt.writeByte(3); //Read error
+                    pkt.writeByte(Constants.GETF_STATUS_INTERNAL_ERROR); //Read error
                     sendPacket(pkt);
 
                     Util.silentClose(fis);
@@ -292,7 +295,7 @@ public class ServerClient extends AbstractClient {
 
             pkt.writeByte(PacketID.FILE_PART.ordinal());
             pkt.writeShort(rd);
-            pkt.writeBytes(FILE_UPLOAD_BUFFER);
+            pkt.writeBytes(FILE_UPLOAD_BUFFER, 0, rd);
             sendPacket(pkt);
         }
 

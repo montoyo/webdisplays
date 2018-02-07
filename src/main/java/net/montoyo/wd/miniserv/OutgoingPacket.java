@@ -18,6 +18,12 @@ public final class OutgoingPacket {
         dos = new DataOutputStream(baos);
     }
 
+    public final void writeLong(long l) {
+        try {
+            dos.writeLong(l);
+        } catch(IOException ex) {}
+    }
+
     public final void writeInt(int i) {
         try {
             dos.writeInt(i);

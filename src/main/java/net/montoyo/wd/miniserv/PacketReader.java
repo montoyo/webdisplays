@@ -28,12 +28,16 @@ public final class PacketReader {
                     return true; //Abort packet reading
                 }
 
+                packetSize -= 4;
                 packetData = new byte[packetSize];
+                Log.info("Awaiting packet of size %d", packetSize);
             } else
                 return false;
         }
 
-        return readByteArray(packetData, buf);
+        boolean ret = readByteArray(packetData, buf);
+        Log.info("Read %d out of %d, ok = %s", pos, packetData.length, ret ? "true" : "false");
+        return ret;
     }
 
     private boolean readByteArray(byte[] dst, ByteBuffer src) {

@@ -88,4 +88,10 @@ public class SharedProxy {
         return FMLServerHandler.instance().getServer();
     }
 
+    public void setMiniservClientPort(int port) {
+    }
+
+    public void startMiniServClient() {
+    }
+
 }

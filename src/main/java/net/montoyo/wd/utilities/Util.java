@@ -224,4 +224,7 @@ public abstract class Util {
         return str.contains("://") ? str : ("http://" + str);
     }
 
+    public static boolean isFileNameInvalid(String fname) {
+        return fname.isEmpty() || fname.length() > 64 || fname.charAt(0) == '.' || fname.indexOf('/') >= 0 || fname.indexOf('\\') >= 0;
+    }
 }

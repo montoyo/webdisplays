@@ -28,7 +28,7 @@ public abstract class AbstractClient {
     private final Method[] packetHandlers = new Method[PacketID.values().length];
     protected SocketChannel socket;
     protected Selector selector;
-    private SelectionKey writeKey;
+    protected SelectionKey selKey;
 
     public AbstractClient() {
         sendBuffer.limit(0);
@@ -67,13 +67,17 @@ public abstract class AbstractClient {
 
                         if(pid >= packetHandlers.length)
                             Log.error("Caught invalid packet ID %d", pid);
-                        else if(packetHandlers[pid] != null) {
-                            try {
-                                packetHandlers[pid].invoke(this, dis); //This is slow, I know... sorry
-                            } catch(IllegalAccessException ex) {
-                                Log.errorEx("This shouldn't have happened", ex);
-                            } catch(InvocationTargetException ex) {
-                                Log.warningEx("Caught exception while handling packet %d", ex.getTargetException(), pid);
+                        else {
+                            Log.info("Received PID %s", PacketID.fromInt(pid).toString());
+
+                            if(packetHandlers[pid] != null) {
+                                try {
+                                    packetHandlers[pid].invoke(this, dis); //This is slow, I know... sorry
+                                } catch(IllegalAccessException ex) {
+                                    Log.errorEx("This shouldn't have happened", ex);
+                                } catch(InvocationTargetException ex) {
+                                    Log.warningEx("Caught exception while handling packet %d", ex.getTargetException(), pid);
+                                }
                             }
                         }
                     } catch(IOException ex) {
@@ -88,8 +92,13 @@ public abstract class AbstractClient {
 
     public void readyWrite() throws Throwable {
         if(sendBuffer.remaining() > 0 || fillSendBuffer()) {
-            if(socket.write(sendBuffer) < 0)
+            int sent = socket.write(sendBuffer);
+            Log.info("Sent %d bytes", sent);
+
+            if(sent < 0) {
+                Log.error("Error when sending data");
                 onWriteError();
+            }
         }
     }
 
@@ -103,12 +112,8 @@ public abstract class AbstractClient {
                     pkt = sendQueue.poll();
 
                     if(pkt == null) {
-                        if(writeKey != null) {
-                            writeKey.cancel();
-                            writeKey = null;
-                        }
-
-                        return sendBuffer.remaining() > 0;
+                        selKey.interestOps(SelectionKey.OP_READ); //Remove write op
+                        break;
                     }
                 }
 
@@ -116,19 +121,19 @@ public abstract class AbstractClient {
             }
         } while(sendBuffer.remaining() > 0);
 
-        return true;
+        int pos = sendBuffer.position();
+        sendBuffer.position(0);
+        sendBuffer.limit(pos);
+        return pos > 0;
     }
 
     public void sendPacket(OutgoingPacket pkt) {
         synchronized(sendQueue) {
             sendQueue.offer(pkt);
 
-            if(writeKey == null) {
-                try {
-                    writeKey = socket.register(selector, SelectionKey.OP_WRITE);
-                } catch(ClosedChannelException ex) {
-                    Log.warningEx("Couldn't send packet", ex);
-                }
+            if((selKey.interestOps() & SelectionKey.OP_WRITE) == 0) {
+                selKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                selector.wakeup(); //Is this needed?
             }
         }
     }
@@ -147,6 +152,13 @@ public abstract class AbstractClient {
 
     protected byte[] getCurrentPacketRawData() {
         return packetReader.getPacketData();
+    }
+
+    protected void clearSendQueue() {
+        synchronized(sendQueue) {
+            packetWriter.clear();
+            sendQueue.clear();
+        }
     }
 
 }

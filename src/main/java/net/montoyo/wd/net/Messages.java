@@ -29,6 +29,7 @@ public abstract class Messages {
         l.add(CMessageJSResponse.class);
         l.add(SMessageMiniservConnect.class);
         l.add(CMessageMiniservKey.class);
+        l.add(CMessageServerInfo.class);
 
         messages = l.toArray(new Class[0]);
     }

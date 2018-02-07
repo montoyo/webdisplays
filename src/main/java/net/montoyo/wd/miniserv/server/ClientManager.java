@@ -42,7 +42,11 @@ public class ClientManager {
     }
 
     public byte[] getClientKey(UUID uuid) {
-        return keys.get(uuid);
+        keyLock.readLock().lock();
+        byte[] ret = keys.get(uuid);
+        keyLock.readLock().unlock();
+
+        return ret;
     }
 
     public void revokeClientKey(UUID id) {
