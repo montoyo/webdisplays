@@ -24,7 +24,7 @@ public class ClientManager {
     private final HashMap<UUID, byte[]> keys = new HashMap<>();
     private final ReentrantReadWriteLock keyLock = new ReentrantReadWriteLock();
 
-    public byte[] getClientKey(UUID uuid) {
+    public byte[] getOrGenClientKey(UUID uuid) {
         keyLock.readLock().lock();
         byte[] key = keys.get(uuid);
         keyLock.readLock().unlock();
@@ -39,6 +39,10 @@ public class ClientManager {
         }
 
         return key;
+    }
+
+    public byte[] getClientKey(UUID uuid) {
+        return keys.get(uuid);
     }
 
     public void revokeClientKey(UUID id) {
@@ -84,7 +88,7 @@ public class ClientManager {
             Cipher cipher = Cipher.getInstance(KeyParameters.RSA_CIPHER);
 
             cipher.init(Cipher.ENCRYPT_MODE, key, random);
-            return cipher.doFinal(getClientKey(client));
+            return cipher.doFinal(getOrGenClientKey(client));
         } catch(NoSuchAlgorithmException | NoSuchPaddingException ex) {
             Log.warningEx("%s is not supported?!?!", ex, KeyParameters.RSA_CIPHER);
         } catch(InvalidKeySpecException | InvalidKeyException ex) {

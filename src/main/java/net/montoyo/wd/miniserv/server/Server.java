@@ -7,6 +7,7 @@ package net.montoyo.wd.miniserv.server;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
 
+import java.io.File;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -18,12 +19,24 @@ import java.util.HashMap;
 
 public class Server extends Thread {
 
+    private static Server instance;
+
+    public static Server getInstance() {
+        if(instance == null)
+            instance = new Server();
+
+        return instance;
+    }
+
     private ServerSocketChannel server;
     private Selector selector;
     private int port = 25566;
     private final ArrayList<ServerClient> clientList = new ArrayList<>();
     private final HashMap<SocketChannel, ServerClient> clientMap = new HashMap<>();
     private final ByteBuffer readBuffer = ByteBuffer.allocateDirect(8192);
+    private final ClientManager clientMgr = new ClientManager();
+    private File directory;
+    private long maxQuota = 1024 * 1024; //1 MiB max
 
     public Server() {
         setDaemon(true);
@@ -81,6 +94,7 @@ public class Server extends Thread {
                     ServerClient toAdd = new ServerClient(chan, selector);
                     clientMap.put(chan, toAdd);
                     clientList.add(toAdd);
+                    toAdd.onConnect();
                 }
             }
 
@@ -136,6 +150,27 @@ public class Server extends Thread {
         clientMap.remove(cli.getChannel());
         clientList.remove(cli);
         Util.silentClose(cli.getChannel());
+    }
+
+    public ClientManager getClientManager() {
+        return clientMgr;
+    }
+
+    public void setDirectory(File dir) {
+        if(!dir.exists()) {
+            if(!dir.mkdir())
+                Log.warning("Could not create miniserv storage directory %s", dir.getAbsolutePath());
+        }
+
+        directory = dir;
+    }
+
+    public File getDirectory() {
+        return directory;
+    }
+
+    public long getMaxQuota() {
+        return maxQuota;
     }
 
 }

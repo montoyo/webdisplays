@@ -9,6 +9,7 @@ import net.montoyo.wd.utilities.Log;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -130,6 +131,22 @@ public abstract class AbstractClient {
                 }
             }
         }
+    }
+
+    protected static String readString(DataInputStream dis) throws IOException {
+        int len = dis.readShort() & 0xFFFF;
+        byte[] str = new byte[len];
+        dis.readFully(str);
+
+        try {
+            return new String(str, "UTF-8");
+        } catch(UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex); //Shouldn't happen
+        }
+    }
+
+    protected byte[] getCurrentPacketRawData() {
+        return packetReader.getPacketData();
     }
 
 }

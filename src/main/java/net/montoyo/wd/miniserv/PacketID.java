@@ -6,10 +6,12 @@ package net.montoyo.wd.miniserv;
 
 public enum PacketID {
 
+    INIT_CONN,          //C->S
     AUTHENTICATE,       //C->S and S->C
     PING,               //C->S and S->C
     BEGIN_FILE_UPLOAD,  //C->S
     FILE_PART,          //C->S and S->C
+    FILE_STATUS,        //S->C
     GET_FILE;           //C->S
 
     public static PacketID fromInt(int i) {
