@@ -121,7 +121,7 @@ public class ClientTaskGetFile extends ClientTask {
 
         while(data == null) {
             if(System.currentTimeMillis() - t > 10000) {
-                data = new byte[1];
+                data = new byte[0];
                 dataLen = -1;
                 dataLock.unlock();
                 return data;

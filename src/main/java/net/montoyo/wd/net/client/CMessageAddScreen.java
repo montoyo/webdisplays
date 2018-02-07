@@ -2,7 +2,7 @@
  * Copyright (C) 2018 BARBOTIN Nicolas
  */
 
-package net.montoyo.wd.net;
+package net.montoyo.wd.net.client;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
@@ -13,6 +13,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.wd.SharedProxy;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.entity.TileEntityScreen;
+import net.montoyo.wd.net.Message;
 import net.montoyo.wd.utilities.*;
 
 import java.util.ArrayList;

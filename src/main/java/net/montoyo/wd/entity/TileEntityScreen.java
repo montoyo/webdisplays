@@ -25,10 +25,10 @@ import net.montoyo.wd.core.IUpgrade;
 import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.data.ScreenConfigData;
-import net.montoyo.wd.net.CMessageAddScreen;
-import net.montoyo.wd.net.CMessageJSResponse;
-import net.montoyo.wd.net.CMessageScreenUpdate;
-import net.montoyo.wd.net.SMessageRequestTEData;
+import net.montoyo.wd.net.client.CMessageAddScreen;
+import net.montoyo.wd.net.client.CMessageJSResponse;
+import net.montoyo.wd.net.client.CMessageScreenUpdate;
+import net.montoyo.wd.net.server.SMessageRequestTEData;
 import net.montoyo.wd.utilities.*;
 import net.montoyo.wd.utilities.Rotation;
 

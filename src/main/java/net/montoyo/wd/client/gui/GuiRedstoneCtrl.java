@@ -9,7 +9,7 @@ import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.gui.controls.Button;
 import net.montoyo.wd.client.gui.controls.TextField;
 import net.montoyo.wd.client.gui.loading.FillControl;
-import net.montoyo.wd.net.SMessageRedstoneCtrl;
+import net.montoyo.wd.net.server.SMessageRedstoneCtrl;
 import net.montoyo.wd.utilities.Util;
 import net.montoyo.wd.utilities.Vector3i;
 

@@ -2,13 +2,14 @@
  * Copyright (C) 2018 BARBOTIN Nicolas
  */
 
-package net.montoyo.wd.net;
+package net.montoyo.wd.net.client;
 
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.wd.WebDisplays;
+import net.montoyo.wd.net.Message;
 import net.montoyo.wd.utilities.NameUUIDPair;
 
 @Message(messageId = 6, side = Side.CLIENT)

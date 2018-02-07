@@ -2,7 +2,7 @@
  * Copyright (C) 2018 BARBOTIN Nicolas
  */
 
-package net.montoyo.wd.net;
+package net.montoyo.wd.net.server;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,6 +18,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.entity.TileEntityRedCtrl;
 import net.montoyo.wd.entity.TileEntityScreen;
+import net.montoyo.wd.net.Message;
 import net.montoyo.wd.utilities.Util;
 import net.montoyo.wd.utilities.Vector3i;
 

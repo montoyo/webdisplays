@@ -2,7 +2,7 @@
  * Copyright (C) 2018 BARBOTIN Nicolas
  */
 
-package net.montoyo.wd.net;
+package net.montoyo.wd.net.server;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,6 +17,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.wd.WebDisplays;
+import net.montoyo.wd.net.Message;
 
 @Message(messageId = 7, side = Side.SERVER)
 public class SMessagePadCtrl implements IMessage, Runnable {

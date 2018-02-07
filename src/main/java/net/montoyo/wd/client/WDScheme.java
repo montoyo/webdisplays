@@ -15,11 +15,14 @@ import net.montoyo.wd.miniserv.client.ClientTaskGetFile;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
 
+import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 public class WDScheme implements IScheme {
 
+    private static final String ERROR_PAGE = "<!DOCTYPE html><html><head></head><body><h1>%d %s</h1><hr /><i>Miniserv powered by WebDisplays</i></body></html>";
     private ClientTaskGetFile task;
+    private boolean isErrorPage;
 
     @Override
     public SchemePreResponse processRequest(String url) {
@@ -65,13 +68,30 @@ public class WDScheme implements IScheme {
             resp.setStatus(200);
             resp.setStatusText("OK");
             resp.setResponseLength(-1);
-        } else if(status == Constants.GETF_STATUS_NOT_FOUND) {
-            resp.setStatus(404);
-            resp.setStatusText("Not Found");
-            resp.setResponseLength(0);
+            return;
+        }
+
+        int errCode;
+        String errStr;
+
+        if(status == Constants.GETF_STATUS_NOT_FOUND) {
+            errCode = 404;
+            errStr = "Not Found";
         } else {
-            resp.setStatus(500);
-            resp.setStatusText("Internal Server Error");
+            errCode = 500;
+            errStr = "Internal Server Error";
+        }
+
+        resp.setStatus(errCode);
+        resp.setStatusText(errStr);
+
+        try {
+            dataToWrite = String.format(ERROR_PAGE, errCode, errStr).getBytes("UTF-8");
+            dataOffset = 0;
+            amountToWrite = dataToWrite.length;
+            isErrorPage = true;
+            resp.setResponseLength(amountToWrite);
+        } catch(UnsupportedEncodingException ex) {
             resp.setResponseLength(0);
         }
     }
@@ -83,6 +103,11 @@ public class WDScheme implements IScheme {
     @Override
     public boolean readResponse(ISchemeResponseData data) {
         if(dataToWrite == null) {
+            if(isErrorPage) {
+                data.setAmountRead(0);
+                return false;
+            }
+
             dataToWrite = task.waitForData();
             dataOffset = 3; //packet ID + size
             amountToWrite = task.getDataLength();
@@ -105,7 +130,9 @@ public class WDScheme implements IScheme {
         amountToWrite -= toWrite;
 
         if(amountToWrite <= 0) {
-            task.nextData();
+            if(!isErrorPage)
+                task.nextData();
+
             dataToWrite = null;
         }
 

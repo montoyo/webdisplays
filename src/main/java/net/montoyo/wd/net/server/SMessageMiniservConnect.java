@@ -2,7 +2,7 @@
  * Copyright (C) 2018 BARBOTIN Nicolas
  */
 
-package net.montoyo.wd.net;
+package net.montoyo.wd.net.server;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -11,6 +11,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.wd.miniserv.server.ClientManager;
 import net.montoyo.wd.miniserv.server.Server;
+import net.montoyo.wd.net.Message;
+import net.montoyo.wd.net.client.CMessageMiniservKey;
 
 @Message(messageId = 10, side = Side.SERVER)
 public class SMessageMiniservConnect implements IMessage {

@@ -7,6 +7,8 @@ package net.montoyo.wd.net;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.montoyo.wd.net.client.*;
+import net.montoyo.wd.net.server.*;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;

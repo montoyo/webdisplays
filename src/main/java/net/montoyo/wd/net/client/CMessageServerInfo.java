@@ -2,13 +2,14 @@
  * Copyright (C) 2018 BARBOTIN Nicolas
  */
 
-package net.montoyo.wd.net;
+package net.montoyo.wd.net.client;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.miniserv.client.Client;
+import net.montoyo.wd.net.Message;
 
 @Message(messageId = 12, side = Side.CLIENT)
 public class CMessageServerInfo implements IMessage, Runnable {

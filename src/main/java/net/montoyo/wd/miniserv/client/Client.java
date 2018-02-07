@@ -6,7 +6,7 @@ package net.montoyo.wd.miniserv.client;
 
 import net.minecraft.client.Minecraft;
 import net.montoyo.wd.miniserv.*;
-import net.montoyo.wd.net.SMessageMiniservConnect;
+import net.montoyo.wd.net.server.SMessageMiniservConnect;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
 

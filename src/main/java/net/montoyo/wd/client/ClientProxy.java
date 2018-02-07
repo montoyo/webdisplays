@@ -53,8 +53,8 @@ import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.item.ItemMulti;
 import net.montoyo.wd.miniserv.client.Client;
-import net.montoyo.wd.net.SMessagePadCtrl;
-import net.montoyo.wd.net.SMessageScreenCtrl;
+import net.montoyo.wd.net.server.SMessagePadCtrl;
+import net.montoyo.wd.net.server.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
 
 import javax.annotation.Nonnull;

@@ -13,7 +13,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.gui.GuiScreenConfig;
 import net.montoyo.wd.entity.TileEntityScreen;
-import net.montoyo.wd.net.CMessageOpenGui;
+import net.montoyo.wd.net.client.CMessageOpenGui;
 import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.NameUUIDPair;

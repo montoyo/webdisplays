@@ -2,7 +2,7 @@
  * Copyright (C) 2018 BARBOTIN Nicolas
  */
 
-package net.montoyo.wd.net;
+package net.montoyo.wd.net.server;
 
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.ByteBuf;
@@ -14,6 +14,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.wd.WebDisplays;
+import net.montoyo.wd.net.Message;
+import net.montoyo.wd.net.client.CMessageACResult;
 import net.montoyo.wd.utilities.NameUUIDPair;
 
 import java.util.ArrayList;

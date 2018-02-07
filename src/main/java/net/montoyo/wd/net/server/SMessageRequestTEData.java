@@ -2,7 +2,7 @@
  * Copyright (C) 2018 BARBOTIN Nicolas
  */
 
-package net.montoyo.wd.net;
+package net.montoyo.wd.net.server;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -15,6 +15,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.mcef.utilities.Log;
 import net.montoyo.wd.entity.TileEntityScreen;
+import net.montoyo.wd.net.Message;
 import net.montoyo.wd.utilities.Vector3i;
 
 @Message(messageId = 1, side = Side.SERVER)

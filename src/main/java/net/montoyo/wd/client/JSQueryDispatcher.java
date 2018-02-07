@@ -18,7 +18,7 @@ import net.montoyo.wd.core.IScreenQueryHandler;
 import net.montoyo.wd.core.IUpgrade;
 import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.entity.TileEntityScreen;
-import net.montoyo.wd.net.SMessageScreenCtrl;
+import net.montoyo.wd.net.server.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
 
 import java.util.ArrayDeque;

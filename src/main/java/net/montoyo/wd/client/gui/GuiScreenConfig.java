@@ -12,7 +12,7 @@ import net.montoyo.wd.client.gui.controls.*;
 import net.montoyo.wd.client.gui.loading.FillControl;
 import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.entity.TileEntityScreen;
-import net.montoyo.wd.net.SMessageScreenCtrl;
+import net.montoyo.wd.net.server.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
 
 import java.util.ArrayList;

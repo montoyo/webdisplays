@@ -18,7 +18,7 @@ import net.montoyo.wd.client.gui.controls.Event;
 import net.montoyo.wd.client.gui.loading.FillControl;
 import net.montoyo.wd.client.gui.loading.GuiLoader;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
-import net.montoyo.wd.net.SMessageACQuery;
+import net.montoyo.wd.net.server.SMessageACQuery;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.NameUUIDPair;
 import org.lwjgl.input.Keyboard;

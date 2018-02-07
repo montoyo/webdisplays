@@ -10,7 +10,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.montoyo.wd.WebDisplays;
-import net.montoyo.wd.net.CMessageOpenGui;
+import net.montoyo.wd.net.client.CMessageOpenGui;
 
 import java.util.HashMap;
 

@@ -2,7 +2,7 @@
  * Copyright (C) 2018 BARBOTIN Nicolas
  */
 
-package net.montoyo.wd.net;
+package net.montoyo.wd.net.server;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
@@ -25,6 +25,7 @@ import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.core.MissingPermissionException;
 import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.entity.TileEntityScreen;
+import net.montoyo.wd.net.Message;
 import net.montoyo.wd.utilities.*;
 
 @Message(messageId = 2, side = Side.SERVER)

@@ -2,7 +2,7 @@
  * Copyright (C) 2018 BARBOTIN Nicolas
  */
 
-package net.montoyo.wd.net;
+package net.montoyo.wd.net.client;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.core.JSServerRequest;
+import net.montoyo.wd.net.Message;
 import net.montoyo.wd.utilities.Log;
 
 @Message(messageId = 9, side = Side.CLIENT)
