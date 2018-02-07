@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 public class ClientTaskUploadFile extends ClientTask implements Consumer<OutgoingPacket> {
 
-    private static final byte[] UPLOAD_BUFFER = new byte[65536];
+    private static final byte[] UPLOAD_BUFFER = new byte[65535];
 
     private final File file;
     private final long size;

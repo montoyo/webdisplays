@@ -12,6 +12,7 @@ import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.miniserv.Constants;
 import net.montoyo.wd.miniserv.client.Client;
 import net.montoyo.wd.miniserv.client.ClientTaskGetFile;
+import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
 
 import java.util.UUID;
@@ -47,7 +48,9 @@ public class WDScheme implements IScheme {
 
     @Override
     public void getResponseHeaders(ISchemeResponseHeaders resp) {
+        Log.info("Waiting for response...");
         int status = task.waitForResponse();
+        Log.info("Got response %d", status);
 
         if(status == 0) {
             //OK

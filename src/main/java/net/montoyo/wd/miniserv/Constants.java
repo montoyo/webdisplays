@@ -20,5 +20,6 @@ public abstract class Constants {
     public static int GETF_STATUS_NOT_FOUND = 2;
     public static int GETF_STATUS_INTERNAL_ERROR = 3;
     public static int GETF_STATUS_CONNECTION_LOST = 4;
+    public static int GETF_STATUS_TIMED_OUT = 5;
 
 }

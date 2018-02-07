@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 public class ServerClient extends AbstractClient {
 
-    private static final byte[] FILE_UPLOAD_BUFFER = new byte[65536];
+    private static final byte[] FILE_UPLOAD_BUFFER = new byte[65535];
 
     private boolean remove;
     private boolean isAuthenticated;
@@ -225,6 +225,7 @@ public class ServerClient extends AbstractClient {
 
                 try {
                     rep.setOnFinishAction(new SendFileCallback(fle));
+                    rep.writeByte(0);
                     sendingFile = true;
                 } catch(FileNotFoundException ex) {
                     rep.writeByte(Constants.GETF_STATUS_NOT_FOUND);

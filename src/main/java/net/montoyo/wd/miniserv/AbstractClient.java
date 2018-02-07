@@ -93,12 +93,9 @@ public abstract class AbstractClient {
     public void readyWrite() throws Throwable {
         if(sendBuffer.remaining() > 0 || fillSendBuffer()) {
             int sent = socket.write(sendBuffer);
-            Log.info("Sent %d bytes", sent);
 
-            if(sent < 0) {
-                Log.error("Error when sending data");
+            if(sent < 0)
                 onWriteError();
-            }
         }
     }
 
@@ -131,7 +128,7 @@ public abstract class AbstractClient {
         synchronized(sendQueue) {
             sendQueue.offer(pkt);
 
-            if((selKey.interestOps() & SelectionKey.OP_WRITE) == 0) {
+            if(selKey.isValid() && (selKey.interestOps() & SelectionKey.OP_WRITE) == 0) {
                 selKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                 selector.wakeup(); //Is this needed?
             }

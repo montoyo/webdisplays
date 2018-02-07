@@ -9,6 +9,7 @@ import net.montoyo.wd.miniserv.OutgoingPacket;
 import net.montoyo.wd.miniserv.PacketID;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -67,6 +68,9 @@ public class ClientTaskGetFile extends ClientTask {
             response = status;
             hasResponse = true;
             gotResponse.signal();
+
+            if(response != 0)
+                client.nextTask();
         }
 
         responseLock.unlock();
@@ -77,9 +81,16 @@ public class ClientTaskGetFile extends ClientTask {
 
     public int waitForResponse() {
         responseLock.lock();
+        long t = System.currentTimeMillis();
+
         while(!hasResponse) {
+            if(System.currentTimeMillis() - t > 10000) {
+                responseLock.unlock();
+                return Constants.GETF_STATUS_TIMED_OUT;
+            }
+
             try {
-                gotResponse.await();
+                gotResponse.await(100, TimeUnit.MILLISECONDS);
             } catch(InterruptedException ex) {}
         }
 
@@ -106,9 +117,18 @@ public class ClientTaskGetFile extends ClientTask {
 
     public byte[] waitForData() {
         dataLock.lock();
-        while(this.data == null) {
+        long t = System.currentTimeMillis();
+
+        while(data == null) {
+            if(System.currentTimeMillis() - t > 10000) {
+                data = new byte[1];
+                dataLen = -1;
+                dataLock.unlock();
+                return data;
+            }
+
             try {
-                dataChanged.await();
+                dataChanged.await(100, TimeUnit.MILLISECONDS);
             } catch(InterruptedException ex) {}
         }
 

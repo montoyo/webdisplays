@@ -118,12 +118,15 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         mc = Minecraft.getMinecraft();
         MinecraftForge.EVENT_BUS.register(this);
         registerCustomBlockBaker(new ScreenBaker(), WebDisplays.INSTANCE.blockScreen);
+
+        mcef = MCEFApi.getAPI();
+        if(mcef != null)
+            mcef.registerScheme("wd", WDScheme.class, true, false, false);
     }
 
     @Override
     public void init() {
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityScreen.class, new ScreenRenderer());
-        mcef = MCEFApi.getAPI();
         jsDispatcher = new JSQueryDispatcher(this);
         minePadRenderer = new MinePadRenderer();
         laserPointerRenderer = new LaserPointerRenderer();

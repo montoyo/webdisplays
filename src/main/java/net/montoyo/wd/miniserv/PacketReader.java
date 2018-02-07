@@ -19,25 +19,22 @@ public final class PacketReader {
         if(needSize) {
             //Read packet size
             if(readByteArray(sizeArray, buf)) {
-                int packetSize = (sizeArray[0] << 24) | (sizeArray[1] << 16) | (sizeArray[2] << 8) | sizeArray[3];
+                int packetSize = ((sizeArray[0] & 0xFF) << 24) | ((sizeArray[1] & 0xFF) << 16) | ((sizeArray[2] & 0xFF) << 8) | (sizeArray[3] & 0xFF);
                 needSize = false;
                 pos = 0;
 
-                if(packetSize < 5 || packetSize > 65536) {
-                    Log.warning("Got invalid packet from client of size %d, things won't go well...", packetSize);
+                if(packetSize < 5 || packetSize > 70000) {
+                    Log.warning("Got invalid packet of size %d, things won't go well...", packetSize);
                     return true; //Abort packet reading
                 }
 
                 packetSize -= 4;
                 packetData = new byte[packetSize];
-                Log.info("Awaiting packet of size %d", packetSize);
             } else
                 return false;
         }
 
-        boolean ret = readByteArray(packetData, buf);
-        Log.info("Read %d out of %d, ok = %s", pos, packetData.length, ret ? "true" : "false");
-        return ret;
+        return readByteArray(packetData, buf);
     }
 
     private boolean readByteArray(byte[] dst, ByteBuffer src) {
