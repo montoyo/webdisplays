@@ -4,11 +4,9 @@
 
 package net.montoyo.wd.core;
 
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IStringSerializable;
-import net.montoyo.wd.entity.TileEntityKeyboard;
-import net.montoyo.wd.entity.TileEntityPeripheralBase;
-import net.montoyo.wd.entity.TileEntityRCtrl;
-import net.montoyo.wd.entity.TileEntityRedCtrl;
+import net.montoyo.wd.entity.*;
 
 import javax.annotation.Nonnull;
 
@@ -18,12 +16,13 @@ public enum DefaultPeripheral implements IStringSerializable {
     CC_INTERFACE("ccinterface", null),
     OC_INTERFACE("cointerface", null),
     REMOTE_CONTROLLER("remotectrl", TileEntityRCtrl.class),         //WITHOUT FACING (>= 3)
-    REDSTONE_CONTROLLER("redstonectrl", TileEntityRedCtrl.class);
+    REDSTONE_CONTROLLER("redstonectrl", TileEntityRedCtrl.class),
+    SERVER("server", TileEntityServer.class);
 
     private final String name;
-    private final Class<? extends TileEntityPeripheralBase> teClass;
+    private final Class<? extends TileEntity> teClass;
 
-    DefaultPeripheral(String name, Class<? extends TileEntityPeripheralBase> te) {
+    DefaultPeripheral(String name, Class<? extends TileEntity> te) {
         this.name = name;
         teClass = te;
     }
@@ -41,7 +40,7 @@ public enum DefaultPeripheral implements IStringSerializable {
         return name;
     }
 
-    public Class<? extends TileEntityPeripheralBase> getTEClass() {
+    public Class<? extends TileEntity> getTEClass() {
         return teClass;
     }
 

@@ -11,6 +11,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.montoyo.mcef.utilities.Log;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.data.GuiData;
+import net.montoyo.wd.net.Message;
 import net.montoyo.wd.utilities.Util;
 
 @Message(messageId = 3, side = Side.CLIENT)

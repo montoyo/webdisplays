@@ -34,12 +34,13 @@ import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.core.DefaultPeripheral;
 import net.montoyo.wd.entity.TileEntityKeyboard;
 import net.montoyo.wd.entity.TileEntityPeripheralBase;
+import net.montoyo.wd.entity.TileEntityServer;
 import net.montoyo.wd.item.ItemLinker;
 import net.montoyo.wd.item.ItemPeripheral;
 import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Log;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 public class BlockPeripheral extends WDBlockContainer {
 
@@ -61,12 +62,15 @@ public class BlockPeripheral extends WDBlockContainer {
     }
 
     @Override
+    @Nonnull
     protected BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, properties);
     }
 
     @Override
-    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing rrezozei, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
+    @Nonnull
+    public IBlockState getStateForPlacement(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumFacing nocare, float hitX,
+                                            float hitY, float hitZ, int meta, @Nonnull EntityLivingBase placer, EnumHand hand) {
         int rot = MathHelper.floor(((double) (placer.rotationYaw * 4.0f / 360.0f)) + 2.5) & 3;
         return getDefaultState().withProperty(type, DefaultPeripheral.fromMetadata(meta)).withProperty(facing, rot);
     }
@@ -78,6 +82,7 @@ public class BlockPeripheral extends WDBlockContainer {
     }
 
     @Override
+    @Nonnull
     public IBlockState getStateFromMeta(int meta) {
         DefaultPeripheral dp = DefaultPeripheral.fromMetadata(meta);
         IBlockState state = getDefaultState().withProperty(type, dp);
@@ -93,10 +98,9 @@ public class BlockPeripheral extends WDBlockContainer {
         return state.getValue(type).toMetadata(state.getValue(facing));
     }
 
-    @Nullable
     @Override
-    public TileEntity createNewTileEntity(World world, int meta) {
-        Class<? extends TileEntityPeripheralBase> cls = DefaultPeripheral.fromMetadata(meta).getTEClass();
+    public TileEntity createNewTileEntity(@Nonnull World world, int meta) {
+        Class<? extends TileEntity> cls = DefaultPeripheral.fromMetadata(meta).getTEClass();
         if(cls == null)
             return null;
 
@@ -110,6 +114,7 @@ public class BlockPeripheral extends WDBlockContainer {
     }
 
     @Override
+    @Nonnull
     public EnumBlockRenderType getRenderType(IBlockState state) {
         return EnumBlockRenderType.MODEL;
     }
@@ -128,10 +133,13 @@ public class BlockPeripheral extends WDBlockContainer {
             return false;
 
         TileEntity te = world.getTileEntity(pos);
-        if(te == null || !(te instanceof TileEntityPeripheralBase))
-            return  false;
 
-        return ((TileEntityPeripheralBase) te).onRightClick(player, hand, BlockSide.values()[facing.ordinal()]);
+        if(te instanceof TileEntityPeripheralBase)
+            return ((TileEntityPeripheralBase) te).onRightClick(player, hand, BlockSide.values()[facing.ordinal()]);
+        else if(te instanceof TileEntityServer)
+            return ((TileEntityServer) te).onPlayerRightClick(player);
+        else
+            return false;
     }
 
     @Override
@@ -160,39 +168,48 @@ public class BlockPeripheral extends WDBlockContainer {
     }
 
     @Override
+    @Nonnull
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
         return state.getValue(type) == DefaultPeripheral.KEYBOARD ? BlockKeyboardRight.KEYBOARD_AABB : FULL_BLOCK_AABB;
     }
 
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        if(world.isRemote || state.getValue(type) != DefaultPeripheral.KEYBOARD)
+        if(world.isRemote)
             return;
 
-        //Keyboard special treatment
-        int f = state.getValue(facing);
-        Vec3i dir = EnumFacing.getHorizontal(f).rotateY().getDirectionVec();
-        BlockPos left = pos.add(dir);
-        BlockPos right = pos.subtract(dir);
+        if(state.getValue(type) == DefaultPeripheral.KEYBOARD) {
+            //Keyboard special treatment
+            int f = state.getValue(facing);
+            Vec3i dir = EnumFacing.getHorizontal(f).rotateY().getDirectionVec();
+            BlockPos left = pos.add(dir);
+            BlockPos right = pos.subtract(dir);
 
-        if(!world.isAirBlock(pos.down()) && BlockKeyboardRight.checkNeighborhood(world, pos, null)) {
-            if(world.isAirBlock(right) && !world.isAirBlock(right.down()) && BlockKeyboardRight.checkNeighborhood(world, right, pos)) {
-                world.setBlockState(right, WebDisplays.INSTANCE.blockKbRight.getDefaultState().withProperty(BlockKeyboardRight.facing, f));
-                return;
-            } else if(world.isAirBlock(left) && !world.isAirBlock(left.down()) && BlockKeyboardRight.checkNeighborhood(world, left, pos)) {
-                world.setBlockState(left, state);
-                world.setBlockState(pos, WebDisplays.INSTANCE.blockKbRight.getDefaultState().withProperty(BlockKeyboardRight.facing, f));
-                return;
+            if(!world.isAirBlock(pos.down()) && BlockKeyboardRight.checkNeighborhood(world, pos, null)) {
+                if(world.isAirBlock(right) && !world.isAirBlock(right.down()) && BlockKeyboardRight.checkNeighborhood(world, right, pos)) {
+                    world.setBlockState(right, WebDisplays.INSTANCE.blockKbRight.getDefaultState().withProperty(BlockKeyboardRight.facing, f));
+                    return;
+                } else if(world.isAirBlock(left) && !world.isAirBlock(left.down()) && BlockKeyboardRight.checkNeighborhood(world, left, pos)) {
+                    world.setBlockState(left, state);
+                    world.setBlockState(pos, WebDisplays.INSTANCE.blockKbRight.getDefaultState().withProperty(BlockKeyboardRight.facing, f));
+                    return;
+                }
             }
-        }
 
-        //Not good; remove this shit...
-        world.setBlockToAir(pos);
-        if(!(placer instanceof EntityPlayer) || !((EntityPlayer) placer).isCreative())
-            dropBlockAsItem(world, pos, state, 0);
+            //Not good; remove this shit...
+            world.setBlockToAir(pos);
+            if(!(placer instanceof EntityPlayer) || !((EntityPlayer) placer).isCreative())
+                dropBlockAsItem(world, pos, state, 0);
+        } else if(placer instanceof EntityPlayer) {
+            TileEntity te = world.getTileEntity(pos);
+
+            if(te instanceof TileEntityServer)
+                ((TileEntityServer) te).setOwner((EntityPlayer) placer);
+        }
     }
 
     @Override
+    @Nonnull
     public EnumPushReaction getMobilityFlag(IBlockState state) {
         return EnumPushReaction.IGNORE;
     }

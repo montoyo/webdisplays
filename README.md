@@ -3,9 +3,9 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 
 ### Missing features
 * Peripheral: OpenComputers interface
-* Server blocks (to store some of the player's web pages)
 * Read config (see "Config elements" below)
 * Miniserv timeout
+* Recipe for server block
 
 ### TODO
 * French translations

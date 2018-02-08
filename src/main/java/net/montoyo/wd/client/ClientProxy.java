@@ -440,6 +440,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         registerItemModel(wd.blockPeripheral.getItem(), 2, "facing=2,type=cointerface");
         registerItemModel(wd.blockPeripheral.getItem(), 3, "facing=0,type=remotectrl");
         registerItemModel(wd.blockPeripheral.getItem(), 7, "facing=0,type=redstonectrl");
+        registerItemModel(wd.blockPeripheral.getItem(), 11, "facing=0,type=server");
         registerItemModel(wd.itemScreenCfg, 0, "normal");
         registerItemModel(wd.itemOwnerThief, 0, "normal");
         registerItemModel(wd.itemLinker, 0, "normal");

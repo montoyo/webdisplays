@@ -23,6 +23,11 @@
     "facing=0,type=redstonectrl": { "model": "webdisplays:redctrl" },
     "facing=1,type=redstonectrl": { "model": "webdisplays:redctrl" },
     "facing=2,type=redstonectrl": { "model": "webdisplays:redctrl" },
-    "facing=3,type=redstonectrl": { "model": "webdisplays:redctrl" }
+    "facing=3,type=redstonectrl": { "model": "webdisplays:redctrl" },
+
+    "facing=0,type=server": { "model": "webdisplays:server" },
+    "facing=1,type=server": { "model": "webdisplays:server" },
+    "facing=2,type=server": { "model": "webdisplays:server" },
+    "facing=3,type=server": { "model": "webdisplays:server" }
   }
 }

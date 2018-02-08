@@ -6,6 +6,7 @@ tile.webdisplays.peripheral.remotectrl.name=Remote Controller
 tile.webdisplays.peripheral.ccinterface.name=ComputerCraft Interface
 tile.webdisplays.peripheral.cointerface.name=OpenComputers Interface
 tile.webdisplays.peripheral.redstonectrl.name=Redstone Controller
+tile.webdisplays.peripheral.server.name=Server
 item.webdisplays.screencfg.name=Screen Configurator
 item.webdisplays.ownerthief.name=Ownership Thief [ADMIN]
 item.webdisplays.linker.name=Linking Tool
