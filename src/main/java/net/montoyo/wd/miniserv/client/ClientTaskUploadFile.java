@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.function.Consumer;
 
-public class ClientTaskUploadFile extends ClientTask implements Consumer<OutgoingPacket> {
+public class ClientTaskUploadFile extends ClientTask<ClientTaskUploadFile> implements Consumer<OutgoingPacket> {
 
     private static final byte[] UPLOAD_BUFFER = new byte[65535];
 

@@ -216,7 +216,7 @@ public class Client extends AbstractClient implements Runnable {
     private void unsafeLoop() throws Throwable {
         selector.select();
 
-        if(currentTask == null)
+        if(currentTask == null || currentTask.isCanceled())
             nextTask();
 
         for(SelectionKey key: selector.selectedKeys()) {
@@ -297,6 +297,27 @@ public class Client extends AbstractClient implements Runnable {
         }
     }
 
+    @PacketHandler(PacketID.QUOTA)
+    public void handleQuota(DataInputStream dis) throws IOException {
+        long q = dis.readLong();
+        long m = dis.readLong();
+
+        if(currentTask instanceof ClientTaskGetQuota)
+            ((ClientTaskGetQuota) currentTask).onQuotaData(q, m);
+    }
+
+    @PacketHandler(PacketID.LIST)
+    public void handleList(DataInputStream dis) throws IOException {
+        int cnt = dis.readByte() & 0xFF;
+        String[] files = new String[cnt];
+
+        for(int i = 0; i < cnt; i++)
+            files[i] = readString(dis);
+
+        if(currentTask instanceof ClientTaskGetFileList)
+            ((ClientTaskGetFileList) currentTask).onFileList(files);
+    }
+
     public void nextTask() {
         if(currentTask != null)
             currentTask.onFinished();
@@ -324,6 +345,16 @@ public class Client extends AbstractClient implements Runnable {
 
         selector.wakeup();
         return true;
+    }
+
+    public void wakeup() {
+        boolean conn;
+        synchronized(this) {
+            conn = connected;
+        }
+
+        if(conn)
+            selector.wakeup();
     }
 
 }

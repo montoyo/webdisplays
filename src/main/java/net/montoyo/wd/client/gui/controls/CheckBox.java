@@ -5,6 +5,7 @@
 package net.montoyo.wd.client.gui.controls;
 
 import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.util.ResourceLocation;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
@@ -71,6 +72,8 @@ public class CheckBox extends BasicControl {
     @Override
     public void draw(int mouseX, int mouseY, float ptt) {
         if(visible) {
+            GlStateManager.disableAlpha();
+
             bindTexture(checked ? texChecked : texUnchecked);
             blend(true);
             fillTexturedRect(x, y, WIDTH, HEIGHT, 0.0, 0.0, 1.0, 1.0);

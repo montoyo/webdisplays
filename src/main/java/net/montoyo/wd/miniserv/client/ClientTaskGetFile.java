@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ClientTaskGetFile extends ClientTask {
+public class ClientTaskGetFile extends ClientTask<ClientTaskGetFile> {
 
     private final UUID uuid;
     private final String fname;
@@ -86,6 +86,7 @@ public class ClientTaskGetFile extends ClientTask {
         while(!hasResponse) {
             if(System.currentTimeMillis() - t > 10000) {
                 responseLock.unlock();
+                cancel();
                 return Constants.GETF_STATUS_TIMED_OUT;
             }
 
@@ -124,6 +125,7 @@ public class ClientTaskGetFile extends ClientTask {
                 data = new byte[0];
                 dataLen = -1;
                 dataLock.unlock();
+                cancel();
                 return data;
             }
 

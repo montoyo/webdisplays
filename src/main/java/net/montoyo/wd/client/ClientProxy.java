@@ -309,7 +309,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     }
 
     @Override
-    public void startMiniServClient() {
+    public void startMiniservClient() {
         if(miniservPort <= 0) {
             Log.warning("Can't start miniserv client: miniserv is disabled");
             return;
@@ -329,6 +329,11 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         InetSocketAddress msAddr = new InetSocketAddress(((InetSocketAddress) saddr).getAddress(), miniservPort);
         Client.getInstance().start(msAddr);
         msClientStarted = true;
+    }
+
+    @Override
+    public boolean isMiniservDisabled() {
+        return miniservPort <= 0;
     }
 
     /**************************************** RESOURCE MANAGER METHODS ****************************************/

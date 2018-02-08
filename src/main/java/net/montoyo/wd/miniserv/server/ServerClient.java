@@ -13,6 +13,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -234,6 +235,43 @@ public class ServerClient extends AbstractClient {
 
             sendPacket(rep);
         }
+    }
+
+    @PacketHandler(PacketID.QUOTA)
+    public void handleQuota(DataInputStream dis) {
+        OutgoingPacket pkt = new OutgoingPacket();
+        pkt.writeByte(PacketID.QUOTA.ordinal());
+        pkt.writeLong(quota);
+        pkt.writeLong(Server.getInstance().getMaxQuota());
+
+        sendPacket(pkt);
+    }
+
+    @PacketHandler(PacketID.LIST)
+    public void handleList(DataInputStream dis) throws IOException {
+        long msb = dis.readLong();
+        long lsb = dis.readLong();
+        File dir = new File(Server.getInstance().getDirectory(), (new UUID(msb, lsb)).toString());
+        String[] list = null;
+
+        if(dir.exists() && dir.isDirectory()) {
+            File[] files = dir.listFiles();
+
+            if(files != null)
+                list = Arrays.stream(files).filter(f -> f.isFile() && !Util.isFileNameInvalid(f.getName())).map(File::getName).toArray(String[]::new);
+        }
+
+        OutgoingPacket pkt = new OutgoingPacket();
+        pkt.writeByte(PacketID.LIST.ordinal());
+
+        if(list == null)
+            pkt.writeByte(0);
+        else {
+            pkt.writeByte(list.length);
+            Arrays.stream(list).forEach(pkt::writeString);
+        }
+
+        sendPacket(pkt);
     }
 
     private void finishUpload(int status) {

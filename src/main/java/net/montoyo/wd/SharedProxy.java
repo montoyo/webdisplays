@@ -91,7 +91,11 @@ public class SharedProxy {
     public void setMiniservClientPort(int port) {
     }
 
-    public void startMiniServClient() {
+    public void startMiniservClient() {
+    }
+
+    public boolean isMiniservDisabled() {
+        return false;
     }
 
 }

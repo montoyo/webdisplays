@@ -29,5 +29,11 @@
     "sounds": [
       "webdisplays:screencfg_open"
     ]
+  },
+  "server": {
+    "category": "master",
+    "sounds": [
+      "webdisplays:server"
+    ]
   }
 }

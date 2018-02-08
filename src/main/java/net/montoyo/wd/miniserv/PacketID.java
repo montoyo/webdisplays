@@ -12,7 +12,9 @@ public enum PacketID {
     BEGIN_FILE_UPLOAD,  //C->S
     FILE_PART,          //C->S and S->C
     FILE_STATUS,        //S->C
-    GET_FILE;           //C->S
+    GET_FILE,           //C->S
+    QUOTA,              //C->S and S->C
+    LIST;               //C->S and S->C
 
     public static PacketID fromInt(int i) {
         PacketID[] values = values();

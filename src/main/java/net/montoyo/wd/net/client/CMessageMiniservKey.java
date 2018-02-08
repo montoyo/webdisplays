@@ -40,7 +40,7 @@ public class CMessageMiniservKey implements IMessage, Runnable {
     public void run() {
         if(Client.getInstance().decryptKey(encryptedKey)) {
             Log.info("Successfully received and decrypted key, starting miniserv client...");
-            WebDisplays.PROXY.startMiniServClient();
+            WebDisplays.PROXY.startMiniservClient();
         }
     }
 

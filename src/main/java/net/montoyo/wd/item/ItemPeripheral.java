@@ -16,6 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.block.BlockKeyboardRight;
 import net.montoyo.wd.core.DefaultPeripheral;
 
@@ -53,6 +54,8 @@ public class ItemPeripheral extends ItemMultiTexture {
     public void addInformation(ItemStack is, @Nullable World world, List<String> tt, ITooltipFlag ttFlags) {
         if(is.getMetadata() == 1) //CC Interface
             tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.missingCC")); //CC is not available for 1.12.2
+        else if(is.getMetadata() == 11 && WebDisplays.PROXY.isMiniservDisabled()) //Server
+            tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.noMiniserv"));
     }
 
 }

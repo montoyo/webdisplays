@@ -82,6 +82,7 @@ public class WebDisplays {
     public SoundEvent soundUpgradeAdd;
     public SoundEvent soundUpgradeDel;
     public SoundEvent soundScreenCfg;
+    public SoundEvent soundServer;
 
     //Criterions
     public Criterion criterionPadBreak;
@@ -176,6 +177,7 @@ public class WebDisplays {
         soundUpgradeAdd = registerSound(ev, "upgradeAdd");
         soundUpgradeDel = registerSound(ev, "upgradeDel");
         soundScreenCfg = registerSound(ev, "screencfgOpen");
+        soundServer = registerSound(ev, "server");
     }
 
     @SubscribeEvent

@@ -227,4 +227,19 @@ public abstract class Util {
     public static boolean isFileNameInvalid(String fname) {
         return fname.isEmpty() || fname.length() > 64 || fname.charAt(0) == '.' || fname.indexOf('/') >= 0 || fname.indexOf('\\') >= 0;
     }
+
+    public static final String[] SIZES = { "bytes", "KiB", "MiB", "GiB", "TiB" };
+
+    public static String sizeString(long l) {
+        double d = (double) l;
+        int size = 0;
+
+        while(l >= 1024L && size + 1 < SIZES.length) {
+            d /= 1024.0;
+            l /= 1024L;
+            size++;
+        }
+
+        return String.format("%.2f %s", d, SIZES[size]);
+    }
 }
