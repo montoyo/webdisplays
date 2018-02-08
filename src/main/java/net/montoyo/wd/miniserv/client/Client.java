@@ -287,6 +287,8 @@ public class Client extends AbstractClient implements Runnable {
     public void handleGetFile(DataInputStream dis) throws IOException {
         if(currentTask instanceof ClientTaskGetFile)
             ((ClientTaskGetFile) currentTask).onGetFileResponse(dis.readByte());
+        else if(currentTask instanceof ClientTaskCheckFile)
+            ((ClientTaskCheckFile) currentTask).onStatus(dis.readByte());
     }
 
     @PacketHandler(PacketID.FILE_PART)

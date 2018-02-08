@@ -40,6 +40,7 @@ public class ClientTaskGetFile extends ClientTask<ClientTaskGetFile> {
         pkt.writeLong(uuid.getMostSignificantBits());
         pkt.writeLong(uuid.getLeastSignificantBits());
         pkt.writeString(fname);
+        pkt.writeBoolean(true);
 
         client.sendPacket(pkt);
     }

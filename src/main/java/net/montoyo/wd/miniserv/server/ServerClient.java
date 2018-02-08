@@ -214,6 +214,7 @@ public class ServerClient extends AbstractClient {
             long msb = dis.readLong();
             long lsb = dis.readLong();
             String fname = readString(dis);
+            boolean doQuery = dis.readBoolean();
 
             OutgoingPacket rep = new OutgoingPacket();
             rep.writeByte(PacketID.GET_FILE.ordinal());
@@ -224,13 +225,16 @@ public class ServerClient extends AbstractClient {
                 UUID user = new UUID(msb, lsb);
                 File fle = new File(Server.getInstance().getDirectory(), user.toString() + File.separatorChar + fname);
 
-                try {
-                    rep.setOnFinishAction(new SendFileCallback(fle));
-                    rep.writeByte(0);
-                    sendingFile = true;
-                } catch(FileNotFoundException ex) {
-                    rep.writeByte(Constants.GETF_STATUS_NOT_FOUND);
-                }
+                if(doQuery) {
+                    try {
+                        rep.setOnFinishAction(new SendFileCallback(fle));
+                        rep.writeByte(0);
+                        sendingFile = true;
+                    } catch(FileNotFoundException ex) {
+                        rep.writeByte(Constants.GETF_STATUS_NOT_FOUND);
+                    }
+                } else
+                    rep.writeByte((fle.exists() && fle.isFile()) ? 0 : Constants.GETF_STATUS_NOT_FOUND);
             }
 
             sendPacket(rep);

@@ -6,6 +6,7 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * Read config (see "Config elements" below)
 * Miniserv timeout
 * Recipe for server block
+* del command
 
 ### TODO
 * French translations

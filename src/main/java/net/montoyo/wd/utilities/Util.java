@@ -14,6 +14,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.StringJoiner;
 
 public abstract class Util {
 
@@ -242,4 +243,11 @@ public abstract class Util {
 
         return String.format("%.2f %s", d, SIZES[size]);
     }
+
+    public static String join(String[] array, String sep) {
+        StringJoiner j = new StringJoiner(sep);
+        Arrays.stream(array).forEach(j::add);
+        return j.toString();
+    }
+
 }
