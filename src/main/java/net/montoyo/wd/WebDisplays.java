@@ -17,6 +17,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -44,6 +46,8 @@ import net.montoyo.wd.utilities.Util;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
@@ -62,6 +66,7 @@ public class WebDisplays {
     public static SimpleNetworkWrapper NET_HANDLER;
     public static WDCreativeTab CREATIVE_TAB;
     public static final ResourceLocation ADV_PAD_BREAK = new ResourceLocation("webdisplays", "webdisplays/pad_break");
+    public static final String BLACKLIST_URL = "mod://webdisplays/blacklisted.html";
 
     //Blocks
     public BlockScreen blockScreen;
@@ -93,15 +98,34 @@ public class WebDisplays {
 
     //Config
     public static final double PAD_RATIO = 59.0 / 30.0;
-    public String homePage = "mod://webdisplays/main.html"; //TODO: Read from config
+    public String homePage;
     public double padResX;
     public double padResY;
     private int lastPadId = 0;
     public boolean doHardRecipe = true;
     private boolean hasOC;
+    private String[] blacklist;
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent ev) {
+        //Load config
+        Configuration cfg = new Configuration(ev.getSuggestedConfigurationFile());
+        cfg.load();
+        Property blacklist = cfg.get("main", "blacklist", new String[0]);
+        Property padHeight = cfg.get("main", "padHeight", 480);
+        Property hardRecipe = cfg.get("main", "hardRecipes", true);
+        Property homePage = cfg.get("main", "homepage", "mod://webdisplays/main.html");
+
+        blacklist.setComment("An array of domain names you don't want to load.");
+        padHeight.setComment("The minePad Y resolution in pixels. padWidth = padHeight * " + PAD_RATIO);
+        hardRecipe.setComment("If true, breaking the minePad is required to craft upgrades.");
+        homePage.setComment("The URL that will be loaded each time you create a screen");
+        cfg.save();
+
+        this.blacklist = blacklist.getStringList();
+        this.doHardRecipe = hardRecipe.getBoolean();
+        this.homePage = homePage.getString();
+
         CREATIVE_TAB = new WDCreativeTab();
 
         //Criterions
@@ -111,9 +135,8 @@ public class WebDisplays {
         criterionKeyboardCat = new Criterion("keyboard_cat");
         registerTrigger(criterionPadBreak, criterionUpgradeScreen, criterionLinkPeripheral, criterionKeyboardCat);
 
-        //Read configuration TODO
-        final int padHeight = 480;
-        padResY = (double) padHeight;
+        //Read configuration
+        padResY = (double) padHeight.getInt();
         padResX = padResY * PAD_RATIO;
 
         //Init blocks
@@ -322,6 +345,19 @@ public class WebDisplays {
 
     public static boolean isOpenComputersAvailable() {
         return INSTANCE.hasOC;
+    }
+
+    public static boolean isSiteBlacklisted(String url) {
+        try {
+            URL url2 = new URL(Util.addProtocol(url));
+            return Arrays.stream(INSTANCE.blacklist).anyMatch(str -> str.equalsIgnoreCase(url2.getHost()));
+        } catch(MalformedURLException ex) {
+            return false;
+        }
+    }
+
+    public static String applyBlacklist(String url) {
+        return isSiteBlacklisted(url) ? BLACKLIST_URL : url;
     }
 
 }

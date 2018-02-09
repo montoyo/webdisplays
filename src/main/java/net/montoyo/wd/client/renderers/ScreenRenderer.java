@@ -41,7 +41,7 @@ public class ScreenRenderer extends TileEntitySpecialRenderer<TileEntityScreen> 
         for(int i = 0; i < te.screenCount(); i++) {
             TileEntityScreen.Screen scr = te.getScreen(i);
             if(scr.browser == null) {
-                scr.browser = ((ClientProxy) WebDisplays.PROXY).getMCEF().createBrowser(scr.url);
+                scr.browser = ((ClientProxy) WebDisplays.PROXY).getMCEF().createBrowser(WebDisplays.applyBlacklist(scr.url));
 
                 if(scr.rotation.isVertical)
                     scr.browser.resize(scr.resolution.y, scr.resolution.x);

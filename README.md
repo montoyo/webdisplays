@@ -7,18 +7,13 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 ### TODO
 * French translations
 * Change mod name to WD2
-* Put a limit on screen resolution
 * Auto-find rotation for BOTTOM & TOP screens
 
 ### Config elements
-* Site blacklist
-* minePad resolution
-* Homepage
 * RPMP (Real pixels per Minecraft pixels)
-* Browser language
 * Screen load/unload distance (max distance = 60.0)
 * Disable ownership thief item
-* Disable hard recipes
+* Put a limit on screen resolution
 
 ### Delayed things
 * Plugin API
@@ -26,5 +21,6 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * CC Interface, if CC gets updated...
 * Center camera to screen when using keyboard
 * minePad management: check GuiContainer.draggedStack for minePad
+* In-game command to add/remove blacklisted domains
 
 

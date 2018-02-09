@@ -322,6 +322,7 @@ public class TileEntityScreen extends TileEntity {
             return;
         }
 
+        url = WebDisplays.applyBlacklist(url);
         scr.url = url;
         scr.videoType = VideoType.getTypeFromURL(url);
 
@@ -639,9 +640,14 @@ public class TileEntityScreen extends TileEntity {
     public void updateClientSideURL(IBrowser target, String url) {
         for(Screen scr: screens) {
             if(scr.browser == target) {
-                scr.url = url; //FIXME: This is an invalid fix for something that CANNOT be fixed
-                scr.videoType = VideoType.getTypeFromURL(url);
+                boolean blacklisted = WebDisplays.isSiteBlacklisted(url);
+                scr.url = blacklisted ? WebDisplays.BLACKLIST_URL : url; //FIXME: This is an invalid fix for something that CANNOT be fixed
+                scr.videoType = VideoType.getTypeFromURL(scr.url);
                 ytVolume = Float.POSITIVE_INFINITY; //Force volume update
+
+                if(blacklisted && scr.browser != null)
+                    scr.browser.loadURL(WebDisplays.BLACKLIST_URL);
+
                 break;
             }
         }

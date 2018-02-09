@@ -52,14 +52,13 @@ public class SMessagePadCtrl implements IMessage, Runnable {
                 if(url.isEmpty())
                     is.setTagCompound(null); //Shutdown
                 else {
-                    //TODO: Check if site is not blacklisted
                     if(is.getTagCompound() == null)
                         is.setTagCompound(new NBTTagCompound());
 
                     if(!is.getTagCompound().hasKey("PadID"))
                         is.getTagCompound().setInteger("PadID", WebDisplays.getNextAvailablePadID());
 
-                    is.getTagCompound().setString("PadURL", url);
+                    is.getTagCompound().setString("PadURL", WebDisplays.applyBlacklist(url));
                 }
             }
         } else {
@@ -77,7 +76,7 @@ public class SMessagePadCtrl implements IMessage, Runnable {
                 target = player.inventory.offHandInventory.get(0);
 
             if(target != null)
-                target.getTagCompound().setString("PadURL", url);
+                target.getTagCompound().setString("PadURL", WebDisplays.applyBlacklist(url));
         }
     }
 

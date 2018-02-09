@@ -103,7 +103,7 @@ public class GuiSetURL2 extends WDScreen {
                     ClientProxy.PadData pd = ((ClientProxy) WebDisplays.PROXY).getPadByID(held.getTagCompound().getInteger("PadID"));
 
                     if(pd != null && pd.view != null)
-                        pd.view.loadURL(url);
+                        pd.view.loadURL(WebDisplays.applyBlacklist(url));
                 }
             } else
                 WebDisplays.NET_HANDLER.sendToServer(SMessageScreenCtrl.setURL(tileEntity, screenSide, url, remoteLocation));

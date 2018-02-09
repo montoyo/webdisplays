@@ -74,7 +74,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         private long lastURLSent;
 
         private PadData(String url, int id) {
-            view = mcef.createBrowser(url);
+            view = mcef.createBrowser(WebDisplays.applyBlacklist(url));
             view.resize((int) WebDisplays.INSTANCE.padResX, (int) WebDisplays.INSTANCE.padResY);
             isInHotbar = true;
             this.id = id;
@@ -356,8 +356,13 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
             for(PadData pd: padList) {
                 if(pd.view == browser && t - pd.lastURLSent >= 1000) {
-                    pd.lastURLSent = t; //Avoid spamming the server with porn URLs
-                    WebDisplays.NET_HANDLER.sendToServer(new SMessagePadCtrl(pd.id, url));
+                    if(WebDisplays.isSiteBlacklisted(url))
+                        pd.view.loadURL(WebDisplays.BLACKLIST_URL);
+                    else {
+                        pd.lastURLSent = t; //Avoid spamming the server with porn URLs
+                        WebDisplays.NET_HANDLER.sendToServer(new SMessagePadCtrl(pd.id, url));
+                    }
+
                     break;
                 }
             }
