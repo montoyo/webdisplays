@@ -46,11 +46,6 @@ public abstract class AbstractClient {
                     packetHandlers[ph.value().ordinal()] = m;
             }
         }
-
-        for(int i = 0; i < packetHandlers.length; i++) {
-            if(packetHandlers[i] == null)
-                Log.warning("AbstractClient: no packet handler for %s", PacketID.fromInt(i).toString());
-        }
     }
 
     protected abstract void onWriteError();
@@ -67,17 +62,13 @@ public abstract class AbstractClient {
 
                         if(pid >= packetHandlers.length)
                             Log.error("Caught invalid packet ID %d", pid);
-                        else {
-                            Log.info("Received PID %s", PacketID.fromInt(pid).toString());
-
-                            if(packetHandlers[pid] != null) {
-                                try {
-                                    packetHandlers[pid].invoke(this, dis); //This is slow, I know... sorry
-                                } catch(IllegalAccessException ex) {
-                                    Log.errorEx("This shouldn't have happened", ex);
-                                } catch(InvocationTargetException ex) {
-                                    Log.warningEx("Caught exception while handling packet %d", ex.getTargetException(), pid);
-                                }
+                        else if(packetHandlers[pid] != null) {
+                            try {
+                                packetHandlers[pid].invoke(this, dis); //This is slow, I know... sorry
+                            } catch(IllegalAccessException ex) {
+                                Log.errorEx("This shouldn't have happened", ex);
+                            } catch(InvocationTargetException ex) {
+                                Log.warningEx("Caught exception while handling packet %d", ex.getTargetException(), pid);
                             }
                         }
                     } catch(IOException ex) {

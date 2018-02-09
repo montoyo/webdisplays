@@ -14,7 +14,8 @@ public enum PacketID {
     FILE_STATUS,        //S->C
     GET_FILE,           //C->S
     QUOTA,              //C->S and S->C
-    LIST;               //C->S and S->C
+    LIST,               //C->S and S->C
+    DELETE;             //C->S and S->C
 
     public static PacketID fromInt(int i) {
         PacketID[] values = values();

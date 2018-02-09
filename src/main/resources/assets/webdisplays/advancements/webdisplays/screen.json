@@ -23,7 +23,8 @@
       "webdisplays:redctrl1",
       "webdisplays:redctrl2",
       "webdisplays:stonekey",
-      "webdisplays:keyboard"
+      "webdisplays:keyboard",
+      "webdisplays:server"
     ]
   }
 }

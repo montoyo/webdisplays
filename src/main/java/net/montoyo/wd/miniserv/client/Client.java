@@ -320,6 +320,12 @@ public class Client extends AbstractClient implements Runnable {
             ((ClientTaskGetFileList) currentTask).onFileList(files);
     }
 
+    @PacketHandler(PacketID.DELETE)
+    public void handleDelete(DataInputStream dis) throws IOException {
+        if(currentTask instanceof ClientTaskDeleteFile)
+            ((ClientTaskDeleteFile) currentTask).onStatusPacket(dis.readByte());
+    }
+
     public void nextTask() {
         if(currentTask != null)
             currentTask.onFinished();

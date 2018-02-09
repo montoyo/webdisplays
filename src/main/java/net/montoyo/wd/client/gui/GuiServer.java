@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,7 +39,7 @@ public class GuiServer extends WDScreen {
     private static final ResourceLocation BG_IMAGE = new ResourceLocation("webdisplays", "textures/gui/server_bg.png");
     private static final ResourceLocation FG_IMAGE = new ResourceLocation("webdisplays", "textures/gui/server_fg.png");
     private static final HashMap<String, Method> COMMAND_MAP = new HashMap<>();
-    private static final int MAX_LINE_LEN = 30;
+    private static final int MAX_LINE_LEN = 32;
     private static final int MAX_LINES = 12;
 
     private final NameUUIDPair owner;
@@ -48,8 +49,9 @@ public class GuiServer extends WDScreen {
     private int blinkTime;
     private String lastCmd;
     private boolean promptLocked;
-    private long queryTime;
+    private volatile long queryTime;
     private ClientTask<?> currentTask;
+    private int selectedLine = -1;
 
     //Access command
     private int accessTrials;
@@ -59,10 +61,12 @@ public class GuiServer extends WDScreen {
 
     //Upload wizard
     private boolean uploadWizard;
-    private int selectedLine = -1;
     private File uploadDir;
-    private File[] uploadFiles;
+    private final ArrayList<File> uploadFiles = new ArrayList<>();
     private int uploadOffset;
+    private boolean uploadFirstIsParent;
+    private String uploadFilter = "";
+    private long uploadFilterTime;
 
     public GuiServer(NameUUIDPair owner) {
         this.owner = owner;
@@ -171,10 +175,22 @@ public class GuiServer extends WDScreen {
         } else {
             blinkTime = (blinkTime + 1) % 10;
 
-            if(currentTask != null && System.currentTimeMillis() - queryTime >= 10000) {
-                writeLine(tr("timeout"));
-                currentTask.cancel();
-                clearTask();
+            if(currentTask != null) {
+                long queryTime;
+                synchronized(this) {
+                    queryTime = this.queryTime;
+                }
+
+                if(System.currentTimeMillis() - queryTime >= 10000) {
+                    writeLine(tr("timeout"));
+                    currentTask.cancel();
+                    clearTask();
+                }
+            }
+
+            if(!uploadFilter.isEmpty() && System.currentTimeMillis() - uploadFilterTime >= 1000) {
+                Log.info("Upload filter cleared");
+                uploadFilter = "";
             }
         }
     }
@@ -187,19 +203,46 @@ public class GuiServer extends WDScreen {
         if(uploadWizard) {
             if(keyState) {
                 if(keyCode == Keyboard.KEY_UP) {
-                    if(--selectedLine < 3)
-                        selectedLine = MAX_LINES - 1;
+                    if(selectedLine > 3)
+                        selectedLine--;
+                    else if(uploadOffset > 0) {
+                        uploadOffset--;
+                        updateUploadScreen();
+                    }
                 } else if(keyCode == Keyboard.KEY_DOWN) {
-                    if(++selectedLine >= MAX_LINES)
-                        selectedLine = 3;
+                    if(selectedLine < MAX_LINES - 1)
+                        selectedLine++;
+                    else if(uploadOffset + selectedLine - 2 < uploadFiles.size()) {
+                        uploadOffset++;
+                        updateUploadScreen();
+                    }
+                } else if(keyCode == Keyboard.KEY_PRIOR) {
+                    selectedLine = 3;
+                    int dst = uploadOffset - (MAX_LINES - 3);
+                    if(dst < 0)
+                        dst = 0;
+
+                    selectFile(dst);
+                } else if(keyCode == Keyboard.KEY_NEXT) {
+                    selectedLine = 3;
+                    int dst = uploadOffset + (MAX_LINES - 3);
+                    if(dst >= uploadFiles.size())
+                        dst = uploadFiles.size() - 1;
+
+                    selectFile(dst);
+                } else if(keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) {
+                    File file = uploadFiles.get(uploadOffset + selectedLine - 3);
+
+                    if(file.isDirectory()) {
+                        uploadCD(file);
+                        updateUploadScreen();
+                    } else
+                        startFileUpload(file, true);
                 }
             }
 
             if(keyCode == Keyboard.KEY_ESCAPE) {
-                lines.clear();
-                promptLocked = false;
-                uploadWizard = false;
-                selectedLine = -1;
+                quitUploadWizard();
                 return; //Don't let the screen handle this
             }
 
@@ -208,9 +251,16 @@ public class GuiServer extends WDScreen {
             super.handleKeyboardInput();
 
             if(keyState) {
-                if(keyCode == Keyboard.KEY_L && (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)))
+                boolean ctrl = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
+
+                if(keyCode == Keyboard.KEY_L && ctrl)
                     lines.clear();
-                else if(keyCode == Keyboard.KEY_UP) {
+                else if(keyCode == Keyboard.KEY_V && ctrl) {
+                    prompt += getClipboardString();
+
+                    if(prompt.length() > MAX_LINE_LEN)
+                        prompt = prompt.substring(0, MAX_LINE_LEN);
+                } else if(keyCode == Keyboard.KEY_UP) {
                     if(lastCmd != null) {
                         String tmp = prompt;
                         prompt = lastCmd;
@@ -225,7 +275,24 @@ public class GuiServer extends WDScreen {
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
         super.keyTyped(typedChar, keyCode);
 
-        if(promptLocked || uploadWizard)
+        if(uploadWizard) {
+            boolean found = false;
+            uploadFilter += Character.toLowerCase(typedChar);
+            uploadFilterTime = System.currentTimeMillis();
+
+            for(int i = uploadFirstIsParent ? 1 : 0; i < uploadFiles.size(); i++) {
+                if(uploadFiles.get(i).getName().toLowerCase().startsWith(uploadFilter)) {
+                    selectFile(i);
+                    found = true;
+                    break;
+                }
+            }
+
+            if(!found && uploadFilter.length() == 1)
+                uploadFilter = "";
+
+            return;
+        } else if(promptLocked)
             return;
 
         if(keyCode == Keyboard.KEY_BACK) {
@@ -293,6 +360,13 @@ public class GuiServer extends WDScreen {
         }
     }
 
+    private void quitUploadWizard() {
+        lines.clear();
+        promptLocked = false;
+        uploadWizard = false;
+        selectedLine = -1;
+    }
+
     @Override
     public void onGuiClosed() {
         super.onGuiClosed();
@@ -304,7 +378,7 @@ public class GuiServer extends WDScreen {
     private boolean queueTask(ClientTask<?> task) {
         if(Client.getInstance().addTask(task)) {
             promptLocked = true;
-            queryTime = System.currentTimeMillis();
+            queryTime = System.currentTimeMillis(); //No task is running so it's okay to have an unsynchronized access here
             currentTask = task;
             return true;
         } else {
@@ -336,9 +410,18 @@ public class GuiServer extends WDScreen {
     }
 
     @CommandHandler("help")
-    public void commandHelp() {
-        for(String c : COMMAND_MAP.keySet())
-            writeLine(c + " - " + tr("help." + c));
+    public void commandHelp(String[] args) {
+        if(args.length > 0) {
+            String cmd = args[0].toLowerCase();
+
+            if(COMMAND_MAP.containsKey(cmd))
+                writeLine(tr("help." + cmd));
+            else
+                writeLine(tr("unknowncmd"));
+        } else {
+            for(String c : COMMAND_MAP.keySet())
+                writeLine(c + " - " + tr("help." + c));
+        }
     }
 
     @CommandHandler("exit")
@@ -408,7 +491,7 @@ public class GuiServer extends WDScreen {
     @CommandHandler("url")
     public void commandURL(String[] args) {
         if(args.length < 1) {
-            writeLine(tr("urlarg"));
+            writeLine(tr("fnamearg"));
             return;
         }
 
@@ -442,11 +525,29 @@ public class GuiServer extends WDScreen {
             uploadDir = newDir;
         }
 
-        uploadFiles = uploadDir.listFiles();
-        if(uploadFiles == null)
-            uploadFiles = new File[0];
-        else
-            uploadFiles = Arrays.stream(uploadFiles).filter(f -> !f.isHidden() && (f.isDirectory() || (f.isFile() && !Util.isFileNameInvalid(f.getName())))).toArray(File[]::new);
+        uploadFiles.clear();
+        File parent = uploadDir.getParentFile();
+
+        if(parent != null && parent.exists()) {
+            uploadFiles.add(parent);
+            uploadFirstIsParent = true;
+        } else
+            uploadFirstIsParent = false;
+
+        File[] children = uploadDir.listFiles();
+        if(children != null) {
+            Collator c = Collator.getInstance();
+            c.setStrength(Collator.SECONDARY);
+            c.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+
+            Arrays.stream(children).filter(f -> !f.isHidden() && (f.isDirectory() || f.isFile())).sorted((a, b) -> c.compare(a.getName(), b.getName())).forEach(uploadFiles::add);
+        }
+
+        uploadOffset = 0;
+        uploadFilter = "";
+
+        if(uploadWizard)
+            selectedLine = 3;
     }
 
     private void updateUploadScreen() {
@@ -455,20 +556,134 @@ public class GuiServer extends WDScreen {
         lines.add("Choose a file to upload");
         lines.add(trimStringL(uploadDir.getPath()));
         lines.add("");
-        lines.add("[Parent]");
 
-        final int maxl = Math.min(MAX_LINES - 4, uploadFiles.length);
-        for(int i = uploadOffset; i < maxl; i++)
-            lines.add(trimStringR(uploadFiles[i].getName()));
+        for(int i = uploadOffset; i < uploadFiles.size() && lines.size() < MAX_LINES; i++) {
+            if(i == 0 && uploadFirstIsParent)
+                lines.add("[Parent directory]");
+            else
+                lines.add(trimStringR(uploadFiles.get(i).getName()));
+        }
+    }
+
+    private void selectFile(int i) {
+        int pos = 3 + i - uploadOffset;
+        if(pos >= 3 && pos < MAX_LINES) {
+            selectedLine = pos;
+            return;
+        }
+
+        uploadOffset = i;
+        if(uploadOffset + MAX_LINES - 3 > uploadFiles.size())
+            uploadOffset = uploadFiles.size() - MAX_LINES + 3;
+
+        updateUploadScreen();
+        selectedLine = 3 + i - uploadOffset;
     }
 
     @CommandHandler("upload")
-    public void commandUpload() {
+    public void commandUpload(String[] args) {
+        if(!mc.player.getGameProfile().getId().equals(owner.uuid)) {
+            writeLine(tr("errowner"));
+            return;
+        }
+
+        if(args.length > 0) {
+            File fle = new File(Util.join(args, " "));
+            if(!fle.exists()) {
+                writeLine(tr("notfound"));
+                return;
+            }
+
+            if(fle.isDirectory())
+                uploadCD(fle);
+            else if(fle.isFile()) {
+                startFileUpload(fle, false);
+                return;
+            } else {
+                writeLine(tr("notfound"));
+                return;
+            }
+        }
+
         uploadWizard = true;
         promptLocked = true;
-        selectedLine = 3;
         uploadOffset = 0;
+        selectedLine = 3;
         updateUploadScreen();
+    }
+
+    @CommandHandler("rm")
+    public void commandDelete(String[] args) {
+        if(!mc.player.getGameProfile().getId().equals(owner.uuid)) {
+            writeLine(tr("errowner"));
+            return;
+        }
+
+        if(args.length < 1) {
+            writeLine(tr("fnamearg"));
+            return;
+        }
+
+        String fname = Util.join(args, " ");
+        if(Util.isFileNameInvalid(fname)) {
+            writeLine(tr("nameerr"));
+            return;
+        }
+
+        ClientTaskDeleteFile task = new ClientTaskDeleteFile(fname);
+        task.setFinishCallback((t) -> {
+            int status = t.getStatus();
+            if(status == 1)
+                writeLine(tr("notfound"));
+            else if(status != 0)
+                writeLine(tr("error"));
+
+            clearTask();
+        });
+
+        queueTask(task);
+    }
+
+    private void startFileUpload(File f, boolean quit) {
+        if(quit)
+            quitUploadWizard();
+
+        if(Util.isFileNameInvalid(f.getName()) || f.getName().length() >= MAX_LINE_LEN - 3) {
+            writeLine(tr("nameerr"));
+            return;
+        }
+
+        ClientTaskUploadFile task;
+        try {
+            task = new ClientTaskUploadFile(f);
+        } catch(IOException ex) {
+            writeLine(tr("error"));
+            ex.printStackTrace();
+            return;
+        }
+
+        task.setProgressCallback((cur, total) -> {
+            synchronized(GuiServer.this) {
+                queryTime = System.currentTimeMillis();
+            }
+        });
+
+        task.setFinishCallback(t -> {
+            int status = t.getUploadStatus();
+            if(status == 0)
+                writeLine(tr("upload.done"));
+            else if(status == Constants.FUPA_STATUS_FILE_EXISTS)
+                writeLine(tr("upload.exists"));
+            else if(status == Constants.FUPA_STATUS_EXCEEDS_QUOTA)
+                writeLine(tr("upload.quota"));
+            else
+                writeLine(tr("error2", status));
+
+            clearTask();
+        });
+
+        if(queueTask(task))
+            writeLine(tr("upload.uploading"));
     }
 
 }

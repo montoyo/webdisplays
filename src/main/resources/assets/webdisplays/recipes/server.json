@@ -6,7 +6,7 @@
   "key": {
     "G": {
       "item": "minecraft:dye",
-      "data": 8
+      "data": 2
     },
     "P": {
       "item": "webdisplays:craftcomp",
@@ -15,6 +15,6 @@
   },
   "result": {
     "item": "webdisplays:peripheral",
-    "data": 2
+    "data": 11
   }
 }

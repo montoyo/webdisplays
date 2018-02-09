@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class ClientTaskUploadFile extends ClientTask<ClientTaskUploadFile> implements Consumer<OutgoingPacket> {
@@ -25,11 +26,14 @@ public class ClientTaskUploadFile extends ClientTask<ClientTaskUploadFile> imple
     private FileInputStream fis;
     private boolean abortFupa;
     private int uploadStatus;
+    private long uploadPos;
+    private BiConsumer<Long, Long> onProgress;
 
     public ClientTaskUploadFile(File fle) throws IOException {
         file = fle;
         size = Files.size(fle.toPath());
         fis = new FileInputStream(fle);
+        runCallbackOnMcThread = true;
     }
 
     @Override
@@ -45,7 +49,7 @@ public class ClientTaskUploadFile extends ClientTask<ClientTaskUploadFile> imple
     @Override
     public void abort() {
         abortFupa = true;
-        setUploadStatus(Constants.FUPA_STATUS_CONNECTION_LOST);
+        uploadStatus = Constants.FUPA_STATUS_CONNECTION_LOST;
         Util.silentClose(fis);
     }
 
@@ -56,14 +60,14 @@ public class ClientTaskUploadFile extends ClientTask<ClientTaskUploadFile> imple
             accept(null);
         } else {
             Util.silentClose(fis);
-            setUploadStatus(status);
+            uploadStatus = status;
             client.nextTask();
         }
     }
 
     public void onUploadFinishedStatus(int status) {
         abortFupa = true; //This isn't necessary, but just in case...
-        setUploadStatus(status);
+        uploadStatus = status;
         client.nextTask();
     }
 
@@ -91,6 +95,11 @@ public class ClientTaskUploadFile extends ClientTask<ClientTaskUploadFile> imple
             pkt.writeBytes(UPLOAD_BUFFER, 0, rd);
             client.sendPacket(pkt);
 
+            if(onProgress != null) {
+                uploadPos += (long) rd;
+                onProgress.accept(uploadPos, size);
+            }
+
             if(rd > 0) {
                 pkt.setOnFinishAction(this);
                 return;
@@ -100,19 +109,12 @@ public class ClientTaskUploadFile extends ClientTask<ClientTaskUploadFile> imple
         Util.silentClose(file);
     }
 
-    private void setUploadStatus(int val) {
-        synchronized(this) {
-            uploadStatus = val;
-        }
+    public int getUploadStatus() {
+        return uploadStatus;
     }
 
-    public int getUploadStatus() {
-        int ret;
-        synchronized(this) {
-            ret = uploadStatus;
-        }
-
-        return ret;
+    public void setProgressCallback(BiConsumer<Long, Long> onProgress) {
+        this.onProgress = onProgress;
     }
 
 }

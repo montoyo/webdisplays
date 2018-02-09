@@ -13,6 +13,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -278,6 +279,39 @@ public class ServerClient extends AbstractClient {
         sendPacket(pkt);
     }
 
+    @PacketHandler(PacketID.DELETE)
+    public void handleDelete(DataInputStream dis) throws IOException {
+        String fname = readString(dis);
+        int status = 2;
+
+        if(!Util.isFileNameInvalid(fname)) {
+            File file = new File(userDir, fname);
+
+            if(file.exists() && file.isFile()) {
+                try {
+                    long sz = Files.size(file.toPath());
+
+                    if(file.delete()) {
+                        quota -= sz;
+                        if(quota < 0)
+                            quota = 0;
+
+                        saveQuota();
+                        status = 0;
+                    }
+                } catch(IOException ex) {
+                    Log.errorEx("Couldn't get size of file %s of user %s for removal", ex, file.getAbsolutePath(), uuid.toString());
+                }
+            } else
+                status = 1;
+        }
+
+        OutgoingPacket ret = new OutgoingPacket();
+        ret.writeByte(PacketID.DELETE.ordinal());
+        ret.writeByte(status);
+        sendPacket(ret);
+    }
+
     private void finishUpload(int status) {
         if(currentFile != null) {
             OutgoingPacket pkt = new OutgoingPacket();
@@ -289,14 +323,17 @@ public class ServerClient extends AbstractClient {
             currentFile = null;
 
             quota += currentFileSize;
+            saveQuota();
+        }
+    }
 
-            try {
-                DataOutputStream dos = new DataOutputStream(new FileOutputStream(new File(userDir, ".quota")));
-                dos.writeLong(quota);
-                Util.silentClose(dos);
-            } catch(IOException ex) {
-                Log.errorEx("Could not save quota data for user %s", ex, uuid.toString());
-            }
+    private void saveQuota() {
+        try {
+            DataOutputStream dos = new DataOutputStream(new FileOutputStream(new File(userDir, ".quota")));
+            dos.writeLong(quota);
+            Util.silentClose(dos);
+        } catch(IOException ex) {
+            Log.errorEx("Could not save quota data for user %s", ex, uuid.toString());
         }
     }
 
