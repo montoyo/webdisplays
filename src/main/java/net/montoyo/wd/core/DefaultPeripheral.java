@@ -14,7 +14,7 @@ public enum DefaultPeripheral implements IStringSerializable {
 
     KEYBOARD("keyboard", TileEntityKeyboard.class),                 //WITH FACING (< 3)
     CC_INTERFACE("ccinterface", null),
-    OC_INTERFACE("cointerface", null),
+    OC_INTERFACE("cointerface", TileEntityOCInterface.class),
     REMOTE_CONTROLLER("remotectrl", TileEntityRCtrl.class),         //WITHOUT FACING (>= 3)
     REDSTONE_CONTROLLER("redstonectrl", TileEntityRedCtrl.class),
     SERVER("server", TileEntityServer.class);

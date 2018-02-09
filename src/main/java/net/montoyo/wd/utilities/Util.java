@@ -6,7 +6,7 @@ package net.montoyo.wd.utilities;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.*;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
@@ -15,6 +15,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 public abstract class Util {
 
@@ -105,54 +106,6 @@ public abstract class Util {
             return ret;
         } else
             throw new RuntimeException(String.format("Cannot unserialize class %s!", cls.getName()));
-    }
-
-    public static NBTBase serialize(Object f) {
-        Class<?> cls = f.getClass();
-
-        if(cls == Integer.class)
-            return new NBTTagInt((Integer) f);
-        else if(cls == Float.class)
-            return new NBTTagFloat((Float) f);
-        else if(cls == Double.class)
-            return new NBTTagDouble((Double) f);
-        else if(cls == String.class)
-            return new NBTTagString((String) f);
-        else if(cls.isEnum())
-            return new NBTTagInt(((Enum<?>) f).ordinal());
-        else if(cls.isArray()) {
-            Object[] ray = (Object[]) f;
-            NBTTagList ret = new NBTTagList();
-
-            for(Object o : ray)
-                ret.appendTag(serialize(o));
-
-            return ret;
-        } else
-            throw new RuntimeException(String.format("Cannot save class %s as NBT!", cls.getName()));
-    }
-
-    public static Object unserialize(NBTBase nbt, Class cls) {
-        if(cls == Integer.class || cls == Integer.TYPE)
-            return ((NBTTagInt) nbt).getInt();
-        else if(cls == Float.class || cls == Float.TYPE)
-            return ((NBTTagFloat) nbt).getFloat();
-        else if(cls == Double.class || cls == Double.TYPE)
-            return ((NBTTagDouble) nbt).getDouble();
-        else if(cls == String.class)
-            return ((NBTTagString) nbt).getString();
-        else if(cls.isEnum())
-            return cls.getEnumConstants()[((NBTTagInt) nbt).getInt()];
-        else if(cls.isArray()) {
-            NBTTagList lst = (NBTTagList) nbt;
-            Object[] ray = new Object[lst.tagCount()];
-
-            for(int i = 0; lst.tagCount() > 0; i++)
-                ray[i] = unserialize(lst.removeTag(0), cls.getComponentType());
-
-            return Arrays.copyOf(ray, ray.length, cls);
-        } else
-            throw new RuntimeException(String.format("Cannot load class %s from NBT!", cls.getName()));
     }
 
     public static String[] commaSplit(String str) {
@@ -248,6 +201,24 @@ public abstract class Util {
         StringJoiner j = new StringJoiner(sep);
         Arrays.stream(array).forEach(j::add);
         return j.toString();
+    }
+
+    public static NBTTagCompound writeOwnerToNBT(NBTTagCompound tag, NameUUIDPair owner) {
+        if(owner != null) {
+            tag.setLong("OwnerMSB", owner.uuid.getMostSignificantBits());
+            tag.setLong("OwnerLSB", owner.uuid.getLeastSignificantBits());
+            tag.setString("OwnerName", owner.name);
+        }
+
+        return tag;
+    }
+
+    public static NameUUIDPair readOwnerFromNBT(NBTTagCompound tag) {
+        long msb = tag.getLong("OwnerMSB");
+        long lsb = tag.getLong("OwnerLSB");
+        String str = tag.getString("OwnerName");
+
+        return new NameUUIDPair(str, new UUID(msb, lsb));
     }
 
 }

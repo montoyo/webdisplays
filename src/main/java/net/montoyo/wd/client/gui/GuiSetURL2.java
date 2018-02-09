@@ -4,8 +4,12 @@
 
 package net.montoyo.wd.client.gui;
 
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.montoyo.mcef.api.IBrowser;
 import net.montoyo.wd.WebDisplays;
+import net.montoyo.wd.client.ClientProxy;
 import net.montoyo.wd.client.gui.controls.Button;
 import net.montoyo.wd.client.gui.controls.TextField;
 import net.montoyo.wd.client.gui.loading.FillControl;
@@ -91,9 +95,17 @@ public class GuiSetURL2 extends WDScreen {
         if(!url.isEmpty()) {
             url = Util.addProtocol(url);
 
-            if(isPad)
+            if(isPad) {
                 WebDisplays.NET_HANDLER.sendToServer(new SMessagePadCtrl(url));
-            else
+                ItemStack held = mc.player.getHeldItem(EnumHand.MAIN_HAND);
+
+                if(held.getItem() == WebDisplays.INSTANCE.itemMinePad && held.getTagCompound() != null && held.getTagCompound().hasKey("PadID")) {
+                    ClientProxy.PadData pd = ((ClientProxy) WebDisplays.PROXY).getPadByID(held.getTagCompound().getInteger("PadID"));
+
+                    if(pd != null && pd.view != null)
+                        pd.view.loadURL(url);
+                }
+            } else
                 WebDisplays.NET_HANDLER.sendToServer(SMessageScreenCtrl.setURL(tileEntity, screenSide, url, remoteLocation));
         }
 

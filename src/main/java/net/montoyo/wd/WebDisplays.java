@@ -20,6 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
@@ -47,7 +48,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
-@Mod(modid = "webdisplays", version = WebDisplays.MOD_VERSION, dependencies = "required-after:mcef;")
+@Mod(modid = "webdisplays", version = WebDisplays.MOD_VERSION, dependencies = "required-after:mcef;after:opencomputers;")
 public class WebDisplays {
 
     public static final String MOD_VERSION = "1.0";
@@ -97,6 +98,7 @@ public class WebDisplays {
     public double padResY;
     private int lastPadId = 0;
     public boolean doHardRecipe = true;
+    private boolean hasOC;
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent ev) {
@@ -158,6 +160,7 @@ public class WebDisplays {
     @Mod.EventHandler
     public void onPostInit(FMLPostInitializationEvent ev) {
         PROXY.postInit();
+        hasOC = Loader.isModLoaded("opencomputers");
     }
 
     @SubscribeEvent
@@ -315,6 +318,10 @@ public class WebDisplays {
         } catch(Throwable t) {
             throw new RuntimeException(t);
         }
+    }
+
+    public static boolean isOpenComputersAvailable() {
+        return INSTANCE.hasOC;
     }
 
 }

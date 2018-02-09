@@ -8,6 +8,8 @@ import net.montoyo.wd.miniserv.Constants;
 import net.montoyo.wd.miniserv.OutgoingPacket;
 import net.montoyo.wd.miniserv.PacketID;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.UUID;
 
 public class ClientTaskCheckFile extends ClientTask<ClientTaskCheckFile> {
@@ -48,7 +50,12 @@ public class ClientTaskCheckFile extends ClientTask<ClientTaskCheckFile> {
     }
 
     public String getURL() {
-        return ((new StringBuilder("wd://"))).append(uuid.toString()).append('/').append(fname).toString();
+        try {
+            return ((new StringBuilder("wd://"))).append(uuid.toString()).append('/').append(URLEncoder.encode(fname, "UTF-8")).toString();
+        } catch(UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            return "hi";
+        }
     }
 
 }

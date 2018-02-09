@@ -13,7 +13,6 @@ import net.montoyo.wd.utilities.NameUUIDPair;
 import net.montoyo.wd.utilities.Util;
 
 import javax.annotation.Nonnull;
-import java.util.UUID;
 
 public class TileEntityServer extends TileEntity {
 
@@ -22,25 +21,14 @@ public class TileEntityServer extends TileEntity {
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
-
-        long msb = tag.getLong("OwnerMSB");
-        long lsb = tag.getLong("OwnerLSB");
-        String str = tag.getString("OwnerName");
-        owner = new NameUUIDPair(str, new UUID(msb, lsb));
+        owner = Util.readOwnerFromNBT(tag);
     }
 
     @Override
     @Nonnull
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
-
-        if(owner != null) {
-            tag.setLong("OwnerMSB", owner.uuid.getMostSignificantBits());
-            tag.setLong("OwnerLSB", owner.uuid.getLeastSignificantBits());
-            tag.setString("OwnerName", owner.name);
-        }
-
-        return tag;
+        return Util.writeOwnerToNBT(tag, owner);
     }
 
     public void setOwner(EntityPlayer ep) {

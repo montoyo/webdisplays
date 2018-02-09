@@ -16,6 +16,8 @@ import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.UUID;
 
 public class WDScheme implements IScheme {
@@ -34,6 +36,12 @@ public class WDScheme implements IScheme {
 
         String uuidStr = url.substring(0, pos);
         String fileStr = url.substring(pos + 1);
+
+        try {
+            fileStr = URLDecoder.decode(fileStr, "UTF-8");
+        } catch(UnsupportedEncodingException ex) {
+            Log.warningEx("UTF-8 isn't supported... yeah... and I'm a billionaire...", ex);
+        }
 
         if(uuidStr.isEmpty() || Util.isFileNameInvalid(fileStr))
             return SchemePreResponse.NOT_HANDLED;

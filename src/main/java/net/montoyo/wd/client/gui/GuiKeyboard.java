@@ -120,18 +120,19 @@ public class GuiKeyboard extends WDScreen {
                     char chr = Keyboard.getEventCharacter();
 
                     if(chr == '\n' || chr == '\r' || chr == '\b') {
-                        if(lastIsType)
-                            lastIsType = false;
+                        if(Keyboard.getEventKeyState()) {
+                            if(lastIsType)
+                                lastIsType = false;
 
-                        if(!eventStack.isEmpty())
-                            eventStack += (char) 1;
+                            if(!eventStack.isEmpty())
+                                eventStack += (char) 1;
 
-                        if(Keyboard.getEventKeyState())
                             eventStack += 'p';
-                        else
+                            eventStack += chr;
+                            eventStack += (char) 1;
                             eventStack += 'r';
-
-                        eventStack += chr;
+                            eventStack += chr;
+                        }
                     } else if(chr != 0) {
                         if(!lastIsType) {
                             if(!eventStack.isEmpty())

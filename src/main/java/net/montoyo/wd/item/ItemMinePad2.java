@@ -49,15 +49,22 @@ public class ItemMinePad2 extends Item {
     @Nonnull
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer ply, @Nonnull EnumHand hand) {
         ItemStack is = ply.getHeldItem(hand);
+        boolean ok;
 
-        if(world.isRemote) {
-            if(ply.isSneaking())
+        if(ply.isSneaking()) {
+            if(world.isRemote)
                 WebDisplays.PROXY.displaySetPadURLGui(getURL(is));
-            else if(is.getTagCompound() != null && is.getTagCompound().hasKey("PadID"))
-                WebDisplays.PROXY.openMinePadGui(is.getTagCompound().getInteger("PadID"));
-        }
 
-        return ActionResult.newResult(EnumActionResult.SUCCESS, is);
+            ok = true;
+        } else if(is.getTagCompound() != null && is.getTagCompound().hasKey("PadID")) {
+            if(world.isRemote)
+                WebDisplays.PROXY.openMinePadGui(is.getTagCompound().getInteger("PadID"));
+
+            ok = true;
+        } else
+            ok = false;
+
+        return ActionResult.newResult(ok ? EnumActionResult.SUCCESS : EnumActionResult.PASS, is);
     }
 
     @Override

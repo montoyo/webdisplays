@@ -2,12 +2,10 @@
 This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The text below is my "TODO" list.
 
 ### Missing features
-* Peripheral: OpenComputers interface
 * Read config (see "Config elements" below)
 
 ### TODO
 * French translations
-* minePad management: check GuiContainer.draggedStack for minePad
 * Change mod name to WD2
 * Put a limit on screen resolution
 * Auto-find rotation for BOTTOM & TOP screens
@@ -27,4 +25,6 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * The Shop
 * CC Interface, if CC gets updated...
 * Center camera to screen when using keyboard
+* minePad management: check GuiContainer.draggedStack for minePad
+
 

@@ -31,6 +31,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     public static final int UPDATE_JS_REDSTONE = 6;
     public static final int UPDATE_OWNER = 7;
     public static final int UPDATE_ROTATION = 8;
+    public static final int UPDATE_RUN_JS = 9;
 
     public static final int MOUSE_CLICK = 0;
     public static final int MOUSE_UP = 1;
@@ -40,10 +41,9 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     private Vector3i pos;
     private BlockSide side;
     private int action;
-    private String url;
+    private String string;
     private Vector2i vec2i;
     private int mouseEvent;
-    private String text;
     private ItemStack[] upgrades;
     private int redstoneLevel;
     private NameUUIDPair owner;
@@ -57,7 +57,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         ret.pos = new Vector3i(tes.getPos());
         ret.side = side;
         ret.action = UPDATE_URL;
-        ret.url = url;
+        ret.string = url;
 
         return ret;
     }
@@ -93,8 +93,18 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         CMessageScreenUpdate ret = new CMessageScreenUpdate();
         ret.pos = new Vector3i(tes.getPos());
         ret.side = side;
-        ret.text = text;
+        ret.string = text;
         ret.action = UPDATE_TYPE;
+
+        return ret;
+    }
+
+    public static CMessageScreenUpdate js(TileEntityScreen tes, BlockSide side, String code) {
+        CMessageScreenUpdate ret = new CMessageScreenUpdate();
+        ret.pos = new Vector3i(tes.getPos());
+        ret.side = side;
+        ret.string = code;
+        ret.action = UPDATE_RUN_JS;
 
         return ret;
     }
@@ -151,8 +161,8 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         side = BlockSide.values()[buf.readByte()];
         action = buf.readByte();
 
-        if(action == UPDATE_URL)
-            url = ByteBufUtils.readUTF8String(buf);
+        if(action == UPDATE_URL || action == UPDATE_TYPE || action == UPDATE_RUN_JS)
+            string = ByteBufUtils.readUTF8String(buf);
         else if(action == UPDATE_MOUSE) {
             mouseEvent = buf.readByte();
 
@@ -160,8 +170,6 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
                 vec2i = new Vector2i(buf);
         } else if(action == UPDATE_RESOLUTION)
             vec2i = new Vector2i(buf);
-        else if(action == UPDATE_TYPE)
-            text = ByteBufUtils.readUTF8String(buf);
         else if(action == UPDATE_UPGRADES) {
             upgrades = new ItemStack[buf.readByte()];
 
@@ -182,8 +190,8 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         buf.writeByte(side.ordinal());
         buf.writeByte(action);
 
-        if(action == UPDATE_URL)
-            ByteBufUtils.writeUTF8String(buf, url);
+        if(action == UPDATE_URL || action == UPDATE_TYPE || action == UPDATE_RUN_JS)
+            ByteBufUtils.writeUTF8String(buf, string);
         else if(action == UPDATE_MOUSE) {
             buf.writeByte(mouseEvent);
 
@@ -191,8 +199,6 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
                 vec2i.writeTo(buf);
         } else if(action == UPDATE_RESOLUTION)
             vec2i.writeTo(buf);
-        else if(action == UPDATE_TYPE)
-            ByteBufUtils.writeUTF8String(buf, text);
         else if(action == UPDATE_UPGRADES) {
             buf.writeByte(upgrades.length);
 
@@ -223,7 +229,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         }*/
 
         if(action == UPDATE_URL)
-            tes.setScreenURL(side, url);
+            tes.setScreenURL(side, string);
         else if(action == UPDATE_MOUSE)
             tes.handleMouseEvent(side, mouseEvent, vec2i);
         else if(action == UPDATE_DELETE)
@@ -231,7 +237,9 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         else if(action == UPDATE_RESOLUTION)
             tes.setResolution(side, vec2i);
         else if(action == UPDATE_TYPE)
-            tes.type(side, text, null);
+            tes.type(side, string, null);
+        else if(action == UPDATE_RUN_JS)
+            tes.evalJS(side, string);
         else if(action == UPDATE_UPGRADES)
             tes.updateUpgrades(side, upgrades);
         else if(action == UPDATE_JS_REDSTONE)

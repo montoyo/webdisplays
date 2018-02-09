@@ -145,11 +145,14 @@ public class TileEntityScreen extends TileEntity {
         }
 
         public int rightsFor(EntityPlayer ply) {
-            final UUID uuid = ply.getGameProfile().getId();
+            return rightsFor(ply.getGameProfile().getId());
+        }
+
+        public int rightsFor(UUID uuid) {
             if(owner.uuid.equals(uuid))
                 return ScreenRights.ALL;
 
-            return friends.stream().anyMatch((f) -> f.uuid.equals(uuid)) ? friendRights : otherRights;
+            return friends.stream().anyMatch(f -> f.uuid.equals(uuid)) ? friendRights : otherRights;
         }
 
         public void setupRedstoneStatus(World world, BlockPos start) {
@@ -422,6 +425,13 @@ public class TileEntityScreen extends TileEntity {
             Log.warning("TileEntityScreen.click() from client side is useless...");
         else if(getLaserUser(scr) == null)
             WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.click(this, side, CMessageScreenUpdate.MOUSE_CLICK, vec), point());
+    }
+
+    void clickUnsafe(BlockSide side, int action, int x, int y) {
+        if(world.isRemote) {
+            Vector2i vec = (action == CMessageScreenUpdate.MOUSE_UP) ? null : new Vector2i(x, y);
+            WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.click(this, side, action, vec), point());
+        }
     }
 
     public void handleMouseEvent(BlockSide side, int event, @Nullable Vector2i vec) {
@@ -988,6 +998,20 @@ public class TileEntityScreen extends TileEntity {
             WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.rotation(this, side, rot), point());
             markDirty();
         }
+    }
+
+    public void evalJS(BlockSide side, String code) {
+        Screen scr = getScreen(side);
+        if(scr == null) {
+            Log.error("Trying to run JS code on invalid screen on side %s", side.toString());
+            return;
+        }
+
+        if(world.isRemote) {
+            if(scr.browser != null)
+                scr.browser.runJS(code, "");
+        } else
+            WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.js(this, side, code), point());
     }
 
 }
