@@ -131,7 +131,7 @@ public class Server implements Runnable {
     }
 
     private void loopUnsafe() throws Throwable {
-        selector.select();
+        selector.select(1000); //Allow the server to kick timed-out clients
 
         for(SelectionKey key: selector.selectedKeys()) {
             if(key.isAcceptable()) {
@@ -194,11 +194,16 @@ public class Server implements Runnable {
             }
         }
 
+        long ctime = System.currentTimeMillis();
         for(int i = clientList.size() - 1; i >= 0; i--) {
             ServerClient cli = clientList.get(i);
 
             if(cli.shouldRemove())
                 removeClient(cli);
+            else if(cli.hasTimedOut(ctime)) {
+                Log.info("Client %s has timed out!", cli.getUUIDString());
+                removeClient(cli);
+            }
         }
     }
 

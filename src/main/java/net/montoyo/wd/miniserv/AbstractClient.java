@@ -50,7 +50,7 @@ public abstract class AbstractClient {
 
     protected abstract void onWriteError();
 
-    public void readyRead(ByteBuffer bb) {
+    public final void readyRead(ByteBuffer bb) {
         while(bb.remaining() > 0) {
             if(packetReader.readFrom(bb)) { //End of packet
                 byte[] pkt = packetReader.getPacketData();
@@ -79,14 +79,18 @@ public abstract class AbstractClient {
                 packetReader.reset();
             }
         }
+
+        onDataReceived();
     }
 
-    public void readyWrite() throws Throwable {
+    public final void readyWrite() throws Throwable {
         if(sendBuffer.remaining() > 0 || fillSendBuffer()) {
             int sent = socket.write(sendBuffer);
 
             if(sent < 0)
                 onWriteError();
+            else if(sent > 0)
+                onDataSent();
         }
     }
 
@@ -115,7 +119,7 @@ public abstract class AbstractClient {
         return pos > 0;
     }
 
-    public void sendPacket(OutgoingPacket pkt) {
+    public final void sendPacket(OutgoingPacket pkt) {
         synchronized(sendQueue) {
             sendQueue.offer(pkt);
 
@@ -138,15 +142,21 @@ public abstract class AbstractClient {
         }
     }
 
-    protected byte[] getCurrentPacketRawData() {
+    protected final byte[] getCurrentPacketRawData() {
         return packetReader.getPacketData();
     }
 
-    protected void clearSendQueue() {
+    protected final void clearSendQueue() {
         synchronized(sendQueue) {
             packetWriter.clear();
             sendQueue.clear();
         }
+    }
+
+    protected void onDataReceived() {
+    }
+
+    protected void onDataSent() {
     }
 
 }

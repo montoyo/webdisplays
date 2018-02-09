@@ -52,6 +52,7 @@ import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.item.ItemMulti;
+import net.montoyo.wd.miniserv.Constants;
 import net.montoyo.wd.miniserv.client.Client;
 import net.montoyo.wd.net.server.SMessagePadCtrl;
 import net.montoyo.wd.net.server.SMessageScreenCtrl;
@@ -87,6 +88,8 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     private MinePadRenderer minePadRenderer;
     private JSQueryDispatcher jsDispatcher;
     private LaserPointerRenderer laserPointerRenderer;
+
+    //Miniserv handling
     private int miniservPort;
     private boolean msClientStarted;
 
@@ -550,8 +553,8 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
             //Handle JS queries
             jsDispatcher.handleQueries();
 
-            //Stop miniserv client
-            if(mc.player == null && msClientStarted) {
+            //Miniserv
+            if(msClientStarted && mc.player == null) {
                 msClientStarted = false;
                 Client.getInstance().stop();
             }

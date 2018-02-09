@@ -22,4 +22,7 @@ public abstract class Constants {
     public static int GETF_STATUS_CONNECTION_LOST = 4;
     public static int GETF_STATUS_TIMED_OUT = 5;
 
+    public static long CLIENT_TIMEOUT = 30000L;
+    public static long CLIENT_PING_PERIOD = 5000L;
+
 }

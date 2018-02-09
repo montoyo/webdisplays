@@ -47,6 +47,7 @@ public class Client extends AbstractClient implements Runnable {
     private final ArrayDeque<ClientTask> tasks = new ArrayDeque<>();
     private ClientTask currentTask;
     private volatile boolean authenticated;
+    private long lastPingTime;
 
     public SMessageMiniservConnect beginConnection() {
         if(keyPair == null) {
@@ -173,6 +174,7 @@ public class Client extends AbstractClient implements Runnable {
         connPacket.writeLong(clientUUID.getMostSignificantBits());
         connPacket.writeLong(clientUUID.getLeastSignificantBits());
         sendPacket(connPacket);
+        lastPingTime = System.currentTimeMillis();
 
         while(getRunning()) {
             try {
@@ -214,7 +216,8 @@ public class Client extends AbstractClient implements Runnable {
     }
 
     private void unsafeLoop() throws Throwable {
-        selector.select();
+        long timeBeforePing = Constants.CLIENT_PING_PERIOD - (System.currentTimeMillis() - lastPingTime);
+        selector.select(Math.max(0, timeBeforePing));
 
         if(currentTask == null || currentTask.isCanceled())
             nextTask();
@@ -242,6 +245,14 @@ public class Client extends AbstractClient implements Runnable {
                     running = false;
                 }
             }
+        }
+
+        long t = System.currentTimeMillis();
+        if(t - lastPingTime >= Constants.CLIENT_PING_PERIOD) {
+            OutgoingPacket pkt = new OutgoingPacket();
+            pkt.writeByte(PacketID.PING.ordinal());
+            sendPacket(pkt);
+            lastPingTime = t;
         }
     }
 
@@ -326,6 +337,10 @@ public class Client extends AbstractClient implements Runnable {
             ((ClientTaskDeleteFile) currentTask).onStatusPacket(dis.readByte());
     }
 
+    @PacketHandler(PacketID.PING)
+    public void handlePing(DataInputStream dis) {
+    }
+
     public void nextTask() {
         if(currentTask != null)
             currentTask.onFinished();
@@ -363,6 +378,11 @@ public class Client extends AbstractClient implements Runnable {
 
         if(conn)
             selector.wakeup();
+    }
+
+    @Override
+    protected void onDataSent() {
+        lastPingTime = System.currentTimeMillis();
     }
 
 }

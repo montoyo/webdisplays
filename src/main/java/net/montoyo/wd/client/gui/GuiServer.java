@@ -644,6 +644,12 @@ public class GuiServer extends WDScreen {
         queueTask(task);
     }
 
+    @CommandHandler("reconnect")
+    public void commandReconnect() {
+        Client.getInstance().stop();
+        WebDisplays.NET_HANDLER.sendToServer(Client.getInstance().beginConnection());
+    }
+
     private void startFileUpload(File f, boolean quit) {
         if(quit)
             quitUploadWizard();

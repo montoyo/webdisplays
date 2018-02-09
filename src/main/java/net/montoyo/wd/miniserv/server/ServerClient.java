@@ -32,6 +32,7 @@ public class ServerClient extends AbstractClient {
     private long currentFileSize;
     private long currentFileExpectedSize;
     private boolean sendingFile; //!= receiving, which is handled by currentFile
+    private long lastDataTime;
 
     ServerClient(SocketChannel s, Selector ss) {
         socket = s;
@@ -40,6 +41,8 @@ public class ServerClient extends AbstractClient {
         try {
             selKey = socket.register(selector, SelectionKey.OP_READ);
         } catch(ClosedChannelException ex) {}
+
+        lastDataTime = System.currentTimeMillis();
     }
 
     @Override
@@ -56,6 +59,10 @@ public class ServerClient extends AbstractClient {
 
     public boolean shouldRemove() {
         return remove;
+    }
+
+    public boolean hasTimedOut(long now) {
+        return now - lastDataTime >= Constants.CLIENT_TIMEOUT;
     }
 
     SocketChannel getChannel() {
@@ -379,6 +386,15 @@ public class ServerClient extends AbstractClient {
             sendPacket(pkt);
         }
 
+    }
+
+    @Override
+    protected void onDataReceived() {
+        lastDataTime = System.currentTimeMillis();
+    }
+
+    public String getUUIDString() {
+        return (uuid == null) ? "[NOT IDENTIFIED YET]" : uuid.toString();
     }
 
 }
