@@ -44,12 +44,9 @@ import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
 
 import java.io.*;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.UUID;
 
 @Mod(modid = "webdisplays", version = WebDisplays.MOD_VERSION, dependencies = "required-after:mcef;after:opencomputers;")
@@ -363,20 +360,8 @@ public class WebDisplays {
     }
 
     private static void registerTrigger(Criterion ... criteria) {
-        Method[] methods = CriteriaTriggers.class.getDeclaredMethods();
-        Optional<Method> register = Arrays.stream(methods).filter(m -> Modifier.isPrivate(m.getModifiers()) && Modifier.isStatic(m.getModifiers()) && m.getParameterTypes().length == 1).findAny();
-        if(!register.isPresent())
-            throw new RuntimeException("Could not register advancement criterion triggers");
-
-        try {
-            Method m = register.get();
-            m.setAccessible(true);
-
-            for(Criterion c: criteria)
-                m.invoke(null, c);
-        } catch(Throwable t) {
-            throw new RuntimeException(t);
-        }
+        for(Criterion c: criteria)
+            CriteriaTriggers.register(c);
     }
 
     public static boolean isOpenComputersAvailable() {
