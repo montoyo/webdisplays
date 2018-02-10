@@ -4,33 +4,33 @@
 
 package net.montoyo.wd.utilities;
 
-import net.minecraftforge.fml.common.FMLLog;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 
 public abstract class Log {
 
     public static void info(String what, Object ... data) {
-        FMLLog.log("WebDisplays", Level.INFO, what, data);
+        LogManager.getLogger("WebDisplays").log(Level.INFO, String.format(what, data));
     }
 
     public static void warning(String what, Object ... data) {
-        FMLLog.log("WebDisplays", Level.WARN, what, data);
+        LogManager.getLogger("WebDisplays").log(Level.WARN, String.format(what, data));
     }
 
     public static void error(String what, Object ... data) {
-        FMLLog.log("WebDisplays", Level.ERROR, what, data);
+        LogManager.getLogger("WebDisplays").log(Level.ERROR, String.format(what, data));
     }
 
     public static void infoEx(String what, Throwable e, Object ... data) {
-        FMLLog.log("WebDisplays", Level.INFO, e, what, data);
+        LogManager.getLogger("WebDisplays").log(Level.INFO, String.format(what, data), e);
     }
 
     public static void warningEx(String what, Throwable e, Object ... data) {
-        FMLLog.log("WebDisplays", Level.WARN, e, what, data);
+        LogManager.getLogger("WebDisplays").log(Level.WARN, String.format(what, data), e);
     }
 
     public static void errorEx(String what, Throwable e, Object ... data) {
-        FMLLog.log("WebDisplays", Level.ERROR, e, what, data);
+        LogManager.getLogger("WebDisplays").log(Level.ERROR, String.format(what, data), e);
     }
 
 }

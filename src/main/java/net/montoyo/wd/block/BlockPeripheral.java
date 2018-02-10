@@ -33,6 +33,7 @@ import net.minecraft.world.World;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.core.DefaultPeripheral;
 import net.montoyo.wd.entity.TileEntityKeyboard;
+import net.montoyo.wd.entity.TileEntityOCInterface;
 import net.montoyo.wd.entity.TileEntityPeripheralBase;
 import net.montoyo.wd.entity.TileEntityServer;
 import net.montoyo.wd.item.ItemLinker;
@@ -205,6 +206,8 @@ public class BlockPeripheral extends WDBlockContainer {
 
             if(te instanceof TileEntityServer)
                 ((TileEntityServer) te).setOwner((EntityPlayer) placer);
+            else if(te instanceof TileEntityOCInterface)
+                ((TileEntityOCInterface) te).setOwner((EntityPlayer) placer);
         }
     }
 
