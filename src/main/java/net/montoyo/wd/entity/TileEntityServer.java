@@ -8,6 +8,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.data.ServerData;
 import net.montoyo.wd.utilities.NameUUIDPair;
 import net.montoyo.wd.utilities.Util;
@@ -40,10 +41,9 @@ public class TileEntityServer extends TileEntity {
         if(world.isRemote)
             return true;
 
-        //TODO: Check if miniserv is disabled
-        //Util.toast(ply, "noMiniserv");
-
-        if(owner != null && ply instanceof EntityPlayerMP)
+        if(WebDisplays.INSTANCE.miniservPort == 0)
+            Util.toast(ply, "noMiniserv");
+        else if(owner != null && ply instanceof EntityPlayerMP)
             (new ServerData(owner)).sendTo((EntityPlayerMP) ply);
 
         return true;

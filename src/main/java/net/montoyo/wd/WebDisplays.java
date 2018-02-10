@@ -102,9 +102,16 @@ public class WebDisplays {
     public double padResX;
     public double padResY;
     private int lastPadId = 0;
-    public boolean doHardRecipe = true;
+    public boolean doHardRecipe;
     private boolean hasOC;
     private String[] blacklist;
+    public boolean disableOwnershipThief;
+    public double unloadDistance2;
+    public double loadDistance2;
+    public int maxResX;
+    public int maxResY;
+    public int miniservPort;
+    public long miniservQuota;
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent ev) {
@@ -115,16 +122,42 @@ public class WebDisplays {
         Property padHeight = cfg.get("main", "padHeight", 480);
         Property hardRecipe = cfg.get("main", "hardRecipes", true);
         Property homePage = cfg.get("main", "homepage", "mod://webdisplays/main.html");
+        Property disableOT = cfg.get("main", "disableOwnershipThief", false);
+        Property maxResX = cfg.get("main", "maxResolutionX", 7680);
+        Property maxResY = cfg.get("main", "maxResolutionY", 4320);
+        Property miniservPort = cfg.get("main", "miniservPort", 25566);
+        Property miniservQuota = cfg.get("main", "miniservQuota", 1024); //It's stored as a string anyway
+        Property loadDistance = cfg.get("client", "loadDistance", 30.0);
+        Property unloadDistance = cfg.get("client", "unloadDistance", 32.0);
 
         blacklist.setComment("An array of domain names you don't want to load.");
         padHeight.setComment("The minePad Y resolution in pixels. padWidth = padHeight * " + PAD_RATIO);
         hardRecipe.setComment("If true, breaking the minePad is required to craft upgrades.");
         homePage.setComment("The URL that will be loaded each time you create a screen");
+        disableOT.setComment("If true, the ownership thief item will be disabled");
+        loadDistance.setComment("All screens outside this range will be unloaded");
+        unloadDistance.setComment("All unloaded screens inside this range will be loaded");
+        maxResX.setComment("Maximum horizontal screen resolution, in pixels");
+        maxResY.setComment("Maximum vertical screen resolution, in pixels");
+        miniservPort.setComment("The port used by miniserv. 0 to disable.");
+        miniservPort.setMaxValue(Short.MAX_VALUE);
+        miniservQuota.setComment("The amount of data that can be uploaded to miniserv, in KiB (so 1024 = 1 MiO)");
+
+        if(unloadDistance.getDouble() < loadDistance.getDouble() + 2.0)
+            unloadDistance.set(loadDistance.getDouble() + 2.0);
+
         cfg.save();
 
         this.blacklist = blacklist.getStringList();
-        this.doHardRecipe = hardRecipe.getBoolean();
+        doHardRecipe = hardRecipe.getBoolean();
         this.homePage = homePage.getString();
+        disableOwnershipThief = disableOT.getBoolean();
+        unloadDistance2 = unloadDistance.getDouble() * unloadDistance.getDouble();
+        loadDistance2 = loadDistance.getDouble() * loadDistance.getDouble();
+        this.maxResX = maxResX.getInt();
+        this.maxResY = maxResY.getInt();
+        this.miniservPort = miniservPort.getInt();
+        this.miniservQuota = miniservQuota.getLong() * 1024L;
 
         CREATIVE_TAB = new WDCreativeTab();
 
@@ -233,9 +266,12 @@ public class WebDisplays {
             }
         }
 
-        Server sv = Server.getInstance();
-        sv.setDirectory(new File(worldDir, "wd_filehost"));
-        sv.start(); //TODO: Configure port
+        if(miniservPort != 0) {
+            Server sv = Server.getInstance();
+            sv.setPort(miniservPort);
+            sv.setDirectory(new File(worldDir, "wd_filehost"));
+            sv.start();
+        }
     }
 
     @SubscribeEvent
@@ -295,7 +331,7 @@ public class WebDisplays {
     @SubscribeEvent
     public void onLogIn(PlayerEvent.PlayerLoggedInEvent ev) {
         if(!ev.player.world.isRemote && ev.player instanceof EntityPlayerMP)
-            WebDisplays.NET_HANDLER.sendTo(new CMessageServerInfo(25566), (EntityPlayerMP) ev.player); //TODO: Port config
+            WebDisplays.NET_HANDLER.sendTo(new CMessageServerInfo(miniservPort), (EntityPlayerMP) ev.player);
     }
 
     @SubscribeEvent

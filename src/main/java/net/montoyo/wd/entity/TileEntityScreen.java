@@ -15,6 +15,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.montoyo.mcef.api.IBrowser;
@@ -186,6 +187,20 @@ public class TileEntityScreen extends TileEntity {
             }
         }
 
+        public void clampResolution() {
+            if(resolution.x > WebDisplays.INSTANCE.maxResX) {
+                float newY = ((float) resolution.y) * ((float) WebDisplays.INSTANCE.maxResX) / ((float) resolution.x);
+                resolution.x = WebDisplays.INSTANCE.maxResX;
+                resolution.y = (int) newY;
+            }
+
+            if(resolution.y > WebDisplays.INSTANCE.maxResY) {
+                float newX = ((float) resolution.x) * ((float) WebDisplays.INSTANCE.maxResY) / ((float) resolution.y);
+                resolution.x = (int) newX;
+                resolution.y = WebDisplays.INSTANCE.maxResY;
+            }
+        }
+
     }
 
     private ArrayList<Screen> screens = new ArrayList<>();
@@ -256,8 +271,22 @@ public class TileEntityScreen extends TileEntity {
         ret.otherRights = ScreenRights.DEFAULTS;
         ret.upgrades = new ArrayList<>();
 
-        if(owner != null)
+        if(owner != null) {
             ret.owner = new NameUUIDPair(owner.getGameProfile());
+
+            if(side == BlockSide.TOP || side == BlockSide.BOTTOM) {
+                int rot = MathHelper.floor(((double) (owner.rotationYaw * 4.0f / 360.0f)) + 2.5) & 3;
+
+                if(side == BlockSide.TOP) {
+                    if(rot == 1)
+                        rot = 3;
+                    else if(rot == 3)
+                        rot = 1;
+                }
+
+                ret.rotation = Rotation.values()[rot];
+            }
+        }
 
         if(resolution == null || resolution.x < 1 || resolution.y < 1) {
             float psx = ((float) size.x) * 16.f - 4.f;
@@ -268,6 +297,8 @@ public class TileEntityScreen extends TileEntity {
             ret.resolution = new Vector2i((int) psx, (int) psy);
         } else
             ret.resolution = resolution;
+
+        ret.clampResolution();
 
         if(!world.isRemote) {
             ret.setupRedstoneStatus(world, pos);
@@ -380,6 +411,7 @@ public class TileEntityScreen extends TileEntity {
         }
 
         scr.resolution = res;
+        scr.clampResolution();
 
         if(world.isRemote) {
             WebDisplays.PROXY.screenUpdateResolutionInGui(new Vector3i(pos), side, res);

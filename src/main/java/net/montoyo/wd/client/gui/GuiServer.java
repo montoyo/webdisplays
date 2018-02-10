@@ -238,6 +238,9 @@ public class GuiServer extends WDScreen {
                         updateUploadScreen();
                     } else
                         startFileUpload(file, true);
+                } else if(keyCode == Keyboard.KEY_F5) {
+                    uploadCD(uploadDir);
+                    updateUploadScreen();
                 }
             }
 
@@ -553,13 +556,13 @@ public class GuiServer extends WDScreen {
     private void updateUploadScreen() {
         lines.clear();
 
-        lines.add("Choose a file to upload");
+        lines.add(tr("upload.info"));
         lines.add(trimStringL(uploadDir.getPath()));
         lines.add("");
 
         for(int i = uploadOffset; i < uploadFiles.size() && lines.size() < MAX_LINES; i++) {
             if(i == 0 && uploadFirstIsParent)
-                lines.add("[Parent directory]");
+                lines.add(tr("upload.parent"));
             else
                 lines.add(trimStringR(uploadFiles.get(i).getName()));
         }

@@ -181,16 +181,24 @@
       "disabled": true
     },
     {
+      "type": "CheckBox",
+      "name": "cbLockRatio",
+      "x": 257,
+      "y": 99,
+      "label": "$webdisplays.gui.screencfg.lockratio",
+      "checked": true
+    },
+    {
       "type": "Label",
       "x": 258,
-      "y": 105,
+      "y": 117,
       "label": "$webdisplays.gui.screencfg.rotation"
     },
     {
       "type": "Button",
       "name": "btnChangeRot",
       "x": 260,
-      "y": 117,
+      "y": 129,
       "width": 84
     }
   ],

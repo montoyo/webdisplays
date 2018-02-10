@@ -105,8 +105,6 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
     //Tracking
     private ArrayList<TileEntityScreen> screenTracking = new ArrayList<>();
-    private double unloadDistance2 = 32.0 * 32.0;
-    private double loadDistance2 = 30.0 * 30.0;
     private int lastTracked = 0;
 
     //MinePads Management
@@ -477,11 +475,11 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
                 double dist2 = mc.player.getDistanceSq(tes.getPos());
 
                 if(tes.isLoaded()) {
-                    if(dist2 > unloadDistance2)
+                    if(dist2 > WebDisplays.INSTANCE.unloadDistance2)
                         tes.unload();
                     else
                         tes.updateTrackDistance(dist2);
-                } else if(dist2 <= loadDistance2)
+                } else if(dist2 <= WebDisplays.INSTANCE.loadDistance2)
                     tes.load();
             }
 

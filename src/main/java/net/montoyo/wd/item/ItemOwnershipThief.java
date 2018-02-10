@@ -43,6 +43,11 @@ public class ItemOwnershipThief extends Item {
         if(world.isRemote)
             return EnumActionResult.SUCCESS;
 
+        if(WebDisplays.INSTANCE.disableOwnershipThief) {
+            Util.toast(player, "otDisabled");
+            return EnumActionResult.SUCCESS;
+        }
+
         ItemStack stack = player.getHeldItem(hand);
         if(stack.hasTagCompound()) {
             NBTTagCompound tag = stack.getTagCompound();

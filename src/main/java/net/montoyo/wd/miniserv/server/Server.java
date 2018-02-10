@@ -4,6 +4,7 @@
 
 package net.montoyo.wd.miniserv.server;
 
+import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
 
@@ -36,9 +37,12 @@ public class Server implements Runnable {
     private final ByteBuffer readBuffer = ByteBuffer.allocateDirect(8192);
     private final ClientManager clientMgr = new ClientManager();
     private File directory;
-    private long maxQuota = 1024 * 1024; //1 MiB max
     private volatile boolean running;
     private volatile Thread thread;
+
+    public void setPort(int p) {
+        port = p;
+    }
 
     public void start() {
         thread = new Thread(this);
@@ -231,7 +235,7 @@ public class Server implements Runnable {
     }
 
     public long getMaxQuota() {
-        return maxQuota;
+        return WebDisplays.INSTANCE.miniservQuota;
     }
 
 }

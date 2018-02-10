@@ -29,6 +29,7 @@ public class GuiScreenConfig extends WDScreen {
     private int friendRights;
     private int otherRights;
     private Rotation rotation = Rotation.ROT_0;
+    private float aspectRatio;
 
     //Autocomplete handling
     private boolean waitingAC;
@@ -101,6 +102,9 @@ public class GuiScreenConfig extends WDScreen {
     @FillControl
     private Button btnChangeRot;
 
+    @FillControl
+    private CheckBox cbLockRatio;
+
     private CheckBox[] friendBoxes;
     private CheckBox[] otherBoxes;
 
@@ -138,6 +142,7 @@ public class GuiScreenConfig extends WDScreen {
 
             tfResX.setText("" + scr.resolution.x);
             tfResY.setText("" + scr.resolution.y);
+            aspectRatio = ((float) scr.resolution.x) / ((float) scr.resolution.y);
 
             //Hopefully upgrades have been synchronized...
             ugUpgrades.setUpgrades(scr.upgrades);
@@ -242,6 +247,22 @@ public class GuiScreenConfig extends WDScreen {
                 }
             }
 
+            if(cbLockRatio.isChecked()) {
+                if(ev.getSource() == tfResX) {
+                    try {
+                        float val = (float) Integer.parseInt(ev.getNewContent());
+                        val /= aspectRatio;
+                        tfResY.setText("" + ((int) val));
+                    } catch(NumberFormatException ex) {}
+                } else {
+                    try {
+                        float val = (float) Integer.parseInt(ev.getNewContent());
+                        val *= aspectRatio;
+                        tfResX.setText("" + ((int) val));
+                    } catch(NumberFormatException ex) {}
+                }
+            }
+
             btnSetRes.setDisabled(false);
         }
     }
@@ -270,6 +291,15 @@ public class GuiScreenConfig extends WDScreen {
                 otherRights &= ~flag;
 
             requestSync();
+        } else if(ev.getSource() == cbLockRatio && ev.isChecked()) {
+            try {
+                int x = Integer.parseInt(tfResX.getText());
+                int y = Integer.parseInt(tfResY.getText());
+
+                aspectRatio = ((float) x) / ((float) y);
+            } catch(NumberFormatException ex) {
+                cbLockRatio.setChecked(false);
+            }
         }
     }
 
@@ -445,6 +475,7 @@ public class GuiScreenConfig extends WDScreen {
     }
 
     public void updateResolution(Vector2i res) {
+        aspectRatio = ((float) res.x) / ((float) res.y);
         tfResX.setText("" + res.x);
         tfResY.setText("" + res.y);
         btnSetRes.setDisabled(true);
