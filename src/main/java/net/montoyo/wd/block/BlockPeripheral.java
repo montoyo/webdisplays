@@ -122,7 +122,7 @@ public class BlockPeripheral extends WDBlockContainer {
 
     @Override
     public int damageDropped(IBlockState state) {
-        return state.getValue(type).ordinal();
+        return state.getValue(type).toMetadata(0);
     }
 
     @Override

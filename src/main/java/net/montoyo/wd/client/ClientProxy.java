@@ -182,7 +182,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         if(track) {
             if(idx < 0)
                 screenTracking.add(tes);
-        } else
+        } else if(idx >= 0)
             screenTracking.remove(idx);
     }
 

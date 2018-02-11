@@ -2,10 +2,8 @@
 This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The text below is my "TODO" list.
 
 ### Bugs to fix
-* Middle-click bug
-* Limit screen size
 * Bugged friend list
-* Multiply volume by game volume
+* Multiply volume by game volume (and add a config option to disable distance<->volume thingy)
 * Memory leak (screens aren't deleted?!?)
 * GUIs are not closed blocks gets destroyed
 

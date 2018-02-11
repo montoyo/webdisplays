@@ -33,6 +33,7 @@ item.webdisplays.advicon.wd.name=WebDisplays
 item.webdisplays.advicon.brokenpad.name=Broken minePad
 item.webdisplays.advicon.pigeon.name=Pigeon
 webdisplays.message.tooSmall=Too small! Minimum size is 2x2.
+webdisplays.message.tooBig=Too big! Maximum size is %dx%d.
 webdisplays.message.invalid=Structure is invalid; look at %s.
 webdisplays.message.turnOn=You need to turn the screen on first!
 webdisplays.message.screenSet=Screen set! Now give the item to the new owner...

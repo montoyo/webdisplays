@@ -62,6 +62,7 @@ public class BlockScreen extends WDBlockContainer {
         setResistance(10.f);
         setCreativeTab(WebDisplays.CREATIVE_TAB);
         setName("screen");
+        setDefaultState(blockState.getBaseState().withProperty(hasTE, false).withProperty(emitting, false));
     }
 
     @Override
@@ -182,6 +183,11 @@ public class BlockScreen extends WDBlockContainer {
         Vector2i size = Multiblock.measure(world, pos, side);
         if(size.x < 2 || size.y < 2) {
             Util.toast(player, "tooSmall");
+            return true;
+        }
+
+        if(size.x > WebDisplays.INSTANCE.maxScreenX || size.y > WebDisplays.INSTANCE.maxScreenY) {
+            Util.toast(player, "tooBig", WebDisplays.INSTANCE.maxScreenX, WebDisplays.INSTANCE.maxScreenY);
             return true;
         }
 

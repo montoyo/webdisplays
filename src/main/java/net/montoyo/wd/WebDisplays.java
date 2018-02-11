@@ -110,6 +110,8 @@ public class WebDisplays {
     public double loadDistance2;
     public int maxResX;
     public int maxResY;
+    public int maxScreenX;
+    public int maxScreenY;
     public int miniservPort;
     public long miniservQuota;
 
@@ -127,6 +129,8 @@ public class WebDisplays {
         Property maxResY = cfg.get("main", "maxResolutionY", 1080);
         Property miniservPort = cfg.get("main", "miniservPort", 25566);
         Property miniservQuota = cfg.get("main", "miniservQuota", 1024); //It's stored as a string anyway
+        Property maxScreenX = cfg.get("main", "maxScreenSizeX", 16);
+        Property maxScreenY = cfg.get("main", "maxScreenSizeY", 16);
         Property loadDistance = cfg.get("client", "loadDistance", 30.0);
         Property unloadDistance = cfg.get("client", "unloadDistance", 32.0);
 
@@ -142,6 +146,8 @@ public class WebDisplays {
         miniservPort.setComment("The port used by miniserv. 0 to disable.");
         miniservPort.setMaxValue(Short.MAX_VALUE);
         miniservQuota.setComment("The amount of data that can be uploaded to miniserv, in KiB (so 1024 = 1 MiO)");
+        maxScreenX.setComment("Maximum screen width, in blocks. Resolution will be clamped by maxResolutionX.");
+        maxScreenY.setComment("Maximum screen height, in blocks. Resolution will be clamped by maxResolutionY.");
 
         if(unloadDistance.getDouble() < loadDistance.getDouble() + 2.0)
             unloadDistance.set(loadDistance.getDouble() + 2.0);
@@ -158,6 +164,8 @@ public class WebDisplays {
         this.maxResY = maxResY.getInt();
         this.miniservPort = miniservPort.getInt();
         this.miniservQuota = miniservQuota.getLong() * 1024L;
+        this.maxScreenX = maxScreenX.getInt();
+        this.maxScreenY = maxScreenY.getInt();
 
         CREATIVE_TAB = new WDCreativeTab();
 
