@@ -7,6 +7,7 @@ package net.montoyo.wd;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.Block;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
@@ -20,6 +21,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Loader;
@@ -86,6 +88,7 @@ public class WebDisplays {
     public SoundEvent soundUpgradeDel;
     public SoundEvent soundScreenCfg;
     public SoundEvent soundServer;
+    public SoundEvent soundIronic;
 
     //Criterions
     public Criterion criterionPadBreak;
@@ -234,6 +237,7 @@ public class WebDisplays {
         soundUpgradeDel = registerSound(ev, "upgradeDel");
         soundScreenCfg = registerSound(ev, "screencfgOpen");
         soundServer = registerSound(ev, "server");
+        soundIronic = registerSound(ev, "ironic");
     }
 
     @SubscribeEvent
@@ -335,6 +339,23 @@ public class WebDisplays {
     public void onLogOut(PlayerEvent.PlayerLoggedOutEvent ev) {
         if(!ev.player.world.isRemote)
             Server.getInstance().getClientManager().revokeClientKey(ev.player.getGameProfile().getId());
+    }
+
+    @SubscribeEvent
+    public void onChat(ServerChatEvent ev) {
+        String msg = ev.getMessage().trim().replaceAll("\\s+", " ").toLowerCase();
+        StringBuilder sb = new StringBuilder(msg.length());
+        for(int i = 0; i < msg.length(); i++) {
+            char chr = msg.charAt(i);
+
+            if(chr != '.' && chr != ',' && chr != ';' && chr != '!' && chr != '?' && chr != ':' && chr != '\'' && chr != '\"' && chr != '`')
+                sb.append(chr);
+        }
+
+        if(sb.toString().equals("ironic he could save others from death but not himself")) {
+            EntityPlayer ply = ev.getPlayer();
+            ply.world.playSound(null, ply.posX, ply.posY, ply.posZ, soundIronic, SoundCategory.PLAYERS, 1.0f, 1.0f);
+        }
     }
 
     private boolean hasPlayerAdvancement(EntityPlayerMP ply, ResourceLocation rl) {

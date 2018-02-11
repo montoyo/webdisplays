@@ -37,6 +37,7 @@ import net.montoyo.wd.data.SetURLData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.utilities.*;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class BlockScreen extends WDBlockContainer {
@@ -50,10 +51,10 @@ public class BlockScreen extends WDBlockContainer {
             sideFlags[i] = Properties.toUnlisted(PropertyInteger.create("neighbor" + i, 0, 15));
     }
 
-    public static final int BAR_BOT = 1;
-    public static final int BAR_RIGHT = 2;
-    public static final int BAR_TOP = 4;
-    public static final int BAR_LEFT = 8;
+    private static final int BAR_BOT = 1;
+    private static final int BAR_RIGHT = 2;
+    private static final int BAR_TOP = 4;
+    private static final int BAR_LEFT = 8;
 
     public BlockScreen() {
         super(Material.ROCK);
@@ -64,11 +65,13 @@ public class BlockScreen extends WDBlockContainer {
     }
 
     @Override
+    @Nonnull
     public EnumBlockRenderType getRenderType(IBlockState state) {
         return EnumBlockRenderType.MODEL;
     }
 
     @Override
+    @Nonnull
     protected BlockStateContainer createBlockState() {
         return new ExtendedBlockState(this, properties, sideFlags);
     }
@@ -78,7 +81,8 @@ public class BlockScreen extends WDBlockContainer {
     }
 
     @Override
-    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos bpos) {
+    @Nonnull
+    public IBlockState getExtendedState(@Nonnull IBlockState state, IBlockAccess world, BlockPos bpos) {
         IExtendedBlockState ret = (IExtendedBlockState) blockState.getBaseState();
         Vector3i pos = new Vector3i(bpos);
 
@@ -96,6 +100,7 @@ public class BlockScreen extends WDBlockContainer {
     }
 
     @Override
+    @Nonnull
     public IBlockState getStateFromMeta(int meta) {
         return getDefaultState().withProperty(hasTE, (meta & 1) != 0).withProperty(emitting, (meta & 2) != 0);
     }
@@ -277,7 +282,10 @@ public class BlockScreen extends WDBlockContainer {
 
     @Nullable
     @Override
-    public TileEntity createNewTileEntity(World world, int meta) {
+    public TileEntity createNewTileEntity(@Nonnull World world, int meta) {
+        if((meta & 1) == 0)
+            return null;
+
         return ((meta & 1) == 0) ? null : new TileEntityScreen();
     }
 
@@ -305,7 +313,7 @@ public class BlockScreen extends WDBlockContainer {
     }
 
     @Override
-    public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer ply, boolean willHarvest) {
+    public boolean removedByPlayer(@Nonnull IBlockState state, World world, @Nonnull BlockPos pos, @Nonnull EntityPlayer ply, boolean willHarvest) {
         onDestroy(world, pos, ply);
         return super.removedByPlayer(state, world, pos, ply, willHarvest);
     }
@@ -339,6 +347,7 @@ public class BlockScreen extends WDBlockContainer {
     }
 
     @Override
+    @Nonnull
     public EnumPushReaction getMobilityFlag(IBlockState state) {
         return EnumPushReaction.IGNORE;
     }

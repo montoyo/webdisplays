@@ -35,5 +35,11 @@
     "sounds": [
       "webdisplays:server"
     ]
+  },
+  "ironic": {
+    "category": "player",
+    "sounds": [
+      "webdisplays:ironic"
+    ]
   }
 }

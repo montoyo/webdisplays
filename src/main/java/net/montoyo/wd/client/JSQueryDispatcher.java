@@ -13,6 +13,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.montoyo.mcef.api.IBrowser;
 import net.montoyo.mcef.api.IJSQueryCallback;
 import net.montoyo.wd.WebDisplays;
+import net.montoyo.wd.block.BlockScreen;
 import net.montoyo.wd.core.DefaultUpgrade;
 import net.montoyo.wd.core.IScreenQueryHandler;
 import net.montoyo.wd.core.IUpgrade;
@@ -239,7 +240,8 @@ public final class JSQueryDispatcher {
                 if(x < 0 || x >= scr.size.x || y < 0 || y >= scr.size.y)
                     cb.failure(403, "Out of range");
                 else {
-                    int level = tes.getWorld().getRedstonePower((new Vector3i(tes.getPos())).addMul(side.right, x).addMul(side.up, y).toBlock(), EnumFacing.VALUES[side.reverse().ordinal()]);
+                    BlockPos bpos = (new Vector3i(tes.getPos())).addMul(side.right, x).addMul(side.up, y).toBlock();
+                    int level = tes.getWorld().getBlockState(bpos).getValue(BlockScreen.emitting) ? 0 : tes.getWorld().getRedstonePower(bpos, EnumFacing.VALUES[side.reverse().ordinal()]);
                     cb.success("{\"level\":" + level + "}");
                 }
             } else
@@ -263,7 +265,12 @@ public final class JSQueryDispatcher {
                             resp.append(',');
 
                         vec2.toBlock(mbp);
-                        resp.append(tes.getWorld().getRedstonePower(mbp, facing));
+
+                        if(tes.getWorld().getBlockState(mbp).getValue(BlockScreen.emitting))
+                            resp.append(0);
+                        else
+                            resp.append(tes.getWorld().getRedstonePower(mbp, facing));
+
                         vec2.add(side.right.x, side.right.y, side.right.z);
                     }
 

@@ -33,6 +33,7 @@ import net.montoyo.wd.net.server.SMessageRequestTEData;
 import net.montoyo.wd.utilities.*;
 import net.montoyo.wd.utilities.Rotation;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -179,7 +180,12 @@ public class TileEntityScreen extends TileEntity {
 
                 for(int x = 0; x < size.x; x++) {
                     vec2.toBlock(mbp);
-                    redstoneStatus.set(base + x, world.getRedstonePower(mbp, facing));
+
+                    if(world.getBlockState(mbp).getValue(BlockScreen.emitting))
+                        redstoneStatus.set(base + x, 0);
+                    else
+                        redstoneStatus.set(base + x, world.getRedstonePower(mbp, facing));
+
                     vec2.add(side.right.x, side.right.y, side.right.z);
                 }
 
@@ -241,6 +247,7 @@ public class TileEntityScreen extends TileEntity {
     }
 
     @Override
+    @Nonnull
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
 
@@ -252,7 +259,7 @@ public class TileEntityScreen extends TileEntity {
         return tag;
     }
 
-    public NetworkRegistry.TargetPoint point() {
+    private NetworkRegistry.TargetPoint point() {
         return new NetworkRegistry.TargetPoint(world.provider.getDimension(), (double) pos.getX(), (double) pos.getY(), (double) pos.getZ(), 64.0);
     }
 
@@ -633,6 +640,7 @@ public class TileEntityScreen extends TileEntity {
     }
 
     @Override
+    @Nonnull
     public AxisAlignedBB getRenderBoundingBox() {
         return renderBB;
     }
@@ -871,10 +879,7 @@ public class TileEntityScreen extends TileEntity {
 
     public boolean hasUpgrade(BlockSide side, DefaultUpgrade du) {
         Screen scr = getScreen(side);
-        if(scr == null)
-            return false;
-
-        return scr.upgrades.stream().anyMatch(du::matches);
+        return scr != null && scr.upgrades.stream().anyMatch(du::matches);
     }
 
     public void removeUpgrade(BlockSide side, ItemStack is, @Nullable EntityPlayer player) {
@@ -1050,6 +1055,11 @@ public class TileEntityScreen extends TileEntity {
                 scr.browser.runJS(code, "");
         } else
             WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.js(this, side, code), point());
+    }
+
+    @Override
+    public boolean shouldRefresh(World world, BlockPos pos, @Nonnull IBlockState oldState, @Nonnull IBlockState newState) {
+        return oldState.getValue(BlockScreen.hasTE) != newState.getValue(BlockScreen.hasTE);
     }
 
 }
