@@ -1059,6 +1059,9 @@ public class TileEntityScreen extends TileEntity {
 
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, @Nonnull IBlockState oldState, @Nonnull IBlockState newState) {
+        if(oldState.getBlock() != WebDisplays.INSTANCE.blockScreen || newState.getBlock() != WebDisplays.INSTANCE.blockScreen)
+            return true;
+
         return oldState.getValue(BlockScreen.hasTE) != newState.getValue(BlockScreen.hasTE);
     }
 

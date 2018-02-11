@@ -123,8 +123,8 @@ public class WebDisplays {
         Property hardRecipe = cfg.get("main", "hardRecipes", true);
         Property homePage = cfg.get("main", "homepage", "mod://webdisplays/main.html");
         Property disableOT = cfg.get("main", "disableOwnershipThief", false);
-        Property maxResX = cfg.get("main", "maxResolutionX", 7680);
-        Property maxResY = cfg.get("main", "maxResolutionY", 4320);
+        Property maxResX = cfg.get("main", "maxResolutionX", 1920);
+        Property maxResY = cfg.get("main", "maxResolutionY", 1080);
         Property miniservPort = cfg.get("main", "miniservPort", 25566);
         Property miniservQuota = cfg.get("main", "miniservQuota", 1024); //It's stored as a string anyway
         Property loadDistance = cfg.get("client", "loadDistance", 30.0);
