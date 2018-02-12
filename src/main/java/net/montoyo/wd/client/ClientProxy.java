@@ -9,6 +9,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.ClientAdvancementManager;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -29,6 +30,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
@@ -40,10 +42,7 @@ import net.montoyo.mcef.api.*;
 import net.montoyo.wd.SharedProxy;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.block.BlockScreen;
-import net.montoyo.wd.client.gui.GuiMinePad;
-import net.montoyo.wd.client.gui.GuiScreenConfig;
-import net.montoyo.wd.client.gui.GuiSetURL2;
-import net.montoyo.wd.client.gui.WDScreen;
+import net.montoyo.wd.client.gui.*;
 import net.montoyo.wd.client.gui.loading.GuiLoader;
 import net.montoyo.wd.client.renderers.*;
 import net.montoyo.wd.core.DefaultUpgrade;
@@ -88,6 +87,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     private MinePadRenderer minePadRenderer;
     private JSQueryDispatcher jsDispatcher;
     private LaserPointerRenderer laserPointerRenderer;
+    private GuiScreen nextScreen;
 
     //Miniserv handling
     private int miniservPort;
@@ -347,6 +347,11 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         }
     }
 
+    @Override
+    public void renderRecipes() {
+        nextScreen = new RenderRecipe();
+    }
+
     /**************************************** RESOURCE MANAGER METHODS ****************************************/
 
     @Override
@@ -476,6 +481,12 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent ev) {
         if(ev.phase == TickEvent.Phase.END) {
+            //Workaround cuz chat sux
+            if(nextScreen != null && mc.currentScreen == null) {
+                mc.displayGuiScreen(nextScreen);
+                nextScreen = null;
+            }
+
             //Unload/load screens depending on client player distance
             if(mc.player != null && !screenTracking.isEmpty()) {
                 int id = lastTracked % screenTracking.size();

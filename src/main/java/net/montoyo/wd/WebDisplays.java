@@ -17,6 +17,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
+import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -360,7 +361,7 @@ public class WebDisplays {
     }
 
     @SubscribeEvent
-    public void onChat(ServerChatEvent ev) {
+    public void onServerChat(ServerChatEvent ev) {
         String msg = ev.getMessage().trim().replaceAll("\\s+", " ").toLowerCase();
         StringBuilder sb = new StringBuilder(msg.length());
         for(int i = 0; i < msg.length(); i++) {
@@ -374,6 +375,12 @@ public class WebDisplays {
             EntityPlayer ply = ev.getPlayer();
             ply.world.playSound(null, ply.posX, ply.posY, ply.posZ, soundIronic, SoundCategory.PLAYERS, 1.0f, 1.0f);
         }
+    }
+
+    @SubscribeEvent
+    public void onClientChat(ClientChatEvent ev) {
+        if(ev.getMessage().equals("!WD render recipes"))
+            PROXY.renderRecipes();
     }
 
     private boolean hasPlayerAdvancement(EntityPlayerMP ply, ResourceLocation rl) {

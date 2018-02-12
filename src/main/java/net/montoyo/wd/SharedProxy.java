@@ -102,4 +102,7 @@ public class SharedProxy {
     public void closeGui(BlockPos bp, BlockSide bs) {
     }
 
+    public void renderRecipes() {
+    }
+
 }
