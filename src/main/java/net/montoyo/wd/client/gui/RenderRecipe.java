@@ -6,6 +6,7 @@ package net.montoyo.wd.client.gui;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.I18n;
@@ -89,6 +90,9 @@ public class RenderRecipe extends GuiScreen {
         drawTexturedModalRect(x, y, 0, 0, SIZE_X, SIZE_Y);
         fontRenderer.drawString(I18n.format("container.crafting"), x + 28, y + 6, 0x404040);
 
+        RenderHelper.enableGUIStandardItemLighting();
+        GlStateManager.disableLighting();
+
         for(int sy = 0; sy < 3; sy++) {
             for(int sx = 0; sx < 3; sx++) {
                 ItemStack is = recipe[sy * 3 + sx];
@@ -107,6 +111,9 @@ public class RenderRecipe extends GuiScreen {
             renderItem.renderItemAndEffectIntoGUI(mc.player, recipeResult, x + 124, y + 35);
             renderItem.renderItemOverlayIntoGUI(fontRenderer, recipeResult, x + 124, y + 35, null);
         }
+
+        GlStateManager.enableLighting();
+        RenderHelper.disableStandardItemLighting();
     }
 
     private void setRecipe(ShapedRecipes recipe) {
