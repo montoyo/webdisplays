@@ -52,7 +52,6 @@ import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.item.ItemMulti;
-import net.montoyo.wd.miniserv.Constants;
 import net.montoyo.wd.miniserv.client.Client;
 import net.montoyo.wd.net.server.SMessagePadCtrl;
 import net.montoyo.wd.net.server.SMessageScreenCtrl;
@@ -71,7 +70,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
         public IBrowser view;
         private boolean isInHotbar;
-        private int id;
+        private final int id;
         private long lastURLSent;
 
         private PadData(String url, int id) {
@@ -84,7 +83,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     }
 
     private Minecraft mc;
-    private ArrayList<ResourceModelPair> modelBakers = new ArrayList<>();
+    private final ArrayList<ResourceModelPair> modelBakers = new ArrayList<>();
     private net.montoyo.mcef.api.API mcef;
     private MinePadRenderer minePadRenderer;
     private JSQueryDispatcher jsDispatcher;
@@ -105,12 +104,12 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     private long lastPointPacket;
 
     //Tracking
-    private ArrayList<TileEntityScreen> screenTracking = new ArrayList<>();
+    private final ArrayList<TileEntityScreen> screenTracking = new ArrayList<>();
     private int lastTracked = 0;
 
     //MinePads Management
-    private HashMap<Integer, PadData> padMap = new HashMap<>();
-    private ArrayList<PadData> padList = new ArrayList<>();
+    private final HashMap<Integer, PadData> padMap = new HashMap<>();
+    private final ArrayList<PadData> padList = new ArrayList<>();
     private int minePadTickCounter = 0;
 
     /**************************************** INHERITED METHODS ****************************************/

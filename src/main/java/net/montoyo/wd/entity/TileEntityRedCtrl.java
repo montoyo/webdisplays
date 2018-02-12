@@ -15,6 +15,8 @@ import net.montoyo.wd.data.RedstoneCtrlData;
 import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Util;
 
+import javax.annotation.Nonnull;
+
 public class TileEntityRedCtrl extends TileEntityPeripheralBase {
 
     private String risingEdgeURL = "";
@@ -31,6 +33,7 @@ public class TileEntityRedCtrl extends TileEntityPeripheralBase {
     }
 
     @Override
+    @Nonnull
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
 

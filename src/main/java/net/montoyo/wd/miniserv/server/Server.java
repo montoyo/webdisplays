@@ -154,7 +154,6 @@ public class Server implements Runnable {
 
                     clientMap.put(chan, toAdd);
                     clientList.add(toAdd);
-                    toAdd.onConnect();
                 }
             }
 

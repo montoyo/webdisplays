@@ -7,7 +7,6 @@ package net.montoyo.wd.client.gui.controls;
 import net.minecraft.client.shader.Framebuffer;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -15,8 +14,8 @@ import static org.lwjgl.opengl.GL11.*;
 public class List extends BasicControl {
 
     private static class Entry {
-        public String text;
-        public Object userdata;
+        public final String text;
+        public final Object userdata;
 
         public Entry(String t, Object o) {
             text = t;
@@ -27,8 +26,8 @@ public class List extends BasicControl {
 
     public static class EntryClick extends Event<List> {
 
-        private int id;
-        private Entry entry;
+        private final int id;
+        private final Entry entry;
 
         private EntryClick(List lst) {
             source = lst;
@@ -52,7 +51,7 @@ public class List extends BasicControl {
 
     private int width;
     private int height;
-    private ArrayList<Entry> content = new ArrayList<>();
+    private final ArrayList<Entry> content = new ArrayList<>();
     private Framebuffer fbo;
     private int selected = -1;
     private boolean update;
@@ -224,7 +223,7 @@ public class List extends BasicControl {
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         if(!disabled && mouseButton == 0) {
             if(isInScrollbar(mouseX, mouseY)) {
                 scrolling = true;

@@ -23,6 +23,7 @@ import net.montoyo.wd.block.BlockScreen;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.utilities.*;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class ItemOwnershipThief extends Item {
     }
 
     @Override
+    @Nonnull
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos_, EnumHand hand, EnumFacing side_, float hitX, float hitY, float hitZ) {
         if(player.isSneaking())
             return EnumActionResult.PASS;

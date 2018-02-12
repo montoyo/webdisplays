@@ -23,8 +23,8 @@ import java.util.UUID;
 public class GuiScreenConfig extends WDScreen {
 
     //Screen data
-    private TileEntityScreen tes;
-    private BlockSide side;
+    private final TileEntityScreen tes;
+    private final BlockSide side;
     private NameUUIDPair owner;
     private NameUUIDPair[] friends;
     private int friendRights;
@@ -36,7 +36,7 @@ public class GuiScreenConfig extends WDScreen {
     private boolean waitingAC;
     private int acFailTicks = -1;
 
-    private ArrayList<NameUUIDPair> acResults = new ArrayList<>();
+    private final ArrayList<NameUUIDPair> acResults = new ArrayList<>();
     private boolean adding;
 
     //Controls
@@ -422,7 +422,7 @@ public class GuiScreenConfig extends WDScreen {
 
     public void updateMyRights() {
         NameUUIDPair me = new NameUUIDPair(mc.player.getGameProfile());
-        int myRights = 0;
+        int myRights;
         boolean clientIsOwner = false;
 
         if(me.equals(owner)) {

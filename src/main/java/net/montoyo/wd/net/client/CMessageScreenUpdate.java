@@ -252,7 +252,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         } else if(action == UPDATE_ROTATION)
             tes.setRotation(side, rotation);
         else
-            Log.warning("===> TODO"); //TODO
+            Log.warning("Caught invalid CMessageScreenUpdate with action ID %d", action);
     }
 
 }

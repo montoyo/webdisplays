@@ -50,9 +50,6 @@ public class ServerClient extends AbstractClient {
         remove = true;
     }
 
-    public void onConnect() {
-    }
-
     void setShouldRemove() {
         remove = true;
     }

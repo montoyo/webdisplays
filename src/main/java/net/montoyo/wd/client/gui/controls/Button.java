@@ -8,8 +8,6 @@ import net.minecraft.client.gui.GuiButton;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
 import org.lwjgl.input.Keyboard;
 
-import java.io.IOException;
-
 public class Button extends Control {
 
     protected final GuiButton btn;
@@ -20,7 +18,7 @@ public class Button extends Control {
 
     public static class ClickEvent extends Event<Button> {
 
-        private boolean shiftDown;
+        private final boolean shiftDown;
 
         private ClickEvent(Button btn) {
             source = btn;
@@ -46,7 +44,7 @@ public class Button extends Control {
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         if(mouseButton == 0 && btn.mousePressed(mc, mouseX, mouseY)) {
             selected = true;
             btn.playPressSound(mc.getSoundHandler());

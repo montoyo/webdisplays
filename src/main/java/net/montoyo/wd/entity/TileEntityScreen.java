@@ -207,7 +207,7 @@ public class TileEntityScreen extends TileEntity {
 
     }
 
-    private ArrayList<Screen> screens = new ArrayList<>();
+    private final ArrayList<Screen> screens = new ArrayList<>();
     private AxisAlignedBB renderBB = new AxisAlignedBB(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
     private boolean loaded = true;
     public float ytVolume = Float.POSITIVE_INFINITY;

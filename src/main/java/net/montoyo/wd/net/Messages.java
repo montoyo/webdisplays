@@ -15,8 +15,8 @@ import java.util.ArrayList;
 
 public abstract class Messages {
 
-    private static DefaultHandler DEFAULT_HANDLER = new DefaultHandler();
-    private static Class<? extends IMessage>[] messages;
+    private static final DefaultHandler DEFAULT_HANDLER = new DefaultHandler();
+    private static final Class<? extends IMessage>[] MESSAGES;
     static {
         ArrayList<Class<? extends IMessage>> l = new ArrayList<>();
         l.add(CMessageAddScreen.class);
@@ -34,11 +34,11 @@ public abstract class Messages {
         l.add(CMessageServerInfo.class);
         l.add(CMessageCloseGui.class);
 
-        messages = l.toArray(new Class[0]);
+        MESSAGES = l.toArray(new Class[0]);
     }
 
     public static void registerAll(SimpleNetworkWrapper wrapper) {
-        for(Class<? extends IMessage> md: messages) {
+        for(Class<? extends IMessage> md: MESSAGES) {
             Message data = md.getAnnotation(Message.class);
             if(data == null)
                 throw new RuntimeException("Missing @Message annotation for message class " + md.getSimpleName());

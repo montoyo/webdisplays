@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.item.ItemStack;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class UpgradeGroup extends BasicControl {
@@ -96,7 +95,7 @@ public class UpgradeGroup extends BasicControl {
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         if(mouseButton == 0)
             clickStack = overStack;
     }
@@ -113,7 +112,7 @@ public class UpgradeGroup extends BasicControl {
 
     public static class ClickEvent extends Event<UpgradeGroup> {
 
-        private ItemStack clickStack;
+        private final ItemStack clickStack;
 
         private ClickEvent(UpgradeGroup src) {
             source = src;

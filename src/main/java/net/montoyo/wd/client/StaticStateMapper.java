@@ -8,16 +8,19 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 
+import javax.annotation.Nonnull;
+
 public class StaticStateMapper extends StateMapperBase {
 
-    private ModelResourceLocation resLoc;
+    private final ModelResourceLocation resLoc;
 
     public StaticStateMapper(ModelResourceLocation rl) {
         resLoc = rl;
     }
 
     @Override
-    protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+    @Nonnull
+    protected ModelResourceLocation getModelResourceLocation(@Nonnull IBlockState state) {
         return resLoc;
     }
 

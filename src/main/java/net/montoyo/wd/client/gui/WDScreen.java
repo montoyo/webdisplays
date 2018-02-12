@@ -21,11 +21,13 @@ import net.montoyo.wd.client.gui.loading.GuiLoader;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
 import net.montoyo.wd.net.server.SMessageACQuery;
 import net.montoyo.wd.utilities.BlockSide;
+import net.montoyo.wd.utilities.Bounds;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.NameUUIDPair;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -39,9 +41,9 @@ public abstract class WDScreen extends GuiScreen {
 
     public static WDScreen CURRENT_SCREEN = null;
 
-    protected ArrayList<Control> controls = new ArrayList<>();
-    protected ArrayList<Control> postDrawList = new ArrayList<>();
-    private HashMap<Class<? extends Event>, Method> eventMap = new HashMap<>();
+    protected final ArrayList<Control> controls = new ArrayList<>();
+    protected final ArrayList<Control> postDrawList = new ArrayList<>();
+    private final HashMap<Class<? extends Event>, Method> eventMap = new HashMap<>();
     protected boolean quitOnEscape = true;
     protected boolean defaultBackground = true;
     protected int syncTicks = 40;
@@ -91,33 +93,11 @@ public abstract class WDScreen extends GuiScreen {
 
     protected void centerControls() {
         //Determine bounding box
-        int minX = Integer.MAX_VALUE;
-        int minY = Integer.MAX_VALUE;
-        int maxX = Integer.MIN_VALUE;
-        int maxY = Integer.MIN_VALUE;
-
-        for(Control ctrl : controls) {
-            int x = ctrl.getX();
-            int y = ctrl.getY();
-            if(x < minX)
-                minX = x;
-
-            if(y < minY)
-                minY = y;
-
-            x += ctrl.getWidth();
-            y += ctrl.getHeight();
-
-            if(x > maxX)
-                maxX = x;
-
-            if(y >= maxY)
-                maxY = y;
-        }
+        Bounds bounds = Control.findBounds(controls);
 
         //Translation vector
-        int diffX = (width - maxX - minX) / 2;
-        int diffY = (height - maxY - minY) / 2;
+        int diffX = (width - bounds.maxX - bounds.minX) / 2;
+        int diffY = (height - bounds.maxY - bounds.minY) / 2;
 
         //Translate controls
         for(Control ctrl : controls) {
@@ -152,7 +132,7 @@ public abstract class WDScreen extends GuiScreen {
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         for(Control ctrl: controls)
             ctrl.mouseClicked(mouseX, mouseY, mouseButton);
     }
@@ -316,7 +296,7 @@ public abstract class WDScreen extends GuiScreen {
     }
 
     @Override
-    public void onResize(Minecraft mcIn, int w, int h) {
+    public void onResize(@Nonnull Minecraft mcIn, int w, int h) {
         for(Control ctrl : controls)
             ctrl.destroy();
 

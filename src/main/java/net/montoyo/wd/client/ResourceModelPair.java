@@ -9,8 +9,8 @@ import net.montoyo.wd.client.renderers.IModelBaker;
 
 public class ResourceModelPair {
 
-    private ModelResourceLocation resLoc;
-    private IModelBaker model;
+    private final ModelResourceLocation resLoc;
+    private final IModelBaker model;
 
     public ResourceModelPair(ModelResourceLocation rl, IModelBaker m) {
         resLoc = rl;

@@ -17,7 +17,6 @@ import net.montoyo.wd.utilities.Util;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.UUID;
 
 public class WDScheme implements IScheme {

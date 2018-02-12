@@ -8,7 +8,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.montoyo.mcef.api.IBrowser;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.ClientProxy;
 import net.montoyo.wd.client.gui.controls.Button;
@@ -31,10 +30,10 @@ public class GuiSetURL2 extends WDScreen {
     private Vector3i remoteLocation;
 
     //Pad data
-    private boolean isPad;
+    private final boolean isPad;
 
     //Common
-    private String screenURL;
+    private final String screenURL;
 
     @FillControl
     private TextField tfURL;

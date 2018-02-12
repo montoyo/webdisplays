@@ -16,7 +16,7 @@ public abstract class Container extends BasicControl {
 
     protected int paddingX = 0;
     protected int paddingY = 0;
-    protected ArrayList<Control> childs = new ArrayList<>();
+    protected final ArrayList<Control> childs = new ArrayList<>();
 
     public <T extends Control> T addControl(T ctrl) {
         childs.add(ctrl);
@@ -48,7 +48,7 @@ public abstract class Container extends BasicControl {
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         if(!disabled) {
             mouseX -= x + paddingX;
             mouseY -= y + paddingY;

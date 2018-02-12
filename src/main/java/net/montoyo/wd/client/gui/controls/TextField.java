@@ -8,14 +8,13 @@ import net.minecraft.client.gui.GuiTextField;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
 import org.lwjgl.input.Keyboard;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class TextField extends Control {
 
     public static class EnterPressedEvent extends Event<TextField> {
 
-        private String text;
+        private final String text;
 
         private EnterPressedEvent(TextField field) {
             source = field;
@@ -30,7 +29,7 @@ public class TextField extends Control {
 
     public static class TabPressedEvent extends Event<TextField> {
 
-        private String beginning;
+        private final String beginning;
 
         private TabPressedEvent(TextField field) {
             source = field;
@@ -57,8 +56,8 @@ public class TextField extends Control {
 
     public static class TextChangedEvent extends Event<TextField> {
 
-        private String oldContent;
-        private String newContent;
+        private final String oldContent;
+        private final String newContent;
 
         private TextChangedEvent(TextField tf, String old) {
             source = tf;
@@ -89,7 +88,7 @@ public class TextField extends Control {
     private boolean enabled = true;
     private int textColor = DEFAULT_TEXT_COLOR;
     private int disabledColor = DEFAULT_DISABLED_COLOR;
-    private ArrayList<TextChangeListener> listeners = new ArrayList<>();
+    private final ArrayList<TextChangeListener> listeners = new ArrayList<>();
 
     public TextField() {
         field = new GuiTextField(0, font, 1, 1, 198, 20);
@@ -105,7 +104,7 @@ public class TextField extends Control {
     }
 
     @Override
-    public void keyTyped(char typedChar, int keyCode) throws IOException {
+    public void keyTyped(char typedChar, int keyCode) {
         if(keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER)
             parent.actionPerformed(new EnterPressedEvent(this));
         else if(keyCode == Keyboard.KEY_TAB)
@@ -129,7 +128,7 @@ public class TextField extends Control {
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         field.mouseClicked(mouseX, mouseY, mouseButton);
     }
 

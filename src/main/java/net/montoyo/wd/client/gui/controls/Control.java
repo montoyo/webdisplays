@@ -15,6 +15,7 @@ import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.ResourceLocation;
 import net.montoyo.wd.client.gui.WDScreen;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
+import net.montoyo.wd.utilities.Bounds;
 
 import java.io.IOException;
 
@@ -64,7 +65,7 @@ public abstract class Control {
     public void keyDown(int key) {
     }
 
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
     }
 
     public void mouseReleased(int mouseX, int mouseY, int state) {
@@ -248,6 +249,34 @@ public abstract class Control {
 
     public void load(JsonOWrapper json) {
         name = json.getString("name", "");
+    }
+
+    public static Bounds findBounds(java.util.List<Control> controlList) {
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+
+        for(Control ctrl : controlList) {
+            int x = ctrl.getX();
+            int y = ctrl.getY();
+            if(x < minX)
+                minX = x;
+
+            if(y < minY)
+                minY = y;
+
+            x += ctrl.getWidth();
+            y += ctrl.getHeight();
+
+            if(x > maxX)
+                maxX = x;
+
+            if(y >= maxY)
+                maxY = y;
+        }
+
+        return new Bounds(minX, minY, maxX, maxY);
     }
 
 }

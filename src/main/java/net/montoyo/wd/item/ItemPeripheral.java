@@ -20,6 +20,7 @@ import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.block.BlockKeyboardRight;
 import net.montoyo.wd.core.DefaultPeripheral;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class ItemPeripheral extends ItemMultiTexture {
     }
 
     @Override
-    public boolean canPlaceBlockOnSide(World world, BlockPos pos_, EnumFacing side, EntityPlayer player, ItemStack stack) {
+    public boolean canPlaceBlockOnSide(World world, @Nonnull BlockPos pos_, @Nonnull EnumFacing side, EntityPlayer player, ItemStack stack) {
         if(stack.getMetadata() != 0) //Keyboard
             return true;
 
@@ -51,13 +52,15 @@ public class ItemPeripheral extends ItemMultiTexture {
     }
 
     @Override
-    public void addInformation(ItemStack is, @Nullable World world, List<String> tt, ITooltipFlag ttFlags) {
-        if(is.getMetadata() == 1) //CC Interface
-            tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.missingCC")); //CC is not available for 1.12.2
-        else if(is.getMetadata() == 2 && !WebDisplays.isOpenComputersAvailable()) //OC Interface
-            tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.missingOC"));
-        else if(is.getMetadata() == 11 && WebDisplays.PROXY.isMiniservDisabled()) //Server
-            tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.noMiniserv"));
+    public void addInformation(@Nullable ItemStack is, @Nullable World world, @Nullable List<String> tt, @Nullable ITooltipFlag ttFlags) {
+        if(is != null && tt != null) {
+            if(is.getMetadata() == 1) //CC Interface
+                tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.missingCC")); //CC is not available for 1.12.2
+            else if(is.getMetadata() == 2 && !WebDisplays.isOpenComputersAvailable()) //OC Interface
+                tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.missingOC"));
+            else if(is.getMetadata() == 11 && WebDisplays.PROXY.isMiniservDisabled()) //Server
+                tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.noMiniserv"));
+        }
     }
 
 }

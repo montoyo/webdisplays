@@ -139,9 +139,10 @@ public class BlockPeripheral extends WDBlockContainer {
 
         if(te instanceof TileEntityPeripheralBase)
             return ((TileEntityPeripheralBase) te).onRightClick(player, hand, BlockSide.values()[facing.ordinal()]);
-        else if(te instanceof TileEntityServer)
-            return ((TileEntityServer) te).onPlayerRightClick(player);
-        else
+        else if(te instanceof TileEntityServer) {
+            ((TileEntityServer) te).onPlayerRightClick(player);
+            return true;
+        } else
             return false;
     }
 

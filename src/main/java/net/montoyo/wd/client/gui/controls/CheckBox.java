@@ -10,8 +10,6 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.util.ResourceLocation;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
 
-import java.io.IOException;
-
 public class CheckBox extends BasicControl {
 
     private static final ResourceLocation texUnchecked = new ResourceLocation("webdisplays", "textures/gui/checkbox.png");
@@ -21,7 +19,7 @@ public class CheckBox extends BasicControl {
 
     public static class CheckedEvent extends Event<CheckBox> {
 
-        private boolean checked;
+        private final boolean checked;
 
         private CheckedEvent(CheckBox cb) {
             source = cb;
@@ -59,7 +57,7 @@ public class CheckBox extends BasicControl {
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         if(mouseButton == 0 && !disabled) {
             if(mouseX >= x && mouseX <= x + WIDTH + 2 + labelW && mouseY >= y && mouseY < y + HEIGHT) {
                 checked = !checked;

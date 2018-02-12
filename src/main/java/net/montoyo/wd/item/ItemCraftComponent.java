@@ -8,7 +8,6 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.core.CraftComponent;

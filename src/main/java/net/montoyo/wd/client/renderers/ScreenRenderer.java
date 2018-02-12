@@ -14,7 +14,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.ClientProxy;
 import net.montoyo.wd.entity.TileEntityScreen;
-import net.montoyo.wd.utilities.Rotation;
 import net.montoyo.wd.utilities.Vector3f;
 import net.montoyo.wd.utilities.Vector3i;
 

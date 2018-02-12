@@ -4,7 +4,6 @@
 
 package net.montoyo.wd.client.gui.loading;
 
-import com.google.common.base.Throwables;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
@@ -20,18 +19,18 @@ import java.util.HashMap;
 
 public class GuiLoader {
 
-    private static HashMap<String, Class<? extends Control>> controls = new HashMap<>();
-    private static HashMap<ResourceLocation, JsonObject> resources = new HashMap<>();
+    private static final HashMap<String, Class<? extends Control>> CONTROLS = new HashMap<>();
+    private static final HashMap<ResourceLocation, JsonObject> RESOURCES = new HashMap<>();
 
     public static void register(Class<? extends Control> cls) {
         if(Modifier.isAbstract(cls.getModifiers()))
             throw new RuntimeException("GG retard, you just registered an abstract class...");
 
         String name = cls.getSimpleName();
-        if(controls.containsKey(name))
+        if(CONTROLS.containsKey(name))
             throw new RuntimeException("Control class already registered or name taken!");
 
-        controls.put(name, cls);
+        CONTROLS.put(name, cls);
     }
 
     static {
@@ -50,7 +49,7 @@ public class GuiLoader {
         Control ret;
 
         try {
-            ret = controls.get(json.getString("type", null)).newInstance();
+            ret = CONTROLS.get(json.getString("type", null)).newInstance();
         } catch(InstantiationException e) {
             Log.errorEx("Could not create control from JSON: instantiation exception", e);
             throw new RuntimeException(e);
@@ -64,7 +63,7 @@ public class GuiLoader {
     }
 
     public static JsonObject getJson(ResourceLocation resLoc) {
-        JsonObject ret = resources.get(resLoc);
+        JsonObject ret = RESOURCES.get(resLoc);
         if(ret == null) {
             IResource resource;
 
@@ -82,14 +81,14 @@ public class GuiLoader {
                 resource.close();
             } catch(IOException e) {}
 
-            resources.put(resLoc, ret);
+            RESOURCES.put(resLoc, ret);
         }
 
         return ret;
     }
 
     public static void clearCache() {
-        resources.clear();
+        RESOURCES.clear();
     }
 
 }

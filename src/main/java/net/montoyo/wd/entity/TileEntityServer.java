@@ -37,16 +37,14 @@ public class TileEntityServer extends TileEntity {
         markDirty();
     }
 
-    public boolean onPlayerRightClick(EntityPlayer ply) {
+    public void onPlayerRightClick(EntityPlayer ply) {
         if(world.isRemote)
-            return true;
+            return;
 
         if(WebDisplays.INSTANCE.miniservPort == 0)
             Util.toast(ply, "noMiniserv");
         else if(owner != null && ply instanceof EntityPlayerMP)
             (new ServerData(pos, owner)).sendTo((EntityPlayerMP) ply);
-
-        return true;
     }
 
 }

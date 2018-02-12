@@ -6,6 +6,7 @@ package net.montoyo.wd.client.gui.controls;
 
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
+import net.montoyo.wd.utilities.Bounds;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -161,37 +162,12 @@ public class ControlGroup extends Container {
     }
 
     public void pack() {
-        int minX = Integer.MAX_VALUE;
-        int minY = Integer.MAX_VALUE;
-        int maxX = Integer.MIN_VALUE;
-        int maxY = Integer.MIN_VALUE;
-
-        for(Control ctrl : childs) {
-            int x = ctrl.getX();
-            int y = ctrl.getY();
-            if(x < minX)
-                minX = x;
-
-            if(y < minY)
-                minY = y;
-
-            x += ctrl.getWidth();
-            y += ctrl.getHeight();
-
-            if(x > maxX)
-                maxX = x;
-
-            if(y >= maxY)
-                maxY = y;
-        }
-
+        Bounds bounds = findBounds(childs);
         for(Control ctrl : childs)
-            ctrl.setPos(ctrl.getX() - minX, ctrl.getY() - minY);
+            ctrl.setPos(ctrl.getX() - bounds.minX, ctrl.getY() - bounds.minY);
 
-        maxX -= minX;
-        maxY -= minY;
-        width = maxX + paddingX * 2;
-        height = maxY + paddingY * 2;
+        width = bounds.getWidth() + paddingX * 2;
+        height = bounds.getHeight() + paddingY * 2;
     }
 
     @Override

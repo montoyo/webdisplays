@@ -337,7 +337,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
             checkPermission(tes, ScreenRights.CHANGE_RESOLUTION);
             tes.setRotation(side, rotation);
         } else
-            Log.info("SMessageScreenCtrl: TODO"); //TODO: other ctrl messages
+            Log.warning("Caught SMessageScreenCtrl with invalid control ID %d from player %s (UUID %s)", ctrl, player.getName(), player.getGameProfile().getId().toString());
     }
 
     public static class Handler implements IMessageHandler<SMessageScreenCtrl, IMessage> {

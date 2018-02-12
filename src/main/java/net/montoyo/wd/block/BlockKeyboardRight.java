@@ -31,6 +31,7 @@ import net.montoyo.wd.item.ItemLinker;
 import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Vector3i;
 
+import javax.annotation.Nonnull;
 import java.util.Random;
 
 public class BlockKeyboardRight extends Block implements IPeripheral {
@@ -49,6 +50,7 @@ public class BlockKeyboardRight extends Block implements IPeripheral {
     }
 
     @Override
+    @Nonnull
     protected BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, properties);
     }
@@ -84,11 +86,13 @@ public class BlockKeyboardRight extends Block implements IPeripheral {
     }
 
     @Override
+    @Nonnull
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
         return KEYBOARD_AABB;
     }
 
     @Override
+    @Nonnull
     public IBlockState getStateFromMeta(int meta) {
         return getDefaultState().withProperty(facing, meta);
     }
@@ -99,11 +103,12 @@ public class BlockKeyboardRight extends Block implements IPeripheral {
     }
 
     @Override
-    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+    @Nonnull
+    public ItemStack getPickBlock(@Nonnull IBlockState state, RayTraceResult target, @Nonnull World world, @Nonnull BlockPos pos, EntityPlayer player) {
         return new ItemStack(WebDisplays.INSTANCE.blockPeripheral, 1, 0);
     }
 
-    TileEntityKeyboard getTileEntity(World world, BlockPos pos) {
+    private TileEntityKeyboard getTileEntity(World world, BlockPos pos) {
         for(EnumFacing nf: EnumFacing.HORIZONTALS) {
             BlockPos np = pos.add(nf.getDirectionVec());
             IBlockState ns = world.getBlockState(np);
@@ -127,6 +132,7 @@ public class BlockKeyboardRight extends Block implements IPeripheral {
     }
 
     @Override
+    @Nonnull
     public EnumPushReaction getMobilityFlag(IBlockState state) {
         return EnumPushReaction.IGNORE;
     }
@@ -176,7 +182,7 @@ public class BlockKeyboardRight extends Block implements IPeripheral {
     }
 
     @Override
-    public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer ply, boolean willHarvest) {
+    public boolean removedByPlayer(@Nonnull IBlockState state, World world, @Nonnull BlockPos pos, @Nonnull EntityPlayer ply, boolean willHarvest) {
         if(!world.isRemote)
             removeLeftPiece(world, pos, !ply.isCreative());
 

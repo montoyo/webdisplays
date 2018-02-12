@@ -6,7 +6,7 @@ package net.montoyo.wd.utilities;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
-import net.montoyo.wd.block.BlockScreen;
+import net.montoyo.wd.WebDisplays;
 
 public abstract class Multiblock {
 
@@ -50,7 +50,7 @@ public abstract class Multiblock {
         do {
             pos.add(side.left);
             pos.toBlock(bp);
-        } while(override.apply(pos, world.getBlockState(bp).getBlock() instanceof BlockScreen));
+        } while(override.apply(pos, world.getBlockState(bp).getBlock() == WebDisplays.INSTANCE.blockScreen));
 
         pos.add(side.right);
 
@@ -58,7 +58,7 @@ public abstract class Multiblock {
         do {
             pos.add(side.down);
             pos.toBlock(bp);
-        } while(override.apply(pos, world.getBlockState(bp).getBlock() instanceof BlockScreen));
+        } while(override.apply(pos, world.getBlockState(bp).getBlock() == WebDisplays.INSTANCE.blockScreen));
 
         pos.add(side.up);
     }
@@ -77,7 +77,7 @@ public abstract class Multiblock {
             pos.add(side.up);
             pos.toBlock(bp);
             ret.y++;
-        } while(world.getBlockState(bp).getBlock() instanceof BlockScreen);
+        } while(world.getBlockState(bp).getBlock() == WebDisplays.INSTANCE.blockScreen);
 
         pos.add(side.down);
 
@@ -86,7 +86,7 @@ public abstract class Multiblock {
             pos.add(side.right);
             pos.toBlock(bp);
             ret.x++;
-        } while(world.getBlockState(bp).getBlock() instanceof BlockScreen);
+        } while(world.getBlockState(bp).getBlock() == WebDisplays.INSTANCE.blockScreen);
 
         return ret;
     }
@@ -102,17 +102,17 @@ public abstract class Multiblock {
         for(int y = 0; y < size.y; y++) {
             for(int x = 0; x < size.x; x++) {
                 pos.toBlock(bp);
-                if(!(world.getBlockState(bp).getBlock() instanceof BlockScreen))
+                if(!(world.getBlockState(bp).getBlock() == WebDisplays.INSTANCE.blockScreen))
                     return pos; //Hole
 
                 pos.add(side.forward);
                 pos.toBlock(bp);
-                if(world.getBlockState(bp).getBlock() instanceof BlockScreen)
+                if(world.getBlockState(bp).getBlock() == WebDisplays.INSTANCE.blockScreen)
                     return pos; //Back should be empty
 
                 pos.addMul(side.backward, 2);
                 pos.toBlock(bp);
-                if(world.getBlockState(bp).getBlock() instanceof BlockScreen)
+                if(world.getBlockState(bp).getBlock() == WebDisplays.INSTANCE.blockScreen)
                     return pos; //Front should be empty
 
                 pos.add(side.forward);
@@ -129,7 +129,7 @@ public abstract class Multiblock {
 
         for(int y = 0; y < size.y; y++) {
             pos.toBlock(bp);
-            if(world.getBlockState(bp).getBlock() instanceof BlockScreen)
+            if(world.getBlockState(bp).getBlock() == WebDisplays.INSTANCE.blockScreen)
                 return pos; //Left edge should be empty
 
             pos.add(side.up);
@@ -141,7 +141,7 @@ public abstract class Multiblock {
 
         for(int y = 0; y < size.y; y++) {
             pos.toBlock(bp);
-            if(world.getBlockState(bp).getBlock() instanceof BlockScreen)
+            if(world.getBlockState(bp).getBlock() == WebDisplays.INSTANCE.blockScreen)
                 return pos; //Left edge should be empty
 
             pos.add(side.up);
@@ -153,7 +153,7 @@ public abstract class Multiblock {
 
         for(int x = 0; x < size.x; x++) {
             pos.toBlock(bp);
-            if(world.getBlockState(bp).getBlock() instanceof BlockScreen)
+            if(world.getBlockState(bp).getBlock() == WebDisplays.INSTANCE.blockScreen)
                 return pos; //Left edge should be empty
 
             pos.add(side.right);
@@ -165,7 +165,7 @@ public abstract class Multiblock {
 
         for(int x = 0; x < size.x; x++) {
             pos.toBlock(bp);
-            if(world.getBlockState(bp).getBlock() instanceof BlockScreen)
+            if(world.getBlockState(bp).getBlock() == WebDisplays.INSTANCE.blockScreen)
                 return pos; //Left edge should be empty
 
             pos.add(side.right);

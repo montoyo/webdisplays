@@ -22,6 +22,8 @@ import net.montoyo.wd.utilities.Multiblock;
 import net.montoyo.wd.utilities.Util;
 import net.montoyo.wd.utilities.Vector3i;
 
+import javax.annotation.Nonnull;
+
 public class ItemScreenConfigurator extends Item {
 
     public ItemScreenConfigurator() {
@@ -32,6 +34,7 @@ public class ItemScreenConfigurator extends Item {
     }
 
     @Override
+    @Nonnull
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side_, float hitX, float hitY, float hitZ) {
         if(player.isSneaking() || !(world.getBlockState(pos).getBlock() instanceof BlockScreen))
             return EnumActionResult.PASS;

@@ -18,6 +18,7 @@ import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Vector3i;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public abstract class TileEntityPeripheralBase extends TileEntity implements IPeripheral {
@@ -40,6 +41,7 @@ public abstract class TileEntityPeripheralBase extends TileEntity implements IPe
     }
 
     @Override
+    @Nonnull
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
 

@@ -12,7 +12,6 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.StringJoiner;
 import java.util.UUID;
@@ -106,33 +105,6 @@ public abstract class Util {
             return ret;
         } else
             throw new RuntimeException(String.format("Cannot unserialize class %s!", cls.getName()));
-    }
-
-    public static String[] commaSplit(String str) {
-        ArrayList<String> lst = new ArrayList<>();
-        String out = "";
-        boolean escape = false;
-
-        for(int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-
-            if(c == '\\' && !escape) {
-                escape = true;
-                continue; //Otherwise it'll set escape back to false
-            } else if(c == ',' && !escape) {
-                lst.add(out);
-                out = "";
-            } else
-                out += c;
-
-            if(escape)
-                escape = false;
-        }
-
-        lst.add(out);
-
-        String[] ret = new String[lst.size()];
-        return lst.toArray(ret);
     }
 
     public static String addSlashes(String str) {

@@ -337,10 +337,6 @@ public class Client extends AbstractClient implements Runnable {
             ((ClientTaskDeleteFile) currentTask).onStatusPacket(dis.readByte());
     }
 
-    @PacketHandler(PacketID.PING)
-    public void handlePing(DataInputStream dis) {
-    }
-
     public void nextTask() {
         if(currentTask != null)
             currentTask.onFinished();

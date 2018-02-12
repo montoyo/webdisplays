@@ -20,6 +20,7 @@ import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Vector3f;
 import net.montoyo.wd.utilities.Vector3i;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +28,9 @@ import java.util.List;
 public class ScreenBaker implements IModelBaker {
 
     private static final List<BakedQuad> noQuads = ImmutableList.of();
-    private TextureAtlasSprite[] texs = new TextureAtlasSprite[16];
-    private BlockSide[] blockSides = BlockSide.values();
-    private EnumFacing[] blockFacings = EnumFacing.values();
+    private final TextureAtlasSprite[] texs = new TextureAtlasSprite[16];
+    private final BlockSide[] blockSides = BlockSide.values();
+    private final EnumFacing[] blockFacings = EnumFacing.values();
 
     @Override
     public void loadTextures(TextureMap texMap) {
@@ -89,6 +90,7 @@ public class ScreenBaker implements IModelBaker {
     }
 
     @Override
+    @Nonnull
     public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
         if(side == null)
             return noQuads;
@@ -122,16 +124,19 @@ public class ScreenBaker implements IModelBaker {
     }
 
     @Override
+    @Nonnull
     public TextureAtlasSprite getParticleTexture() {
         return texs[15];
     }
 
     @Override
+    @Nonnull
     public ItemCameraTransforms getItemCameraTransforms() {
         return ItemCameraTransforms.DEFAULT;
     }
 
     @Override
+    @Nonnull
     public ItemOverrideList getOverrides() {
         return ItemOverrideList.NONE;
     }

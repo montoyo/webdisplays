@@ -18,7 +18,6 @@ import net.montoyo.wd.net.Message;
 import net.montoyo.wd.net.client.CMessageACResult;
 import net.montoyo.wd.utilities.NameUUIDPair;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 @Message(messageId = 5, side = Side.SERVER)
