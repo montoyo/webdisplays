@@ -153,11 +153,6 @@ public class GuiKeyboard extends WDScreen {
     }
 
     @Override
-    public boolean doesGuiPauseGame() {
-        return false;
-    }
-
-    @Override
     protected void sync() {
         if(!eventStack.isEmpty()) {
             WebDisplays.NET_HANDLER.sendToServer(SMessageScreenCtrl.type(tes, side, eventStack, kbPos));
@@ -215,6 +210,11 @@ public class GuiKeyboard extends WDScreen {
         } catch(Throwable t) {
             Log.warningEx("Can't write that the user read the warning", t);
         }
+    }
+
+    @Override
+    public boolean isForBlock(BlockPos bp, BlockSide side) {
+        return bp.equals(kbPos) || (bp.equals(tes.getPos()) && side == this.side);
     }
 
 }

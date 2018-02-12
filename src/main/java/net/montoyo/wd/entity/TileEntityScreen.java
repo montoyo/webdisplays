@@ -27,6 +27,7 @@ import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.data.ScreenConfigData;
 import net.montoyo.wd.net.client.CMessageAddScreen;
+import net.montoyo.wd.net.client.CMessageCloseGui;
 import net.montoyo.wd.net.client.CMessageJSResponse;
 import net.montoyo.wd.net.client.CMessageScreenUpdate;
 import net.montoyo.wd.net.server.SMessageRequestTEData;
@@ -688,14 +689,6 @@ public class TileEntityScreen extends TileEntity {
         }
     }
 
-    /*@Override
-    public void validate() {
-        super.validate();
-
-        if(world.isRemote)
-            Log.info("===> TES(  VALIDATE) %s", pos.toString());
-    }*/
-
     @Override
     public void invalidate() {
         super.invalidate();
@@ -844,7 +837,7 @@ public class TileEntityScreen extends TileEntity {
         }
 
         IUpgrade itemAsUpgrade = (IUpgrade) is.getItem();
-        if(abortIfExisting && scr.upgrades.stream().anyMatch((otherStack) -> itemAsUpgrade.isSameUpgrade(is, otherStack)))
+        if(abortIfExisting && scr.upgrades.stream().anyMatch(otherStack -> itemAsUpgrade.isSameUpgrade(is, otherStack)))
             return false; //Upgrade already exists
 
         ItemStack isCopy = is.copy(); //FIXME: Duct tape fix, because the original stack will be shrinked
@@ -867,7 +860,7 @@ public class TileEntityScreen extends TileEntity {
             return false;
 
         IUpgrade itemAsUpgrade = (IUpgrade) is.getItem();
-        return scr.upgrades.stream().anyMatch((otherStack) -> itemAsUpgrade.isSameUpgrade(is, otherStack));
+        return scr.upgrades.stream().anyMatch(otherStack -> itemAsUpgrade.isSameUpgrade(is, otherStack));
     }
 
     public boolean hasUpgrade(BlockSide side, DefaultUpgrade du) {
@@ -950,10 +943,6 @@ public class TileEntityScreen extends TileEntity {
     }
 
     public void laserDownMove(BlockSide side, EntityPlayer ply, Vector2i pos, boolean down) {
-        //System.out.println("called laser" + (down ? "Down" : "Move"));
-        if(down)
-            System.out.println("called laserDown");
-
         Screen scr = getScreenForLaserOp(side, ply);
 
         if(scr != null) {
@@ -969,7 +958,6 @@ public class TileEntityScreen extends TileEntity {
     }
 
     public void laserUp(BlockSide side, EntityPlayer ply) {
-        System.out.println("called laserUp");
         Screen scr = getScreenForLaserOp(side, ply);
 
         if(scr != null) {
@@ -982,11 +970,11 @@ public class TileEntityScreen extends TileEntity {
 
     public void onDestroy(@Nullable EntityPlayer ply) {
         for(Screen scr: screens) {
-            for(ItemStack is: scr.upgrades)
-                dropUpgrade(is, scr.side, ply);
-
+            scr.upgrades.forEach(is -> dropUpgrade(is, scr.side, ply));
             scr.upgrades.clear();
         }
+
+        WebDisplays.NET_HANDLER.sendToAllAround(new CMessageCloseGui(pos), point());
     }
 
     public void setOwner(BlockSide side, EntityPlayer newOwner) {

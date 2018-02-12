@@ -2,8 +2,6 @@
 This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The text below is my "TODO" list.
 
 ### Bugs to fix
-* Memory leak (screens aren't deleted?!?)
-* GUIs are not closed blocks gets destroyed
 * Remove remaining printed debug infos and check for TODOs
 
 ### Things before release
@@ -21,3 +19,4 @@ This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The tex
 * minePad management: check GuiContainer.draggedStack for minePad
 * In-game command to add/remove blacklisted domains
 * Config: RPMP (Real pixels per Minecraft pixels)
+* Disable miniserv in solo

@@ -46,7 +46,7 @@ public class ScreenConfigData extends GuiData {
         if(old != null && old instanceof GuiScreenConfig) {
             GuiScreenConfig gsc = (GuiScreenConfig) old;
 
-            if(gsc.isScreen(pos, side)) {
+            if(gsc.isForBlock(pos.toBlock(), side)) {
                 gsc.updateFriends(friends);
                 gsc.updateFriendRights(friendRights);
                 gsc.updateOtherRights(otherRights);

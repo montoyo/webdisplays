@@ -44,7 +44,7 @@ public class TileEntityServer extends TileEntity {
         if(WebDisplays.INSTANCE.miniservPort == 0)
             Util.toast(ply, "noMiniserv");
         else if(owner != null && ply instanceof EntityPlayerMP)
-            (new ServerData(owner)).sendTo((EntityPlayerMP) ply);
+            (new ServerData(pos, owner)).sendTo((EntityPlayerMP) ply);
 
         return true;
     }

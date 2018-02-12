@@ -63,6 +63,10 @@ public final class Vector3i {
             return false;
     }
 
+    public boolean equalsBlockPos(BlockPos bp) {
+        return bp.getX() == x && bp.getY() == y && bp.getZ() == z;
+    }
+
     @Override
     public String toString() {
         return "X: " + x + ", Y: " + y + ", Z: " + z;

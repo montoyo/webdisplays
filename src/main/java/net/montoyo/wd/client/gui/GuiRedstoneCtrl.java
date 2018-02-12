@@ -5,11 +5,13 @@
 package net.montoyo.wd.client.gui;
 
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.gui.controls.Button;
 import net.montoyo.wd.client.gui.controls.TextField;
 import net.montoyo.wd.client.gui.loading.FillControl;
 import net.montoyo.wd.net.server.SMessageRedstoneCtrl;
+import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Util;
 import net.montoyo.wd.utilities.Vector3i;
 
@@ -56,6 +58,11 @@ public class GuiRedstoneCtrl extends WDScreen {
         }
 
         mc.displayGuiScreen(null);
+    }
+
+    @Override
+    public boolean isForBlock(BlockPos bp, BlockSide side) {
+        return pos.equalsBlockPos(bp);
     }
 
 }

@@ -207,7 +207,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         if(mc.currentScreen != null && mc.currentScreen instanceof GuiScreenConfig) {
             GuiScreenConfig gsc = (GuiScreenConfig) mc.currentScreen;
 
-            if(gsc.isScreen(pos, side))
+            if(gsc.isForBlock(pos.toBlock(), side))
                 gsc.updateResolution(res);
         }
     }
@@ -217,7 +217,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         if(mc.currentScreen != null && mc.currentScreen instanceof GuiScreenConfig) {
             GuiScreenConfig gsc = (GuiScreenConfig) mc.currentScreen;
 
-            if(gsc.isScreen(pos, side))
+            if(gsc.isForBlock(pos.toBlock(), side))
                 gsc.updateRotation(rot);
         }
     }
@@ -336,6 +336,16 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     @Override
     public boolean isMiniservDisabled() {
         return miniservPort <= 0;
+    }
+
+    @Override
+    public void closeGui(BlockPos bp, BlockSide bs) {
+        if(mc.currentScreen instanceof WDScreen) {
+            WDScreen scr = (WDScreen) mc.currentScreen;
+
+            if(scr.isForBlock(bp, bs))
+                mc.displayGuiScreen(null);
+        }
     }
 
     /**************************************** RESOURCE MANAGER METHODS ****************************************/

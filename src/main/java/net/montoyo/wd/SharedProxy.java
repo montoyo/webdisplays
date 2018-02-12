@@ -7,6 +7,7 @@ package net.montoyo.wd;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.server.FMLServerHandler;
@@ -96,6 +97,9 @@ public class SharedProxy {
 
     public boolean isMiniservDisabled() {
         return false;
+    }
+
+    public void closeGui(BlockPos bp, BlockSide bs) {
     }
 
 }

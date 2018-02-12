@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.gui.controls.Container;
 import net.montoyo.wd.client.gui.controls.Control;
@@ -19,6 +20,7 @@ import net.montoyo.wd.client.gui.loading.FillControl;
 import net.montoyo.wd.client.gui.loading.GuiLoader;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
 import net.montoyo.wd.net.server.SMessageACQuery;
+import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.NameUUIDPair;
 import org.lwjgl.input.Keyboard;
@@ -363,5 +365,12 @@ public abstract class WDScreen extends GuiScreen {
         if(!postDrawList.contains(ctrl))
             postDrawList.add(ctrl);
     }
+
+    @Override
+    public boolean doesGuiPauseGame() {
+        return false;
+    }
+
+    public abstract boolean isForBlock(BlockPos bp, BlockSide side);
 
 }

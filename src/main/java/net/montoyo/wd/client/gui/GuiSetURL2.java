@@ -7,6 +7,7 @@ package net.montoyo.wd.client.gui;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.montoyo.mcef.api.IBrowser;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.ClientProxy;
@@ -110,6 +111,11 @@ public class GuiSetURL2 extends WDScreen {
         }
 
         mc.displayGuiScreen(null);
+    }
+
+    @Override
+    public boolean isForBlock(BlockPos bp, BlockSide side) {
+        return (remoteLocation != null && remoteLocation.equalsBlockPos(bp)) || (bp.equals(tileEntity.getPos()) && side == screenSide);
     }
 
 }

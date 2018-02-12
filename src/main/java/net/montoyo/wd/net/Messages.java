@@ -32,6 +32,7 @@ public abstract class Messages {
         l.add(SMessageMiniservConnect.class);
         l.add(CMessageMiniservKey.class);
         l.add(CMessageServerInfo.class);
+        l.add(CMessageCloseGui.class);
 
         messages = l.toArray(new Class[0]);
     }

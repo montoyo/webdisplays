@@ -7,6 +7,7 @@ package net.montoyo.wd.client.gui;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.gui.controls.*;
 import net.montoyo.wd.client.gui.loading.FillControl;
@@ -413,10 +414,6 @@ public class GuiScreenConfig extends WDScreen {
         otherRights = updateRights(otherRights, rights, otherBoxes, false);
     }
 
-    public boolean isScreen(Vector3i pos, BlockSide side) {
-        return pos.x == tes.getPos().getX() && pos.y == tes.getPos().getY() && pos.z == tes.getPos().getZ() && side == this.side;
-    }
-
     @Override
     protected void sync() {
         WebDisplays.NET_HANDLER.sendToServer(new SMessageScreenCtrl(tes, side, friendRights, otherRights));
@@ -469,6 +466,11 @@ public class GuiScreenConfig extends WDScreen {
     public void updateRotation(Rotation rot) {
         rotation = rot;
         updateRotationStr();
+    }
+
+    @Override
+    public boolean isForBlock(BlockPos bp, BlockSide side) {
+        return bp.equals(tes.getPos()) && side == this.side;
     }
 
 }

@@ -13,12 +13,11 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.BlockPos;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.miniserv.Constants;
 import net.montoyo.wd.miniserv.client.*;
-import net.montoyo.wd.utilities.Log;
-import net.montoyo.wd.utilities.NameUUIDPair;
-import net.montoyo.wd.utilities.Util;
+import net.montoyo.wd.utilities.*;
 import org.lwjgl.input.Keyboard;
 
 import javax.swing.filechooser.FileSystemView;
@@ -42,6 +41,7 @@ public class GuiServer extends WDScreen {
     private static final int MAX_LINE_LEN = 32;
     private static final int MAX_LINES = 12;
 
+    private final Vector3i serverPos;
     private final NameUUIDPair owner;
     private final ArrayList<String> lines = new ArrayList<>();
     private String prompt = "";
@@ -68,7 +68,8 @@ public class GuiServer extends WDScreen {
     private String uploadFilter = "";
     private long uploadFilterTime;
 
-    public GuiServer(NameUUIDPair owner) {
+    public GuiServer(Vector3i vec, NameUUIDPair owner) {
+        serverPos = vec;
         this.owner = owner;
         //userPrompt = owner.name + "@miniserv$ ";
         userPrompt = "> ";
@@ -695,4 +696,8 @@ public class GuiServer extends WDScreen {
             writeLine(tr("upload.uploading"));
     }
 
+    @Override
+    public boolean isForBlock(BlockPos bp, BlockSide side) {
+        return serverPos.equalsBlockPos(bp);
+    }
 }

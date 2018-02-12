@@ -198,7 +198,7 @@ public class BlockScreen extends WDBlockContainer {
         }
 
         boolean created = false;
-        Log.info("Structure at %s of size %dx%d", pos.toString(), size.x, size.y);
+        Log.info("Player %s (UUID %s) created a screen at %s of size %dx%d", player.getName(), player.getGameProfile().getId().toString(), pos.toString(), size.x, size.y);
 
         if(te == null) {
             BlockPos bp = pos.toBlock();

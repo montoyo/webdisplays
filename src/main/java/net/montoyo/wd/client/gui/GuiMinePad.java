@@ -7,10 +7,12 @@ package net.montoyo.wd.client.gui;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.ClientProxy;
+import net.montoyo.wd.utilities.BlockSide;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -135,8 +137,7 @@ public class GuiMinePad extends WDScreen {
     }
 
     @Override
-    public boolean doesGuiPauseGame() {
-        //TODO: Is this necessary??
+    public boolean isForBlock(BlockPos bp, BlockSide side) {
         return false;
     }
 

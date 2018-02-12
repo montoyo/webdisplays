@@ -30,6 +30,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.core.DefaultPeripheral;
 import net.montoyo.wd.entity.TileEntityKeyboard;
@@ -38,6 +39,7 @@ import net.montoyo.wd.entity.TileEntityPeripheralBase;
 import net.montoyo.wd.entity.TileEntityServer;
 import net.montoyo.wd.item.ItemLinker;
 import net.montoyo.wd.item.ItemPeripheral;
+import net.montoyo.wd.net.client.CMessageCloseGui;
 import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Log;
 
@@ -241,19 +243,23 @@ public class BlockPeripheral extends WDBlockContainer {
             removeRightPiece(world, pos);
             world.setBlockToAir(pos);
             dropBlockAsItem(world, pos, state, 0);
+            WebDisplays.NET_HANDLER.sendToAllAround(new CMessageCloseGui(pos), point(world, pos));
         }
     }
 
     @Override
     public void onBlockDestroyedByPlayer(World world, BlockPos pos, IBlockState state) {
-        if(!world.isRemote && state.getValue(type) == DefaultPeripheral.KEYBOARD)
-            removeRightPiece(world, pos);
+        if(!world.isRemote) {
+            if(state.getBlock() == this && state.getValue(type) == DefaultPeripheral.KEYBOARD)
+                removeRightPiece(world, pos);
+
+            WebDisplays.NET_HANDLER.sendToAllAround(new CMessageCloseGui(pos), point(world, pos));
+        }
     }
 
     @Override
     public void onBlockDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
-        if(!world.isRemote && world.getBlockState(pos).getValue(type) == DefaultPeripheral.KEYBOARD)
-            removeRightPiece(world, pos);
+        onBlockDestroyedByPlayer(world, pos, world.getBlockState(pos));
     }
 
     @Override
@@ -268,6 +274,10 @@ public class BlockPeripheral extends WDBlockContainer {
                     ((TileEntityKeyboard) te).simulateCat(entity);
             }
         }
+    }
+
+    private static NetworkRegistry.TargetPoint point(World world, BlockPos bp) {
+        return new NetworkRegistry.TargetPoint(world.provider.getDimension(), (double) bp.getX(), (double) bp.getY(), (double) bp.getZ(), 64.0);
     }
 
 }
