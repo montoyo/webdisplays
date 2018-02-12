@@ -19,6 +19,7 @@ import net.montoyo.wd.net.client.CMessageACResult;
 import net.montoyo.wd.utilities.NameUUIDPair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 @Message(messageId = 5, side = Side.SERVER)
 public class SMessageACQuery implements IMessage, Runnable {
@@ -39,9 +40,6 @@ public class SMessageACQuery implements IMessage, Runnable {
     public void fromBytes(ByteBuf buf) {
         beginning = ByteBufUtils.readUTF8String(buf);
         matchExact = buf.readBoolean();
-
-        if(!matchExact)
-            beginning = beginning.toLowerCase();
     }
 
     @Override
@@ -53,28 +51,16 @@ public class SMessageACQuery implements IMessage, Runnable {
     @Override
     public void run() {
         GameProfile[] profiles = WebDisplays.PROXY.getOnlineGameProfiles();
+        NameUUIDPair[] result;
 
-        if(matchExact) {
-            for(GameProfile gp : profiles) {
-                if(gp.getName().equals(beginning)) {
-                    WebDisplays.NET_HANDLER.sendTo(new CMessageACResult(gp), player);
-                    return;
-                }
-
-                WebDisplays.NET_HANDLER.sendTo(new CMessageACResult(new NameUUIDPair[0]), player);
-            }
-        } else {
-            ArrayList<NameUUIDPair> results = new ArrayList<>();
-
-            for(GameProfile gp : profiles) {
-                if(gp.getName().toLowerCase().startsWith(beginning)) {
-                    results.add(new NameUUIDPair(gp));
-                    break;
-                }
-            }
-
-            WebDisplays.NET_HANDLER.sendTo(new CMessageACResult(results.toArray(new NameUUIDPair[0])), player);
+        if(matchExact)
+            result = Arrays.stream(profiles).filter(gp -> gp.getName().equalsIgnoreCase(beginning)).map(NameUUIDPair::new).toArray(NameUUIDPair[]::new);
+        else {
+            final String lBeg = beginning.toLowerCase();
+            result = Arrays.stream(profiles).filter(gp -> gp.getName().toLowerCase().startsWith(lBeg)).map(NameUUIDPair::new).toArray(NameUUIDPair[]::new);
         }
+
+        WebDisplays.NET_HANDLER.sendTo(new CMessageACResult(result), player);
     }
 
     public static class Handler implements IMessageHandler<SMessageACQuery, IMessage> {

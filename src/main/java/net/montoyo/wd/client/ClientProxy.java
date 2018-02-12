@@ -57,6 +57,7 @@ import net.montoyo.wd.miniserv.client.Client;
 import net.montoyo.wd.net.server.SMessagePadCtrl;
 import net.montoyo.wd.net.server.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
+import paulscode.sound.SoundSystemConfig;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
@@ -477,8 +478,8 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
                 if(tes.isLoaded()) {
                     if(dist2 > WebDisplays.INSTANCE.unloadDistance2)
                         tes.unload();
-                    else
-                        tes.updateTrackDistance(dist2);
+                    else if(WebDisplays.INSTANCE.enableSoundDistance)
+                        tes.updateTrackDistance(dist2, SoundSystemConfig.getMasterGain());
                 } else if(dist2 <= WebDisplays.INSTANCE.loadDistance2)
                     tes.load();
             }

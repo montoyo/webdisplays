@@ -102,8 +102,6 @@ public class TileEntityScreen extends TileEntity {
             for(int i = 0; i < upgrades.tagCount(); i++)
                 ret.upgrades.add(new ItemStack(upgrades.getCompoundTagAt(i)));
 
-            System.out.println("Read " + ret.upgrades.size() + " upgrades from NBT"); //TODO: Remove me
-
             return ret;
         }
 
@@ -141,7 +139,6 @@ public class TileEntityScreen extends TileEntity {
             for(ItemStack is: upgrades)
                 list.appendTag(is.writeToNBT(new NBTTagCompound()));
 
-            System.out.println("Saved " + list.tagCount() + " upgrades"); //TODO: Remove me
             tag.setTag("Upgrades", list);
             return tag;
         }
@@ -482,9 +479,6 @@ public class TileEntityScreen extends TileEntity {
         }
 
         if(scr.browser != null) {
-            if(event != CMessageScreenUpdate.MOUSE_MOVE)
-                System.out.println(String.format("handleMouseEvent2 %d @ %d, %d", event, vec == null ? -1 : vec.x, vec == null ? -1 : vec.y));
-
             if(event == CMessageScreenUpdate.MOUSE_CLICK) {
                 scr.browser.injectMouseMove(vec.x, vec.y, 0, false);                                            //Move to target
                 scr.browser.injectMouseButton(vec.x, vec.y, 0, 1, true, 1);                              //Press
@@ -645,7 +639,8 @@ public class TileEntityScreen extends TileEntity {
         return renderBB;
     }
 
-    public void updateTrackDistance(double d) {
+    //FIXME: Not called if enableSoundDistance is false
+    public void updateTrackDistance(double d, float masterVolume) {
         boolean needsComputation = true;
         int intPart = 0; //Need to initialize those because the compiler is stupid
         int fracPart = 0;
@@ -656,19 +651,19 @@ public class TileEntityScreen extends TileEntity {
                     float dist = (float) Math.sqrt(d);
                     float vol;
 
-                    if(dist <= 10.f)
-                        vol = 100.f;
-                    else if(dist >= 30.f)
-                        vol = 0.f;
+                    if(dist <= 10.0f)
+                        vol = masterVolume * WebDisplays.INSTANCE.ytVolume;
+                    else if(dist >= 30.0f)
+                        vol = 0.0f;
                     else
-                        vol = (1.f - (dist - 10.f) / 20.f) * 100.f;
+                        vol = (1.0f - (dist - 10.0f) / 20.0f) * masterVolume * WebDisplays.INSTANCE.ytVolume;
 
                     if(Math.abs(ytVolume - vol) < 0.5f)
                         return; //Delta is too small
 
                     ytVolume = vol;
                     intPart = (int) vol; //Manually convert to string, probably faster in that case...
-                    fracPart = ((int) (vol * 100.f)) - intPart * 100;
+                    fracPart = ((int) (vol * 100.0f)) - intPart * 100;
                     needsComputation = false;
                 }
 
@@ -705,10 +700,8 @@ public class TileEntityScreen extends TileEntity {
     public void invalidate() {
         super.invalidate();
 
-        if(world.isRemote) {
-            Log.info("===> TES(INVALIDATE) %s", pos.toString());
+        if(world.isRemote)
             onChunkUnload();
-        }
     }
 
     public void addFriend(EntityPlayerMP ply, BlockSide side, NameUUIDPair pair) {

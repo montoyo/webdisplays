@@ -4,7 +4,6 @@
 
 package net.montoyo.wd.net.client;
 
-import com.mojang.authlib.GameProfile;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.relauncher.Side;
@@ -18,17 +17,6 @@ public class CMessageACResult implements IMessage, Runnable {
     private NameUUIDPair[] result;
 
     public CMessageACResult() {
-    }
-
-    public CMessageACResult(GameProfile gp) {
-        result = new NameUUIDPair[] { new NameUUIDPair(gp) };
-    }
-
-    public CMessageACResult(GameProfile[] gps) {
-        result = new NameUUIDPair[gps.length];
-
-        for(int i = 0; i < gps.length; i++)
-            result[i] = new NameUUIDPair(gps[i]);
     }
 
     public CMessageACResult(NameUUIDPair[] pairs) {

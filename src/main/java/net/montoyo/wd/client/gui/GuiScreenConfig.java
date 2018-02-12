@@ -309,30 +309,15 @@ public class GuiScreenConfig extends WDScreen {
     }
 
     public boolean isFriendCheckbox(CheckBox cb) {
-        for(CheckBox box : friendBoxes) {
-            if(box == cb)
-                return true;
-        }
-
-        return false;
+        return Arrays.stream(friendBoxes).anyMatch(fb -> cb == fb);
     }
 
     public boolean isOtherCheckbox(CheckBox cb) {
-        for(CheckBox box : otherBoxes) {
-            if(box == cb)
-                return true;
-        }
-
-        return false;
+        return Arrays.stream(otherBoxes).anyMatch(ob -> cb == ob);
     }
 
     public boolean hasFriend(NameUUIDPair f) {
-        for(NameUUIDPair pair : friends) {
-            if(pair.equals(f))
-                return true;
-        }
-
-        return false;
+        return Arrays.stream(friends).anyMatch(f::equals);
     }
 
     @Override

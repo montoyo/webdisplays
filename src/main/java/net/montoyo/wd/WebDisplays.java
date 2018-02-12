@@ -114,6 +114,8 @@ public class WebDisplays {
     public int maxScreenY;
     public int miniservPort;
     public long miniservQuota;
+    public boolean enableSoundDistance;
+    public float ytVolume;
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent ev) {
@@ -133,6 +135,8 @@ public class WebDisplays {
         Property maxScreenY = cfg.get("main", "maxScreenSizeY", 16);
         Property loadDistance = cfg.get("client", "loadDistance", 30.0);
         Property unloadDistance = cfg.get("client", "unloadDistance", 32.0);
+        Property enableSndDist = cfg.get("client", "enableSoundDistance", true);
+        Property ytVolume = cfg.get("client", "ytVolume", 100.0);
 
         blacklist.setComment("An array of domain names you don't want to load.");
         padHeight.setComment("The minePad Y resolution in pixels. padWidth = padHeight * " + PAD_RATIO);
@@ -148,6 +152,10 @@ public class WebDisplays {
         miniservQuota.setComment("The amount of data that can be uploaded to miniserv, in KiB (so 1024 = 1 MiO)");
         maxScreenX.setComment("Maximum screen width, in blocks. Resolution will be clamped by maxResolutionX.");
         maxScreenY.setComment("Maximum screen height, in blocks. Resolution will be clamped by maxResolutionY.");
+        enableSndDist.setComment("If true, the volume of YouTube videos will change depending on how far you are");
+        ytVolume.setComment("Volume for YouTube videos. This will have no effect if enableSoundDistance is set to false");
+        ytVolume.setMinValue(0.0);
+        ytVolume.setMaxValue(100.0);
 
         if(unloadDistance.getDouble() < loadDistance.getDouble() + 2.0)
             unloadDistance.set(loadDistance.getDouble() + 2.0);
@@ -166,6 +174,8 @@ public class WebDisplays {
         this.miniservQuota = miniservQuota.getLong() * 1024L;
         this.maxScreenX = maxScreenX.getInt();
         this.maxScreenY = maxScreenY.getInt();
+        enableSoundDistance = enableSndDist.getBoolean();
+        this.ytVolume = (float) ytVolume.getDouble();
 
         CREATIVE_TAB = new WDCreativeTab();
 
