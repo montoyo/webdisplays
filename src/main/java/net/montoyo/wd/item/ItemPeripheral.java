@@ -53,6 +53,8 @@ public class ItemPeripheral extends ItemMultiTexture implements WDItem {
 
     @Override
     public void addInformation(@Nullable ItemStack is, @Nullable World world, @Nullable List<String> tt, @Nullable ITooltipFlag ttFlags) {
+        super.addInformation(is, world, tt, ttFlags);
+
         if(is != null && tt != null) {
             if(is.getMetadata() == 1) //CC Interface
                 tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.missingCC")); //CC is not available for 1.12.2

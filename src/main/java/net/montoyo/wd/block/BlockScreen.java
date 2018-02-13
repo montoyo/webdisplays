@@ -12,9 +12,11 @@ import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
@@ -35,10 +37,12 @@ import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.core.IUpgrade;
 import net.montoyo.wd.data.SetURLData;
 import net.montoyo.wd.entity.TileEntityScreen;
+import net.montoyo.wd.item.WDItem;
 import net.montoyo.wd.utilities.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class BlockScreen extends WDBlockContainer {
 
@@ -366,6 +370,31 @@ public class BlockScreen extends WDBlockContainer {
     @Override
     public boolean canProvidePower(IBlockState state) {
         return state.getValue(emitting);
+    }
+
+    @Override
+    protected ItemBlock createItemBlock() {
+        return new ItemBlockScreen(this);
+    }
+
+    private static class ItemBlockScreen extends ItemBlock implements WDItem {
+
+        public ItemBlockScreen(BlockScreen screen) {
+            super(screen);
+        }
+
+        @Nullable
+        @Override
+        public String getWikiName(@Nonnull ItemStack is) {
+            return "Screen";
+        }
+
+        @Override
+        public void addInformation(@Nullable ItemStack is, @Nullable World world, @Nullable List<String> tt, @Nullable ITooltipFlag ttFlags) {
+            super.addInformation(is, world, tt, ttFlags);
+            WDItem.addInformation(tt);
+        }
+
     }
 
 }

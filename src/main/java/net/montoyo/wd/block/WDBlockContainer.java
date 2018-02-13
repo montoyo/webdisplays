@@ -13,10 +13,6 @@ public abstract class WDBlockContainer extends BlockContainer {
 
     protected ItemBlock itemBlock;
 
-    public WDBlockContainer(Material mat, MapColor color) {
-        super(mat, color);
-    }
-
     public WDBlockContainer(Material material) {
         super(material);
     }
@@ -26,9 +22,7 @@ public abstract class WDBlockContainer extends BlockContainer {
         setRegistryName(name);
     }
 
-    protected ItemBlock createItemBlock() {
-        return new ItemBlock(this);
-    }
+    protected abstract ItemBlock createItemBlock();
 
     public void makeItemBlock() {
         if(itemBlock != null)
