@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-public class ItemMinePad2 extends Item {
+public class ItemMinePad2 extends Item implements WDItem {
 
     public ItemMinePad2() {
         setUnlocalizedName("webdisplays.minepad");
@@ -74,6 +74,8 @@ public class ItemMinePad2 extends Item {
 
         if(is.getMetadata() > 0)
             tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.minepad2.info"));
+
+        WDItem.addInformation(tt);
     }
 
     @Override
@@ -119,6 +121,12 @@ public class ItemMinePad2 extends Item {
             ret += "2";
 
         return ret;
+    }
+
+    @Nullable
+    @Override
+    public String getWikiName(@Nonnull ItemStack is) {
+        return "Mine_Pad";
     }
 
 }

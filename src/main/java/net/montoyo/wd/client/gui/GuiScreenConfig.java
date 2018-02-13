@@ -6,6 +6,7 @@ package net.montoyo.wd.client.gui;
 
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.montoyo.wd.WebDisplays;
@@ -13,9 +14,11 @@ import net.montoyo.wd.client.gui.controls.*;
 import net.montoyo.wd.client.gui.loading.FillControl;
 import net.montoyo.wd.core.ScreenRights;
 import net.montoyo.wd.entity.TileEntityScreen;
+import net.montoyo.wd.item.WDItem;
 import net.montoyo.wd.net.server.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
@@ -471,6 +474,20 @@ public class GuiScreenConfig extends WDScreen {
     @Override
     public boolean isForBlock(BlockPos bp, BlockSide side) {
         return bp.equals(tes.getPos()) && side == this.side;
+    }
+
+    @Nullable
+    @Override
+    public String getWikiPageName() {
+        ItemStack is = ugUpgrades.getMouseOverUpgrade();
+        if(is != null) {
+            if(is.getItem() instanceof WDItem)
+                return ((WDItem) is.getItem()).getWikiName(is);
+            else
+                return null;
+        }
+
+        return "Screen_Configurator";
     }
 
 }

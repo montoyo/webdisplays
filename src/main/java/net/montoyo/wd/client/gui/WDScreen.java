@@ -28,6 +28,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -352,5 +353,10 @@ public abstract class WDScreen extends GuiScreen {
     }
 
     public abstract boolean isForBlock(BlockPos bp, BlockSide side);
+
+    @Nullable
+    public String getWikiPageName() {
+        return null;
+    }
 
 }

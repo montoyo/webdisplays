@@ -32,6 +32,7 @@ item.webdisplays.advicon.name=Icone de progrès
 item.webdisplays.advicon.wd.name=WebDisplays
 item.webdisplays.advicon.brokenpad.name=minePad cassé
 item.webdisplays.advicon.pigeon.name=Pigeon
+item.webdisplays.wiki=Appuyez sur "F1" pour ouvrir le Wiki
 webdisplays.message.tooSmall=Trop petit ! La taille minimale est de 2x2.
 webdisplays.message.tooBig=Trop grand ! La taille maximale est de %dx%d.
 webdisplays.message.invalid=La structure est invalide; regardez vers %s.

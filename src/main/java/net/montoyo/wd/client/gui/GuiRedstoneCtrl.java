@@ -15,6 +15,8 @@ import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Util;
 import net.montoyo.wd.utilities.Vector3i;
 
+import javax.annotation.Nullable;
+
 public class GuiRedstoneCtrl extends WDScreen {
 
     private int dimension;
@@ -63,6 +65,12 @@ public class GuiRedstoneCtrl extends WDScreen {
     @Override
     public boolean isForBlock(BlockPos bp, BlockSide side) {
         return pos.equalsBlockPos(bp);
+    }
+
+    @Nullable
+    @Override
+    public String getWikiPageName() {
+        return "Redstone_Controller";
     }
 
 }

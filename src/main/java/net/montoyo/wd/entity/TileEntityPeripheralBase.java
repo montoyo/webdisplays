@@ -106,6 +106,18 @@ public abstract class TileEntityPeripheralBase extends TileEntity implements IPe
     }
 
     @Nullable
+    public TileEntityScreen getConnectedScreenEx() {
+        if(screenPos == null || screenSide == null)
+            return null;
+
+        TileEntity te = world.getTileEntity(screenPos.toBlock());
+        if(te == null || !(te instanceof TileEntityScreen) || ((TileEntityScreen) te).getScreen(screenSide) == null)
+            return null;
+
+        return (TileEntityScreen) te;
+    }
+
+    @Nullable
     public Vector3i getScreenPos() {
         return screenPos;
     }

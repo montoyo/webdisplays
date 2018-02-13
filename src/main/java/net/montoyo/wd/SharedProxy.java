@@ -105,4 +105,8 @@ public class SharedProxy {
     public void renderRecipes() {
     }
 
+    public boolean isShiftDown() {
+        return false;
+    }
+
 }

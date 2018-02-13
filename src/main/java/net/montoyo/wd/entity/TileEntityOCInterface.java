@@ -92,13 +92,13 @@ public class TileEntityOCInterface extends TileEntityPeripheralBase implements S
         switch(what) {
             case "click":
             case "type":
-            case "js":
-            case "javascript":
-            case "runjs":
                 right = ScreenRights.CLICK;
                 break;
 
             case "seturl":
+			case "js":
+            case "javascript":
+            case "runjs":
                 right = ScreenRights.CHANGE_URL;
                 break;
 
@@ -111,10 +111,11 @@ public class TileEntityOCInterface extends TileEntityPeripheralBase implements S
                 throw new IllegalArgumentException("invalid right name");
         }
 
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
+        TileEntityScreen tes = getConnectedScreenEx();
+        if(owner == null || tes == null)
             return null;
         else
-            return ((getConnectedScreen().getScreen(screenSide).rightsFor(owner.uuid) & right) == 0) ? FALSE : TRUE;
+            return ((tes.getScreen(screenSide).rightsFor(owner.uuid) & right) == 0) ? FALSE : TRUE;
     }
 
     @Callback
@@ -122,19 +123,22 @@ public class TileEntityOCInterface extends TileEntityPeripheralBase implements S
     public Object[] hasUpgrade(Context ctx, Arguments args) {
         String name = args.checkString(0);
 
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
+        TileEntityScreen tes = getConnectedScreenEx();
+        if(owner == null || tes == null)
             return null;
         else
-            return getConnectedScreen().getScreen(screenSide).upgrades.stream().anyMatch(is -> ((IUpgrade) is.getItem()).getJSName(is).equalsIgnoreCase(name)) ? TRUE : FALSE;
+            return tes.getScreen(screenSide).upgrades.stream().anyMatch(is -> ((IUpgrade) is.getItem()).getJSName(is).equalsIgnoreCase(name)) ? TRUE : FALSE;
     }
 
     @Callback
     @Optional.Method(modid = "opencomputers")
     public Object[] getSize(Context ctx, Arguments args) {
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
+        TileEntityScreen tes = getConnectedScreenEx();
+
+        if(owner == null || tes == null)
             return null;
         else {
-            Vector2i sz = getConnectedScreen().getScreen(screenSide).size;
+            Vector2i sz = tes.getScreen(screenSide).size;
             return new Object[] { sz.x, sz.y };
         }
     }
@@ -142,10 +146,12 @@ public class TileEntityOCInterface extends TileEntityPeripheralBase implements S
     @Callback
     @Optional.Method(modid = "opencomputers")
     public Object[] getResolution(Context ctx, Arguments args) {
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
+        TileEntityScreen tes = getConnectedScreenEx();
+
+        if(owner == null || tes == null)
             return null;
         else {
-            Vector2i res = getConnectedScreen().getScreen(screenSide).resolution;
+            Vector2i res = tes.getScreen(screenSide).resolution;
             return new Object[] { res.x, res.y };
         }
     }
@@ -153,19 +159,23 @@ public class TileEntityOCInterface extends TileEntityPeripheralBase implements S
     @Callback
     @Optional.Method(modid = "opencomputers")
     public Object[] getRotation(Context ctx, Arguments args) {
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
+        TileEntityScreen tes = getConnectedScreenEx();
+
+        if(owner == null || tes == null)
             return null;
         else
-            return new Object[] { getConnectedScreen().getScreen(screenSide).rotation.angle };
+            return new Object[] { tes.getScreen(screenSide).rotation.getAngleAsInt() };
     }
 
     @Callback
     @Optional.Method(modid = "opencomputers")
     public Object[] getURL(Context ctx, Arguments args) {
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
+        TileEntityScreen tes = getConnectedScreenEx();
+
+        if(owner == null || tes == null)
             return null;
         else
-            return new Object[] { getConnectedScreen().getScreen(screenSide).url };
+            return new Object[] { tes.getScreen(screenSide).url };
     }
 
     private static Object[] err(String str) {
@@ -205,10 +215,11 @@ public class TileEntityOCInterface extends TileEntityPeripheralBase implements S
                 throw new IllegalArgumentException("bad action name");
         }
 
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
+        TileEntityScreen scr = getConnectedScreenEx();
+
+        if(owner == null || scr == null)
             return err("notlinked");
         else {
-            TileEntityScreen scr = getConnectedScreen();
             TileEntityScreen.Screen scrscr = scr.getScreen(screenSide);
 
             if((scrscr.rightsFor(owner.uuid) & ScreenRights.CLICK) == 0)
@@ -243,17 +254,15 @@ public class TileEntityOCInterface extends TileEntityPeripheralBase implements S
     }
 
     private Object[] realType(String what) {
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
-            return err("notlinked");
-        else {
-            TileEntityScreen scr = getConnectedScreen();
+        TileEntityScreen scr = getConnectedScreenEx();
 
-            if((scr.getScreen(screenSide).rightsFor(owner.uuid) & ScreenRights.CLICK) == 0)
-                return err("restrictions");
-            else {
-                scr.type(screenSide, what, null);
-                return TRUE;
-            }
+        if(owner == null || scr == null)
+            return err("notlinked");
+        else if((scr.getScreen(screenSide).rightsFor(owner.uuid) & ScreenRights.CLICK) == 0)
+            return err("restrictions");
+        else {
+            scr.type(screenSide, what, null);
+            return TRUE;
         }
     }
 
@@ -293,18 +302,15 @@ public class TileEntityOCInterface extends TileEntityPeripheralBase implements S
     @Optional.Method(modid = "opencomputers")
     public Object[] setURL(Context ctx, Arguments args) {
         String url = args.checkString(0);
+        TileEntityScreen scr = getConnectedScreenEx();
 
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
+        if(owner == null || scr == null)
             return err("notlinked");
+        else if((scr.getScreen(screenSide).rightsFor(owner.uuid) & ScreenRights.CHANGE_URL) == 0)
+            return err("restrictions");
         else {
-            TileEntityScreen scr = getConnectedScreen();
-
-            if((scr.getScreen(screenSide).rightsFor(owner.uuid) & ScreenRights.CHANGE_URL) == 0)
-                return err("restrictions");
-            else {
-                scr.setScreenURL(screenSide, url);
-                return TRUE;
-            }
+            scr.setScreenURL(screenSide, url);
+            return TRUE;
         }
     }
 
@@ -313,18 +319,15 @@ public class TileEntityOCInterface extends TileEntityPeripheralBase implements S
     public Object[] setResolution(Context ctx, Arguments args) {
         int rx = args.checkInteger(0);
         int ry = args.checkInteger(1);
+        TileEntityScreen scr = getConnectedScreenEx();
 
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
+        if(owner == null || scr == null)
             return err("notlinked");
+        else if((scr.getScreen(screenSide).rightsFor(owner.uuid) & ScreenRights.CHANGE_RESOLUTION) == 0)
+            return err("restrictions");
         else {
-            TileEntityScreen scr = getConnectedScreen();
-
-            if((scr.getScreen(screenSide).rightsFor(owner.uuid) & ScreenRights.CHANGE_RESOLUTION) == 0)
-                return err("restrictions");
-            else {
-                scr.setResolution(screenSide, new Vector2i(rx, ry));
-                return TRUE;
-            }
+            scr.setResolution(screenSide, new Vector2i(rx, ry));
+            return TRUE;
         }
     }
 
@@ -340,17 +343,15 @@ public class TileEntityOCInterface extends TileEntityPeripheralBase implements S
         rot /= 90;
         rot &= 3;
 
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
-            return err("notlinked");
-        else {
-            TileEntityScreen scr = getConnectedScreen();
+        TileEntityScreen scr = getConnectedScreenEx();
 
-            if((scr.getScreen(screenSide).rightsFor(owner.uuid) & ScreenRights.CHANGE_RESOLUTION) == 0)
-                return err("restrictions");
-            else {
-                scr.setRotation(screenSide, Rotation.values()[rot]);
-                return TRUE;
-            }
+        if(owner == null || scr == null)
+            return err("notlinked");
+        else if((scr.getScreen(screenSide).rightsFor(owner.uuid) & ScreenRights.CHANGE_RESOLUTION) == 0)
+            return err("restrictions");
+        else {
+            scr.setRotation(screenSide, Rotation.values()[rot]);
+            return TRUE;
         }
     }
 
@@ -358,18 +359,15 @@ public class TileEntityOCInterface extends TileEntityPeripheralBase implements S
     @Optional.Method(modid = "opencomputers")
     public Object[] runJS(Context ctx, Arguments args) {
         String code = args.checkString(0);
+        TileEntityScreen scr = getConnectedScreenEx();
 
-        if(owner == null || !isLinked() || !isScreenChunkLoaded())
+        if(owner == null || scr == null)
             return err("notlinked");
+        else if((scr.getScreen(screenSide).rightsFor(owner.uuid) & ScreenRights.CHANGE_URL) == 0)
+            return err("restrictions");
         else {
-            TileEntityScreen scr = getConnectedScreen();
-
-            if((scr.getScreen(screenSide).rightsFor(owner.uuid) & ScreenRights.CHANGE_URL) == 0)
-                return err("restrictions");
-            else {
-                scr.evalJS(screenSide, code);
-                return TRUE;
-            }
+            scr.evalJS(screenSide, code);
+            return TRUE;
         }
     }
 

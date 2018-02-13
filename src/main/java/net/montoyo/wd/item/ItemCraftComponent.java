@@ -13,10 +13,11 @@ import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.core.CraftComponent;
 import net.montoyo.wd.core.HasAdvancement;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemCraftComponent extends ItemMulti {
+public class ItemCraftComponent extends ItemMulti implements WDItem {
 
     public ItemCraftComponent() {
         super(CraftComponent.class);
@@ -37,6 +38,14 @@ public class ItemCraftComponent extends ItemMulti {
             tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.extcard.bad"));
         else
             tt.add("" + ChatFormatting.ITALIC + I18n.format("item.webdisplays.craftcomp.name"));
+
+        WDItem.addInformation(tt);
+    }
+
+    @Nullable
+    @Override
+    public String getWikiName(@Nonnull ItemStack is) {
+        return CraftComponent.getWikiName(is.getMetadata());
     }
 
 }

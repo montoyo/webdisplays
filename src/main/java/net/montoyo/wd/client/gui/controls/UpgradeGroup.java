@@ -110,6 +110,10 @@ public class UpgradeGroup extends BasicControl {
         }
     }
 
+    public ItemStack getMouseOverUpgrade() {
+        return overStack;
+    }
+
     public static class ClickEvent extends Event<UpgradeGroup> {
 
         private final ItemStack clickStack;

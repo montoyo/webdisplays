@@ -24,7 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemPeripheral extends ItemMultiTexture {
+public class ItemPeripheral extends ItemMultiTexture implements WDItem {
 
     public ItemPeripheral(Block block) {
         super(block, block, (is) -> DefaultPeripheral.fromMetadata(is.getMetadata()).getName());
@@ -61,6 +61,14 @@ public class ItemPeripheral extends ItemMultiTexture {
             else if(is.getMetadata() == 11 && WebDisplays.PROXY.isMiniservDisabled()) //Server
                 tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.noMiniserv"));
         }
+
+        WDItem.addInformation(tt);
+    }
+
+    @Nullable
+    @Override
+    public String getWikiName(@Nonnull ItemStack is) {
+        return DefaultPeripheral.fromMetadata(is.getMetadata()).getWikiName();
     }
 
 }

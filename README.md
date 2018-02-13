@@ -2,7 +2,6 @@
 This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The text below is my "TODO" list.
 
 ### Things before release
-* Write wiki
 * "Anti-9minecraft"
 * Update website
 * Publish

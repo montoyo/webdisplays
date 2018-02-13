@@ -20,6 +20,7 @@ import net.montoyo.wd.miniserv.client.*;
 import net.montoyo.wd.utilities.*;
 import org.lwjgl.input.Keyboard;
 
+import javax.annotation.Nullable;
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.io.IOException;
@@ -700,4 +701,11 @@ public class GuiServer extends WDScreen {
     public boolean isForBlock(BlockPos bp, BlockSide side) {
         return serverPos.equalsBlockPos(bp);
     }
+
+    @Nullable
+    @Override
+    public String getWikiPageName() {
+        return "Server";
+    }
+
 }

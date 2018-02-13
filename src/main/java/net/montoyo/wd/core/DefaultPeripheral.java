@@ -12,18 +12,20 @@ import javax.annotation.Nonnull;
 
 public enum DefaultPeripheral implements IStringSerializable {
 
-    KEYBOARD("keyboard", TileEntityKeyboard.class),                 //WITH FACING (< 3)
-    CC_INTERFACE("ccinterface", null),
-    OC_INTERFACE("cointerface", TileEntityOCInterface.class),
-    REMOTE_CONTROLLER("remotectrl", TileEntityRCtrl.class),         //WITHOUT FACING (>= 3)
-    REDSTONE_CONTROLLER("redstonectrl", TileEntityRedCtrl.class),
-    SERVER("server", TileEntityServer.class);
+    KEYBOARD("keyboard", "Keyboard", TileEntityKeyboard.class),                          //WITH FACING (< 3)
+    CC_INTERFACE("ccinterface", "ComputerCraft_Interface", null),
+    OC_INTERFACE("cointerface", "OpenComputers_Interface", TileEntityOCInterface.class),
+    REMOTE_CONTROLLER("remotectrl", "Remote_Controller", TileEntityRCtrl.class),         //WITHOUT FACING (>= 3)
+    REDSTONE_CONTROLLER("redstonectrl", "Redstone_Controller", TileEntityRedCtrl.class),
+    SERVER("server", "Server", TileEntityServer.class);
 
     private final String name;
+    private final String wikiName;
     private final Class<? extends TileEntity> teClass;
 
-    DefaultPeripheral(String name, Class<? extends TileEntity> te) {
+    DefaultPeripheral(String name, String wname, Class<? extends TileEntity> te) {
         this.name = name;
+        wikiName = wname;
         teClass = te;
     }
 
@@ -56,6 +58,10 @@ public enum DefaultPeripheral implements IStringSerializable {
             ret = (((ret + 1) & 3) << 2) | 3;
 
         return ret;
+    }
+
+    public String getWikiName() {
+        return wikiName;
     }
 
 }

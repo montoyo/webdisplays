@@ -9,8 +9,8 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.multiplayer.ClientAdvancementManager;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -18,6 +18,7 @@ import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -51,10 +52,12 @@ import net.montoyo.wd.core.JSServerRequest;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.item.ItemMulti;
+import net.montoyo.wd.item.WDItem;
 import net.montoyo.wd.miniserv.client.Client;
 import net.montoyo.wd.net.server.SMessagePadCtrl;
 import net.montoyo.wd.net.server.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
+import org.lwjgl.input.Keyboard;
 import paulscode.sound.SoundSystemConfig;
 
 import javax.annotation.Nonnull;
@@ -88,6 +91,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     private JSQueryDispatcher jsDispatcher;
     private LaserPointerRenderer laserPointerRenderer;
     private GuiScreen nextScreen;
+    private boolean isF1Down;
 
     //Miniserv handling
     private int miniservPort;
@@ -352,6 +356,11 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
         nextScreen = new RenderRecipe();
     }
 
+    @Override
+    public boolean isShiftDown() {
+        return Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+    }
+
     /**************************************** RESOURCE MANAGER METHODS ****************************************/
 
     @Override
@@ -481,6 +490,27 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent ev) {
         if(ev.phase == TickEvent.Phase.END) {
+            //Help
+            if(Keyboard.isKeyDown(Keyboard.KEY_F1)) {
+                if(!isF1Down) {
+                    isF1Down = true;
+
+                    String wikiName = null;
+                    if(mc.currentScreen instanceof WDScreen)
+                        wikiName = ((WDScreen) mc.currentScreen).getWikiPageName();
+                    else if(mc.currentScreen instanceof GuiContainer) {
+                        Slot slot = ((GuiContainer) mc.currentScreen).getSlotUnderMouse();
+
+                        if(slot != null && slot.getHasStack() && slot.getStack().getItem() instanceof WDItem)
+                            wikiName = ((WDItem) slot.getStack().getItem()).getWikiName(slot.getStack());
+                    }
+
+                    if(wikiName != null)
+                        mcef.openExampleBrowser("https://montoyo.net/wdwiki/index.php/" + wikiName);
+                }
+            } else if(isF1Down)
+                isF1Down = false;
+
             //Workaround cuz chat sux
             if(nextScreen != null && mc.currentScreen == null) {
                 mc.displayGuiScreen(nextScreen);

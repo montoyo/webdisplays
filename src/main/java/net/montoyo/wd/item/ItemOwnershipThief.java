@@ -27,7 +27,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemOwnershipThief extends Item {
+public class ItemOwnershipThief extends Item implements WDItem {
 
     public ItemOwnershipThief() {
         setUnlocalizedName("webdisplays.ownerthief");
@@ -117,6 +117,7 @@ public class ItemOwnershipThief extends Item {
             if(tag.hasKey("PosX") && tag.hasKey("PosY") && tag.hasKey("PosZ") && tag.hasKey("Side")) {
                 tt.add("Screen pos: " + tag.getInteger("PosX") + ", " + tag.getInteger("PosY") + ", " + tag.getInteger("PosZ"));
                 tt.add("Screen side: " + BlockSide.values()[tag.getByte("Side")].toString());
+                WDItem.addInformation(tt);
                 return;
             }
         }
@@ -124,6 +125,13 @@ public class ItemOwnershipThief extends Item {
         tt.add("" + TextFormatting.RED + "WARNING: Admin tool");
         tt.add("Right click on screen");
         tt.add("and give to new owner.");
+        WDItem.addInformation(tt);
+    }
+
+    @Nullable
+    @Override
+    public String getWikiName(@Nonnull ItemStack is) {
+        return "Ownership_Thief";
     }
 
 }

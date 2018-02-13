@@ -35,7 +35,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemLinker extends Item {
+public class ItemLinker extends Item implements WDItem {
 
     public ItemLinker() {
         setUnlocalizedName("webdisplays.linker");
@@ -139,11 +139,19 @@ public class ItemLinker extends Item {
                 tt.add(I18n.format("webdisplays.linker.selectPeripheral"));
                 tt.add(I18n.format("webdisplays.linker.posInfo", tag.getInteger("ScreenX"), tag.getInteger("ScreenY"), tag.getInteger("ScreenZ")));
                 tt.add(I18n.format("webdisplays.linker.sideInfo", I18n.format("webdisplays.side." + side.toString().toLowerCase())));
+                WDItem.addInformation(tt);
                 return;
             }
         }
 
         tt.add(I18n.format("webdisplays.linker.selectScreen"));
+        WDItem.addInformation(tt);
+    }
+
+    @Nullable
+    @Override
+    public String getWikiName(@Nonnull ItemStack is) {
+        return "Linking_Tool";
     }
 
 }

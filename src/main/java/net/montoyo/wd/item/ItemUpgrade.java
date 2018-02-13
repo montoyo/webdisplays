@@ -20,7 +20,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemUpgrade extends ItemMulti implements IUpgrade {
+public class ItemUpgrade extends ItemMulti implements IUpgrade, WDItem {
 
     public ItemUpgrade() {
         super(DefaultUpgrade.class);
@@ -49,6 +49,7 @@ public class ItemUpgrade extends ItemMulti implements IUpgrade {
     @Override
     public void addInformation(ItemStack is, @Nullable World world, List<String> tt, ITooltipFlag ttFlags) {
         tt.add("" + ChatFormatting.ITALIC + I18n.format("item.webdisplays.upgrade.name"));
+        WDItem.addInformation(tt);
     }
 
     @Override
@@ -60,6 +61,12 @@ public class ItemUpgrade extends ItemMulti implements IUpgrade {
             return "webdisplays:wtf";
         else
             return "webdisplays:" + upgrades[meta];
+    }
+
+    @Nullable
+    @Override
+    public String getWikiName(@Nonnull ItemStack is) {
+        return DefaultUpgrade.getWikiName(is.getMetadata());
     }
 
 }
