@@ -1,12 +1,11 @@
 # WebDisplays for Minecraft 1.12.2
-This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The text below is my "TODO" list.
+This is the WebDisplays mod for Minecraft 1.12.2. Even though the source code is public, it is not an "open source" project. Read the "LICENSE" file for more informations.
+
+### Wiki
+* The Wiki that details all blocks/items can be found on my website https://montoyo.net/wdwiki/
 
 ### Things before release
-* Add IsEmitting and GetEmissionArray
-* Do some nice screenshots
-* "Anti-9minecraft"
-* Update website
-* Publish
+* Release ready. Targeted release date: 17/02/2018.
 
 ### Delayed things
 * Plugin API
