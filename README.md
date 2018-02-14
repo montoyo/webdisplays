@@ -2,6 +2,8 @@
 This is the unfinished port of the WebDisplays mod for Minecraft 1.12.2. The text below is my "TODO" list.
 
 ### Things before release
+* Add IsEmitting and GetEmissionArray
+* Do some nice screenshots
 * "Anti-9minecraft"
 * Update website
 * Publish

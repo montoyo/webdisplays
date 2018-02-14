@@ -22,10 +22,7 @@ import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.server.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.*;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
 @SideOnly(Side.CLIENT)
 public final class JSQueryDispatcher {
@@ -250,34 +247,17 @@ public final class JSQueryDispatcher {
 
         register("GetRedstoneArray", (cb, tes, side, args) -> {
             if(tes.hasUpgrade(side, DefaultUpgrade.REDSTONE_INPUT)) {
-                final Vector2i size = tes.getScreen(side).size;
                 final EnumFacing facing = EnumFacing.VALUES[side.reverse().ordinal()];
-                final BlockPos.MutableBlockPos mbp = new BlockPos.MutableBlockPos();
-                final Vector3i vec1 = new Vector3i(tes.getPos());
-                final Vector3i vec2 = new Vector3i();
-                final StringBuilder resp = new StringBuilder("{\"levels\":[");
+                final StringJoiner resp = new StringJoiner(",", "{\"levels\":[", "]}");
 
-                for(int y = 0; y < size.y; y++) {
-                    vec2.set(vec1);
+                tes.forEachScreenBlocks(side, bp -> {
+                    if(tes.getWorld().getBlockState(bp).getValue(BlockScreen.emitting))
+                        resp.add("0");
+                    else
+                        resp.add("" + tes.getWorld().getRedstonePower(bp, facing));
+                });
 
-                    for(int x = 0; x < size.x; x++) {
-                        if(x > 0 || y > 0)
-                            resp.append(',');
-
-                        vec2.toBlock(mbp);
-
-                        if(tes.getWorld().getBlockState(mbp).getValue(BlockScreen.emitting))
-                            resp.append(0);
-                        else
-                            resp.append(tes.getWorld().getRedstonePower(mbp, facing));
-
-                        vec2.add(side.right.x, side.right.y, side.right.z);
-                    }
-
-                    vec1.add(side.up.x, side.up.y, side.up.z);
-                }
-
-                cb.success(resp.append("]}").toString());
+                cb.success(resp.toString());
             } else
                 cb.failure(403, "Missing upgrade");
         });
@@ -319,6 +299,37 @@ public final class JSQueryDispatcher {
             }
 
             makeServerQuery(tes, side, cb, JSServerRequest.SET_REDSTONE_AT, x, y, state);
+        });
+
+        register("IsEmitting", (cb, tes, side, args) -> {
+            if(!tes.hasUpgrade(side, DefaultUpgrade.REDSTONE_OUTPUT)) {
+                cb.failure(403, "Missing upgrade");
+                return;
+            }
+
+            if(args.length == 2 && args[0] instanceof Double && args[1] instanceof Double) {
+                TileEntityScreen.Screen scr = tes.getScreen(side);
+                int x = ((Double) args[0]).intValue();
+                int y = ((Double) args[1]).intValue();
+
+                if(x < 0 || x >= scr.size.x || y < 0 || y >= scr.size.y)
+                    cb.failure(403, "Out of range");
+                else {
+                    BlockPos bpos = (new Vector3i(tes.getPos())).addMul(side.right, x).addMul(side.up, y).toBlock();
+                    boolean e = tes.getWorld().getBlockState(bpos).getValue(BlockScreen.emitting);
+                    cb.success("{\"emitting\":" + (e ? "true" : "false") + "}");
+                }
+            } else
+                cb.failure(400, "Wrong arguments");
+        });
+
+        register("GetEmissionArray", (cb, tes, side, args) -> {
+            if(tes.hasUpgrade(side, DefaultUpgrade.REDSTONE_OUTPUT)) {
+                final StringJoiner resp = new StringJoiner(",", "{\"emission\":[", "]}");
+                tes.forEachScreenBlocks(side, bp -> resp.add(tes.getWorld().getBlockState(bp).getValue(BlockScreen.emitting) ? "1" : "0"));
+                cb.success(resp.toString());
+            } else
+                cb.failure(403, "Missing upgrade");
         });
 
         register("GetLocation", (cb, tes, side, args) -> {

@@ -37,6 +37,7 @@ import net.montoyo.wd.utilities.Rotation;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class TileEntityScreen extends TileEntity {
 
@@ -167,27 +168,12 @@ public class TileEntityScreen extends TileEntity {
             }
 
             redstoneStatus = new NibbleArray(size.x * size.y);
-            final BlockPos.MutableBlockPos mbp = new BlockPos.MutableBlockPos();
-            final Vector3i vec1 = new Vector3i(start);
-            final Vector3i vec2 = new Vector3i();
             final EnumFacing facing = EnumFacing.VALUES[side.reverse().ordinal()];
+            final ScreenIterator it = new ScreenIterator(start, side, size);
 
-            for(int y = 0; y < size.y; y++) {
-                final int base = y * size.x;
-                vec2.set(vec1);
-
-                for(int x = 0; x < size.x; x++) {
-                    vec2.toBlock(mbp);
-
-                    if(world.getBlockState(mbp).getValue(BlockScreen.emitting))
-                        redstoneStatus.set(base + x, 0);
-                    else
-                        redstoneStatus.set(base + x, world.getRedstonePower(mbp, facing));
-
-                    vec2.add(side.right.x, side.right.y, side.right.z);
-                }
-
-                vec1.add(side.up.x, side.up.y, side.up.z);
+            while(it.hasNext()) {
+                int idx = it.getIndex();
+                redstoneStatus.set(idx, world.getRedstonePower(it.next(), facing));
             }
         }
 
@@ -205,6 +191,17 @@ public class TileEntityScreen extends TileEntity {
             }
         }
 
+    }
+
+    public void forEachScreenBlocks(BlockSide side, Consumer<BlockPos> func) {
+        Screen scr = getScreen(side);
+
+        if(scr != null) {
+            ScreenIterator it = new ScreenIterator(pos, side, scr.size);
+
+            while(it.hasNext())
+                func.accept(it.next());
+        }
     }
 
     private final ArrayList<Screen> screens = new ArrayList<>();

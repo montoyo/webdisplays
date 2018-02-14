@@ -50,8 +50,6 @@
 		var screenW = 1;
 		var screenH = 1;
 		var screenData = [ 0 ];
-		var gotSize = false;
-		var gotData = false;
 		var hasRedOutput = false;
 	
 		function generateTable() {
@@ -112,30 +110,21 @@
 			wdGetSize(function(w, h) {
 				screenW = w;
 				screenH = h;
-				
-				if(gotData)
-					generateTable();
-				else
-					gotSize = true;
-			});
-			
-			wdGetRedstoneArray(function(array) {
-				screenData = array;
-				
-				if(gotSize)
-					generateTable();
-				else
-					gotData = true;
-			});
-			
-			wdGetUpgrades(function(upgrades) {
-				for(i = 0; i < upgrades.length; i++) {
-					if(upgrades[i] == "webdisplays:redoutput") {
-						hasRedOutput = true;
-						wdClearRedstone();
-						break;
-					}
-				}
+
+                wdGetRedstoneArray(function(array) {
+                    screenData = array;
+                    generateTable();
+
+                    wdGetUpgrades(function(upgrades) {
+                        for(i = 0; i < upgrades.length; i++) {
+                            if(upgrades[i] == "webdisplays:redoutput") {
+                                hasRedOutput = true;
+                                fetchEmissionData();
+                                break;
+                            }
+                        }
+                    });
+                });
 			});
 		});
 		
@@ -152,6 +141,22 @@
 					wdSetRedstoneAt(x, y, true);
 				}
 			}
+		}
+
+		function fetchEmissionData() {
+			wdGetEmissionArray(function(emission) {
+				for(y = 0; y < screenH; y++) {
+				    for(x = 0; x < screenW; x++) {
+                        var elem = $("#cell_" + x + "_" + y);
+
+				        if(emission[y * screenW + x]) {
+                            if(!elem.hasClass("redstone_override"))
+                                elem.addClass("redstone_override");
+						} else if(elem.hasClass("redstone_override"))
+						    elem.removeClass("redstone_override");
+					}
+				}
+			});
 		}
 	</script>
 </head>

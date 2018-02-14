@@ -82,6 +82,24 @@ function wdSetRedstoneAt(x, y, state) {
 	wdExecRequest("SetRedstoneAt(" + x + "," + y + "," + istate + ")", function(resp) { /* console.log(resp.status); */ });
 }
 
+//Requires upgrade: webdisplays:redoutput
+function wdIsEmitting(x, y, callback) {
+    wdExecRequest("IsEmitting(" + x + "," + y + ")", function(resp) {
+        callback(resp.emitting);
+    });
+}
+
+//Requires upgrade: webdisplays:redoutput
+function wdGetEmissionArray(callback) {
+    wdExecRequest("GetEmissionArray", function(resp) {
+        var emission = [];
+        for(i = 0; i < resp.emission.length; i++)
+            emission.push(resp.emission[i] != 0);
+
+        callback(emission);
+    });
+}
+
 //Requires upgrade: webdisplays:gps
 function wdGetLocation(callback) {
 	wdExecRequest("GetLocation", function(resp) {
