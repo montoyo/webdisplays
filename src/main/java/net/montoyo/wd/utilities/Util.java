@@ -147,7 +147,7 @@ public abstract class Util {
     }
 
     public static String addProtocol(String str) {
-        return str.contains("://") ? str : ("http://" + str);
+        return (str.isEmpty() || str.contains("://")) ? str : ("http://" + str);
     }
 
     public static boolean isFileNameInvalid(String fname) {
