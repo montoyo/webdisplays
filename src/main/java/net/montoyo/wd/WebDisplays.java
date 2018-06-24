@@ -4,6 +4,7 @@
 
 package net.montoyo.wd;
 
+import dan200.computercraft.api.ComputerCraftAPI;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.Block;
@@ -14,9 +15,13 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -45,15 +50,20 @@ import net.montoyo.wd.net.client.CMessageServerInfo;
 import net.montoyo.wd.net.Messages;
 import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.utilities.Util;
+import net.montoyo.wd.entity.TileEntityCCInterface;
 
+import dan200.computercraft.api.peripheral.IPeripheral;
+import dan200.computercraft.api.peripheral.IPeripheralProvider;
+
+import javax.annotation.Nonnull;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.UUID;
 
-@Mod(modid = "webdisplays", version = WebDisplays.MOD_VERSION, dependencies = "required-after:mcef;after:opencomputers;")
-public class WebDisplays {
+@Mod(modid = "webdisplays", version = WebDisplays.MOD_VERSION, dependencies = "required-after:mcef;after:opencomputers;after:computercraft")
+public class WebDisplays implements IPeripheralProvider {
 
     public static final String MOD_VERSION = "1.0";
 
@@ -105,6 +115,7 @@ public class WebDisplays {
     private int lastPadId = 0;
     public boolean doHardRecipe;
     private boolean hasOC;
+    private boolean hasCC;
     private String[] blacklist;
     public boolean disableOwnershipThief;
     public double unloadDistance2;
@@ -215,6 +226,8 @@ public class WebDisplays {
 
         PROXY.preInit();
         MinecraftForge.EVENT_BUS.register(this);
+
+        ComputerCraftAPI.registerPeripheralProvider(this);
     }
 
     @Mod.EventHandler
@@ -236,6 +249,7 @@ public class WebDisplays {
     public void onPostInit(FMLPostInitializationEvent ev) {
         PROXY.postInit();
         hasOC = Loader.isModLoaded("opencomputers");
+        hasCC = Loader.isModLoaded("computercraft") ;
     }
 
     @SubscribeEvent
@@ -414,6 +428,8 @@ public class WebDisplays {
         return INSTANCE.hasOC;
     }
 
+    public static boolean isComputerCraftAvailable() { return INSTANCE.hasCC; }
+
     public static boolean isSiteBlacklisted(String url) {
         try {
             URL url2 = new URL(Util.addProtocol(url));
@@ -427,5 +443,27 @@ public class WebDisplays {
         return isSiteBlacklisted(url) ? BLACKLIST_URL : url;
     }
 
+    /**
+     * Produce an peripheral implementation from a block location.
+     *
+     * @param world The world the block is in.
+     * @param pos   The position the block is at.
+     * @param side  The side to get the peripheral from.
+     * @return A peripheral, or {@code null} if there is not a peripheral here you'd like to handle.
+     */
+
+    @Override
+    public IPeripheral getPeripheral(@Nonnull net.minecraft.world.World world, @Nonnull net.minecraft.util.math.BlockPos blockPos, @Nonnull net.minecraft.util.EnumFacing enumFacing)
+    {
+        TileEntity te = world.getTileEntity(blockPos);
+        if (te == null) {
+            return null;
+        }
+
+        if (!(te instanceof TileEntityCCInterface)) {
+            return null;
+        }
+        return (TileEntityCCInterface)te;
+    }
 }
 

@@ -10,6 +10,11 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
+file "build.properties" withReader {
+    def prop = new Properties()
+    prop.load(it)
+    ext.config = new ConfigSlurper().parse prop
+}
 
 version = "1.12.2-1.0"
 group = "net.montoyo.wd" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
@@ -33,7 +38,23 @@ minecraft {
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
+repositories {
+    maven {
+        // computercraft
+        url "http://maven.thiakil.com"
+    }
+
+    maven {
+        // opencomputers
+        url = "http://maven.cil.li/"
+    }
+}
+
 dependencies {
+    // this will use the API jars for CC and OC mods.  you must place the regular .jar
+    // files in the run/mods/folder like normal for testing. also need to add luaj-jse-2.0.3jar to mods folder
+    compileOnly "dan200.computercraft:ComputerCraft:${config.computercraft.version}:api"
+    compileOnly "li.cil.oc:OpenComputers:MC1.12.2-${config.opencomputers.version}:api"
 }
 
 jar {

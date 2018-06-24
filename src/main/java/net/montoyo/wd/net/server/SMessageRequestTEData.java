@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
-import net.montoyo.mcef.utilities.Log;
+import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.Message;
 import net.montoyo.wd.utilities.Vector3i;

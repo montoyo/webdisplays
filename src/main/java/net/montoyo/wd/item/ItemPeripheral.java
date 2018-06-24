@@ -56,8 +56,8 @@ public class ItemPeripheral extends ItemMultiTexture implements WDItem {
         super.addInformation(is, world, tt, ttFlags);
 
         if(is != null && tt != null) {
-            if(is.getMetadata() == 1) //CC Interface
-                tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.missingCC")); //CC is not available for 1.12.2
+            if(is.getMetadata() == 1 && !WebDisplays.isComputerCraftAvailable()) //CC Interface
+                tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.missingCC"));
             else if(is.getMetadata() == 2 && !WebDisplays.isOpenComputersAvailable()) //OC Interface
                 tt.add("" + ChatFormatting.RED + I18n.format("webdisplays.message.missingOC"));
             else if(is.getMetadata() == 11 && WebDisplays.PROXY.isMiniservDisabled()) //Server
