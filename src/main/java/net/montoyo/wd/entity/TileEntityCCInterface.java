@@ -4,9 +4,42 @@ import dan200.computercraft.api.lua.ILuaContext;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
+import net.montoyo.wd.utilities.Vector2i;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
 
 public class TileEntityCCInterface extends TileEntityPeripheralBase implements IPeripheral
 {
+    public enum CCLuaMethod {
+        METHOD_IS_LINKED("isLinked"),
+        METHOD_GET_SCREEN_POS("getScreenPos"),
+        METHOD_CLICK("click"),
+        METHOD_TYPE("type"),
+        METHOD_GETURL("getUrl"),
+        METHOD_SETURL("setUrl"),
+        METHOD_SHUTDOWN("shutdown"),
+        METHOD_RUNJS("runJS");
+
+        private final String name;
+
+        CCLuaMethod(String n) {
+            name = n;
+        }
+
+        public String toString() {
+            return name;
+        }
+
+        public static CCLuaMethod getMethod(int index) {
+            return values()[index];
+        }
+
+        public static String[] getMethodsList() {
+            return Arrays.stream(CCLuaMethod.values()).map(CCLuaMethod::toString).toArray(String[]::new);
+        }
+    }
+
     @Override
     public boolean equals(IPeripheral other)
     {
@@ -19,87 +52,76 @@ public class TileEntityCCInterface extends TileEntityPeripheralBase implements I
         return "WebScreen";
     }
 
-    @Override
-    public Object[] callMethod(IComputerAccess computer, ILuaContext context, int method, Object[] args) throws LuaException, InterruptedException
-    {
-        if (method == 0)
-            return new Object[] { Boolean.valueOf(this.isLinked()) };
-        if (method == 1) {
-            if (this.isLinked()) {
-                return new Object[] { Double.valueOf(this.screenPos.x), Double.valueOf(this.screenPos.y), Double.valueOf(this.screenPos.z) };
-            }
-            return null; }
-        if (method == 2) {
-            if ((args.length < 2) || (!(args[0] instanceof Double)) || (!(args[1] instanceof Double))) {
-                return null;
-            }
-            TileEntityScreen ent = getConnectedScreenEx();
-            if (ent == null) {
-                return null;
-            }
-            // NOT YET IMPLEMENTED, TODO
-            // ent.click(((Double)args[0]).floatValue(), ((Double)args[1]).floatValue());
-            return null; }
-        if (method == 3) {
-            if ((args.length < 1) || (!(args[0] instanceof String))) {
-                return null;
-            }
-            TileEntityScreen ent = getConnectedScreenEx();
-            if (ent == null) {
-                return null;
-            }
-            // TODO: NOT YET IMPLEMENTED
-            // ent.type((String)args[0]);
-            return null; }
-        if (method == 4) {
-            TileEntityScreen ent = getConnectedScreenEx();
-            if (ent == null) {
-                return null;
-            }
-            return new Object[] { ent.getScreen(screenSide).url }; }
-        if (method == 5) {
-            if ((args.length < 1) || (!(args[0] instanceof String))) {
-                return null;
-            }
-            TileEntityScreen ent = getConnectedScreenEx();
-            if (ent == null) {
-                return null;
-            }
-            ent.setScreenURL(this.screenSide, (String)args[0]);
-            return null;
-        }
-        if (method == 6) {
-            TileEntityScreen ent = getConnectedScreenEx();
-            if (ent == null) {
-                return null;
-            }
-            // TODO: NOT YET IMPLEMENTED // ent.getScreen(screenSide).setDead() or something
-            return null; }
-        if (method == 7) {
-            if ((args.length < 1) || (!(args[0] instanceof String))) {
-                return null;
-            }
-            TileEntityScreen ent = getConnectedScreenEx();
-            if (ent == null) {
-                return null;
-            }
-            try {
-                // TODO: not yet implemented.  call runJS() probably.
-                //ent.getScreen(screenSide).browser.runJS();
-                //ent.sendJS((String)args[0]);
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
-
-            return null;
-        }
-        return null;
-    }
-
-    public static final String[] methods = { "isLinked", "getScreenPos", "click", "type", "getUrl", "setUrl", "shutdown", "runJS" };
-
     public String[] getMethodNames()
     {
-        return methods;
+        return CCLuaMethod.getMethodsList();
+    }
+
+    @Override
+    public Object[] callMethod(@Nonnull IComputerAccess computer,
+                               @Nonnull ILuaContext context,
+                               int method,
+                               @Nonnull Object[] args)
+            throws LuaException, InterruptedException
+    {
+        CCLuaMethod method_name = CCLuaMethod.getMethod(method);
+
+        boolean requireLinked = method_name != CCLuaMethod.METHOD_IS_LINKED;
+        boolean requireScreen = method_name != CCLuaMethod.METHOD_IS_LINKED &&
+                                method_name != CCLuaMethod.METHOD_GET_SCREEN_POS;
+
+        if (requireLinked && !this.isLinked()) {
+            return null;
+        }
+
+        TileEntityScreen screenEntity = getConnectedScreenEx();
+        if (requireScreen && screenEntity == null) {
+            return null;
+        }
+
+        // lots of our methods take 1 string arg from lua as a param, so we check here
+        String luaParam1String = null;
+        if (args.length >= 1 && (args[0] instanceof String)) {
+            luaParam1String = (String)args[0];
+        }
+
+        switch (method_name) {
+            case METHOD_IS_LINKED:
+                return new Object[]{this.isLinked()};
+            case METHOD_GET_SCREEN_POS:
+                return new Object[]{this.screenPos.x, this.screenPos.y, this.screenPos.z};
+            case METHOD_CLICK:
+                if ((args.length < 2) || (!(args[0] instanceof Double)) || (!(args[1] instanceof Double))) {
+                    return null;
+                }
+
+                float x = ((Double)args[0]).floatValue();
+                float y = ((Double)args[1]).floatValue();
+                screenEntity.click(screenSide, new Vector2i((int)(x), (int)(y)));
+                return null;
+            case METHOD_TYPE:
+                if (luaParam1String == null) { return null; }
+                screenEntity.type(this.screenSide, luaParam1String, null);
+                return null;
+            case METHOD_GETURL:
+                return new Object[]{screenEntity.getScreen(screenSide).url};
+            case METHOD_SETURL:
+                if (luaParam1String == null) { return null; }
+                screenEntity.setScreenURL(this.screenSide, luaParam1String);
+                return null;
+            case METHOD_SHUTDOWN:
+                screenEntity.removeScreen(this.screenSide);
+                return null;
+            case METHOD_RUNJS:
+                if (luaParam1String == null) { return null; }
+                try {
+                    screenEntity.evalJS(this.screenSide, luaParam1String);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+                return null;
+            default:
+                return null;
+        }
     }
 }
