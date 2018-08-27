@@ -16,6 +16,7 @@ import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.gui.controls.Container;
 import net.montoyo.wd.client.gui.controls.Control;
 import net.montoyo.wd.client.gui.controls.Event;
+import net.montoyo.wd.client.gui.controls.List;
 import net.montoyo.wd.client.gui.loading.FillControl;
 import net.montoyo.wd.client.gui.loading.GuiLoader;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
@@ -340,6 +341,10 @@ public abstract class WDScreen extends GuiScreen {
 
     public void drawItemStackTooltip(ItemStack is, int x, int y) {
         renderToolTip(is, x, y); //Since it's protected...
+    }
+
+    public void drawTooltip(java.util.List<String> lines, int x, int y) {
+        drawHoveringText(lines, x, y, fontRenderer); //This is also protected...
     }
 
     public void requirePostDraw(Control ctrl) {

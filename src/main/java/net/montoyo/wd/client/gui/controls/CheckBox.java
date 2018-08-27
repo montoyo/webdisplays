@@ -10,6 +10,8 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.util.ResourceLocation;
 import net.montoyo.wd.client.gui.loading.JsonOWrapper;
 
+import java.util.Arrays;
+
 public class CheckBox extends BasicControl {
 
     private static final ResourceLocation texUnchecked = new ResourceLocation("webdisplays", "textures/gui/checkbox.png");
@@ -35,6 +37,7 @@ public class CheckBox extends BasicControl {
     private String label;
     private int labelW;
     private boolean checked;
+    private java.util.List<String> tooltip;
 
     public CheckBox() {
         label = "";
@@ -116,6 +119,18 @@ public class CheckBox extends BasicControl {
         label = tr(json.getString("label", ""));
         labelW = font.getStringWidth(label);
         checked = json.getBool("checked", false);
+
+        String tt = tr(json.getString("tooltip", ""));
+        if(!tt.isEmpty()) {
+            tooltip = Arrays.asList(tt.split("\\\\n"));
+            parent.requirePostDraw(this);
+        }
+    }
+
+    @Override
+    public void postDraw(int mouseX, int mouseY, float ptt) {
+        if(tooltip != null && !disabled && mouseX >= x && mouseX <= x + WIDTH + 2 + labelW && mouseY >= y && mouseY < y + HEIGHT)
+            parent.drawTooltip(tooltip, mouseX, mouseY);
     }
 
 }

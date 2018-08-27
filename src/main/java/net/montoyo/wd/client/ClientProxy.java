@@ -226,6 +226,16 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     }
 
     @Override
+    public void screenUpdateAutoVolumeInGui(Vector3i pos, BlockSide side, boolean av) {
+        if(mc.currentScreen != null && mc.currentScreen instanceof GuiScreenConfig) {
+            GuiScreenConfig gsc = (GuiScreenConfig) mc.currentScreen;
+
+            if(gsc.isForBlock(pos.toBlock(), side))
+                gsc.updateAutoVolume(av);
+        }
+    }
+
+    @Override
     public void displaySetPadURLGui(String padURL) {
         mc.displayGuiScreen(new GuiSetURL2(padURL));
     }

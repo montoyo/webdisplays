@@ -32,6 +32,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     public static final int UPDATE_OWNER = 7;
     public static final int UPDATE_ROTATION = 8;
     public static final int UPDATE_RUN_JS = 9;
+    public static final int UPDATE_AUTO_VOL = 10;
 
     public static final int MOUSE_CLICK = 0;
     public static final int MOUSE_UP = 1;
@@ -48,6 +49,7 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
     private int redstoneLevel;
     private NameUUIDPair owner;
     private Rotation rotation;
+    private boolean autoVolume;
 
     public CMessageScreenUpdate() {
     }
@@ -155,6 +157,16 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
         return ret;
     }
 
+    public static CMessageScreenUpdate autoVolume(TileEntityScreen tes, BlockSide side, boolean av) {
+        CMessageScreenUpdate ret = new CMessageScreenUpdate();
+        ret.pos = new Vector3i(tes.getPos());
+        ret.side = side;
+        ret.action = UPDATE_AUTO_VOL;
+        ret.autoVolume = av;
+
+        return ret;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
         pos = new Vector3i(buf);
@@ -182,6 +194,8 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
             owner = new NameUUIDPair(buf);
         else if(action == UPDATE_ROTATION)
             rotation = Rotation.values()[buf.readByte() & 3];
+        else if(action == UPDATE_AUTO_VOL)
+            autoVolume = buf.readBoolean();
     }
 
     @Override
@@ -211,6 +225,8 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
             owner.writeTo(buf);
         else if(action == UPDATE_ROTATION)
             buf.writeByte(rotation.ordinal());
+        else if(action == UPDATE_AUTO_VOL)
+            buf.writeBoolean(autoVolume);
     }
 
     @Override
@@ -251,6 +267,8 @@ public class CMessageScreenUpdate implements IMessage, Runnable {
                 scr.owner = owner;
         } else if(action == UPDATE_ROTATION)
             tes.setRotation(side, rotation);
+        else if(action == UPDATE_AUTO_VOL)
+            tes.setAutoVolume(side, autoVolume);
         else
             Log.warning("Caught invalid CMessageScreenUpdate with action ID %d", action);
     }

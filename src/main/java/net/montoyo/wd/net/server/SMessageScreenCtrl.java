@@ -45,6 +45,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     public static final int CTRL_JS_REQUEST = 11;
     public static final int CTRL_SET_ROTATION = 12;
     public static final int CTRL_SET_URL_REMOTE = 13;
+    public static final int CTRL_SET_AUTO_VOL = 14;
 
     private int ctrl;
     private int dim;
@@ -64,6 +65,7 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
     private Object[] jsReqData;
     private Rotation rotation;
     private Vector3i remoteLoc;
+    private boolean autoVol;
 
     public SMessageScreenCtrl() {
     }
@@ -164,6 +166,17 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         return ret;
     }
 
+    public static SMessageScreenCtrl autoVol(TileEntityScreen tes, BlockSide side, boolean av) {
+        SMessageScreenCtrl ret = new SMessageScreenCtrl();
+        ret.ctrl = CTRL_SET_AUTO_VOL;
+        ret.pos = new Vector3i(tes.getPos());
+        ret.dim = tes.getWorld().provider.getDimension();
+        ret.side = side;
+        ret.autoVol = av;
+
+        return ret;
+    }
+
     private static boolean isVec2Ctrl(int msg) {
         return msg == CTRL_SET_RESOLUTION || msg == CTRL_LASER_DOWN || msg == CTRL_LASER_MOVE;
     }
@@ -204,7 +217,8 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         else if(ctrl == CTRL_SET_URL_REMOTE) {
             url = ByteBufUtils.readUTF8String(buf);
             remoteLoc = new Vector3i(buf);
-        }
+        } else if(ctrl == CTRL_SET_AUTO_VOL)
+            autoVol = buf.readBoolean();
     }
 
     @Override
@@ -241,7 +255,8 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         else if(ctrl == CTRL_SET_URL_REMOTE) {
             ByteBufUtils.writeUTF8String(buf, url);
             remoteLoc.writeTo(buf);
-        }
+        } else if(ctrl == CTRL_SET_AUTO_VOL)
+            buf.writeBoolean(autoVol);
     }
 
     @Override
@@ -336,6 +351,9 @@ public class SMessageScreenCtrl implements IMessage, Runnable {
         } else if(ctrl == CTRL_SET_ROTATION) {
             checkPermission(tes, ScreenRights.CHANGE_RESOLUTION);
             tes.setRotation(side, rotation);
+        } else if(ctrl == CTRL_SET_AUTO_VOL) {
+            checkPermission(tes, ScreenRights.MANAGE_UPGRADES); //because why not
+            tes.setAutoVolume(side, autoVol);
         } else
             Log.warning("Caught SMessageScreenCtrl with invalid control ID %d from player %s (UUID %s)", ctrl, player.getName(), player.getGameProfile().getId().toString());
     }

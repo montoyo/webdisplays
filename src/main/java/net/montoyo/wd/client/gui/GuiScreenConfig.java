@@ -109,6 +109,9 @@ public class GuiScreenConfig extends WDScreen {
     @FillControl
     private CheckBox cbLockRatio;
 
+    @FillControl
+    private CheckBox cbAutoVolume;
+
     private CheckBox[] friendBoxes;
     private CheckBox[] otherBoxes;
 
@@ -150,6 +153,7 @@ public class GuiScreenConfig extends WDScreen {
 
             //Hopefully upgrades have been synchronized...
             ugUpgrades.setUpgrades(scr.upgrades);
+            cbAutoVolume.setChecked(scr.autoVolume);
         }
 
         if(owner == null)
@@ -304,7 +308,8 @@ public class GuiScreenConfig extends WDScreen {
             } catch(NumberFormatException ex) {
                 cbLockRatio.setChecked(false);
             }
-        }
+        } else if(ev.getSource() == cbAutoVolume)
+            WebDisplays.NET_HANDLER.sendToServer(SMessageScreenCtrl.autoVol(tes, side, ev.isChecked()));
     }
 
     @GuiSubscribe
@@ -457,6 +462,7 @@ public class GuiScreenConfig extends WDScreen {
 
         flag = (myRights & ScreenRights.MANAGE_UPGRADES) == 0;
         ugUpgrades.setDisabled(flag);
+        cbAutoVolume.setDisabled(flag);
     }
 
     public void updateResolution(Vector2i res) {
@@ -469,6 +475,10 @@ public class GuiScreenConfig extends WDScreen {
     public void updateRotation(Rotation rot) {
         rotation = rot;
         updateRotationStr();
+    }
+
+    public void updateAutoVolume(boolean av) {
+        cbAutoVolume.setChecked(av);
     }
 
     @Override

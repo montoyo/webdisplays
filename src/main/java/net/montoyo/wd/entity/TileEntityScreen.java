@@ -60,6 +60,7 @@ public class TileEntityScreen extends TileEntity {
         public EntityPlayer laserUser;
         public final Vector2i lastMousePos = new Vector2i();
         public NibbleArray redstoneStatus; //null on client
+        public boolean autoVolume = true;
 
         public static Screen deserialize(NBTTagCompound tag) {
             Screen ret = new Screen();
@@ -104,6 +105,9 @@ public class TileEntityScreen extends TileEntity {
             for(int i = 0; i < upgrades.tagCount(); i++)
                 ret.upgrades.add(new ItemStack(upgrades.getCompoundTagAt(i)));
 
+            if(tag.hasKey("AutoVolume"))
+                ret.autoVolume = tag.getBoolean("AutoVolume");
+
             return ret;
         }
 
@@ -142,6 +146,7 @@ public class TileEntityScreen extends TileEntity {
                 list.appendTag(is.writeToNBT(new NBTTagCompound()));
 
             tag.setTag("Upgrades", list);
+            tag.setBoolean("AutoVolume", autoVolume);
             return tag;
         }
 
@@ -644,7 +649,7 @@ public class TileEntityScreen extends TileEntity {
         int fracPart = 0;
 
         for(Screen scr: screens) {
-            if(scr.videoType != null && scr.browser != null && !scr.browser.isPageLoading()) {
+            if(scr.autoVolume && scr.videoType != null && scr.browser != null && !scr.browser.isPageLoading()) {
                 if(needsComputation) {
                     float dist = (float) Math.sqrt(d);
                     float vol;
@@ -1033,6 +1038,23 @@ public class TileEntityScreen extends TileEntity {
                 scr.browser.runJS(code, "");
         } else
             WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.js(this, side, code), point());
+    }
+
+    public void setAutoVolume(BlockSide side, boolean av) {
+        Screen scr = getScreen(side);
+        if(scr == null) {
+            Log.error("Trying to toggle auto-volume on invalid screen (side %s)", side.toString());
+            return;
+        }
+
+        scr.autoVolume = av;
+
+        if(world.isRemote)
+            WebDisplays.PROXY.screenUpdateAutoVolumeInGui(new Vector3i(pos), side, av);
+        else {
+            WebDisplays.NET_HANDLER.sendToAllAround(CMessageScreenUpdate.autoVolume(this, side, av), point());
+            markDirty();
+        }
     }
 
     @Override

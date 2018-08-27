@@ -200,6 +200,14 @@
       "x": 260,
       "y": 129,
       "width": 84
+    },
+    {
+      "type": "CheckBox",
+      "name": "cbAutoVolume",
+      "x": 257,
+      "y": 150,
+      "label": "$webdisplays.gui.screencfg.autovol",
+      "tooltip": "$webdisplays.gui.screencfg.avwarning"
     }
   ],
   "center": true
