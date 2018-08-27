@@ -644,6 +644,7 @@ public class TileEntityScreen extends TileEntity {
 
     //FIXME: Not called if enableSoundDistance is false
     public void updateTrackDistance(double d, float masterVolume) {
+        final WebDisplays wd = WebDisplays.INSTANCE;
         boolean needsComputation = true;
         int intPart = 0; //Need to initialize those because the compiler is stupid
         int fracPart = 0;
@@ -654,12 +655,12 @@ public class TileEntityScreen extends TileEntity {
                     float dist = (float) Math.sqrt(d);
                     float vol;
 
-                    if(dist <= 10.0f)
-                        vol = masterVolume * WebDisplays.INSTANCE.ytVolume;
-                    else if(dist >= 30.0f)
+                    if(dist <= wd.avDist100)
+                        vol = masterVolume * wd.ytVolume;
+                    else if(dist >= wd.avDist0)
                         vol = 0.0f;
                     else
-                        vol = (1.0f - (dist - 10.0f) / 20.0f) * masterVolume * WebDisplays.INSTANCE.ytVolume;
+                        vol = (1.0f - (dist - wd.avDist100) / (wd.avDist0 - wd.avDist100)) * masterVolume * wd.ytVolume;
 
                     if(Math.abs(ytVolume - vol) < 0.5f)
                         return; //Delta is too small

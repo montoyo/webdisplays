@@ -117,12 +117,16 @@ public class WebDisplays {
     public long miniservQuota;
     public boolean enableSoundDistance;
     public float ytVolume;
+    public float avDist100;
+    public float avDist0;
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent ev) {
         //Load config
         Configuration cfg = new Configuration(ev.getSuggestedConfigurationFile());
         cfg.load();
+
+        //CAT: Main
         Property blacklist = cfg.get("main", "blacklist", new String[0]);
         Property padHeight = cfg.get("main", "padHeight", 480);
         Property hardRecipe = cfg.get("main", "hardRecipes", true);
@@ -134,11 +138,19 @@ public class WebDisplays {
         Property miniservQuota = cfg.get("main", "miniservQuota", 1024); //It's stored as a string anyway
         Property maxScreenX = cfg.get("main", "maxScreenSizeX", 16);
         Property maxScreenY = cfg.get("main", "maxScreenSizeY", 16);
+
+        //CAT: Client options
         Property loadDistance = cfg.get("client", "loadDistance", 30.0);
         Property unloadDistance = cfg.get("client", "unloadDistance", 32.0);
-        Property enableSndDist = cfg.get("client", "enableSoundDistance", true);
-        Property ytVolume = cfg.get("client", "ytVolume", 100.0);
 
+        //CAT: Auto volume config (client-side)
+        Property enableAutoVol = cfg.get("clientAutoVolume", "enableAutoVolume", true);
+        Property ytVolume = cfg.get("clientAutoVolume", "ytVolume", 100.0);
+        Property dist100 = cfg.get("clientAutoVolume", "dist100", 10.0);
+        Property dist0 = cfg.get("clientAutoVolume", "dist0", 30.0);
+
+
+        //Comments & shit
         blacklist.setComment("An array of domain names you don't want to load.");
         padHeight.setComment("The minePad Y resolution in pixels. padWidth = padHeight * " + PAD_RATIO);
         hardRecipe.setComment("If true, breaking the minePad is required to craft upgrades.");
@@ -153,13 +165,20 @@ public class WebDisplays {
         miniservQuota.setComment("The amount of data that can be uploaded to miniserv, in KiB (so 1024 = 1 MiO)");
         maxScreenX.setComment("Maximum screen width, in blocks. Resolution will be clamped by maxResolutionX.");
         maxScreenY.setComment("Maximum screen height, in blocks. Resolution will be clamped by maxResolutionY.");
-        enableSndDist.setComment("If true, the volume of YouTube videos will change depending on how far you are");
+        enableAutoVol.setComment("If true, the volume of YouTube videos will change depending on how far you are");
         ytVolume.setComment("Volume for YouTube videos. This will have no effect if enableSoundDistance is set to false");
         ytVolume.setMinValue(0.0);
         ytVolume.setMaxValue(100.0);
+        dist100.setComment("Distance after which the sound starts dropping (in blocks)");
+        dist100.setMinValue(0.0);
+        dist0.setComment("Distance after which you can't hear anything (in blocks)");
+        dist0.setMinValue(0.0);
 
         if(unloadDistance.getDouble() < loadDistance.getDouble() + 2.0)
             unloadDistance.set(loadDistance.getDouble() + 2.0);
+
+        if(dist0.getDouble() < dist100.getDouble() + 0.1)
+            dist0.set(dist100.getDouble() + 0.1);
 
         cfg.save();
 
@@ -175,8 +194,10 @@ public class WebDisplays {
         this.miniservQuota = miniservQuota.getLong() * 1024L;
         this.maxScreenX = maxScreenX.getInt();
         this.maxScreenY = maxScreenY.getInt();
-        enableSoundDistance = enableSndDist.getBoolean();
+        enableSoundDistance = enableAutoVol.getBoolean();
         this.ytVolume = (float) ytVolume.getDouble();
+        avDist100 = (float) dist100.getDouble();
+        avDist0 = (float) dist0.getDouble();
 
         CREATIVE_TAB = new WDCreativeTab();
 
