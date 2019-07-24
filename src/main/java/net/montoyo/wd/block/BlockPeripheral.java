@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 BARBOTIN Nicolas
+ * Copyright (C) 2019 BARBOTIN Nicolas
  */
 
 package net.montoyo.wd.block;
@@ -33,10 +33,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.core.DefaultPeripheral;
-import net.montoyo.wd.entity.TileEntityKeyboard;
-import net.montoyo.wd.entity.TileEntityOCInterface;
-import net.montoyo.wd.entity.TileEntityPeripheralBase;
-import net.montoyo.wd.entity.TileEntityServer;
+import net.montoyo.wd.entity.*;
 import net.montoyo.wd.item.ItemLinker;
 import net.montoyo.wd.item.ItemPeripheral;
 import net.montoyo.wd.net.client.CMessageCloseGui;
@@ -209,8 +206,8 @@ public class BlockPeripheral extends WDBlockContainer {
 
             if(te instanceof TileEntityServer)
                 ((TileEntityServer) te).setOwner((EntityPlayer) placer);
-            else if(te instanceof TileEntityOCInterface)
-                ((TileEntityOCInterface) te).setOwner((EntityPlayer) placer);
+            else if(te instanceof TileEntityInterfaceBase)
+                ((TileEntityInterfaceBase) te).setOwner((EntityPlayer) placer);
         }
     }
 

@@ -1,11 +1,13 @@
 /*
- * Copyright (C) 2018 BARBOTIN Nicolas
+ * Copyright (C) 2019 BARBOTIN Nicolas
  */
 
 package net.montoyo.wd.client.gui;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.montoyo.mcef.api.API;
+import net.montoyo.wd.client.ClientProxy;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.client.gui.controls.Button;
 import net.montoyo.wd.client.gui.controls.TextField;
@@ -54,8 +56,10 @@ public class GuiRedstoneCtrl extends WDScreen {
     @GuiSubscribe
     public void onClick(Button.ClickEvent ev) {
         if(ev.getSource() == btnOk) {
-            String rising = Util.addProtocol(tfRisingEdge.getText());
-            String falling = Util.addProtocol(tfFallingEdge.getText());
+            API mcef = ((ClientProxy) WebDisplays.PROXY).getMCEF();
+
+            String rising = mcef.punycode(Util.addProtocol(tfRisingEdge.getText()));
+            String falling = mcef.punycode(Util.addProtocol(tfFallingEdge.getText()));
             WebDisplays.NET_HANDLER.sendToServer(new SMessageRedstoneCtrl(dimension, pos, rising, falling));
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 BARBOTIN Nicolas
+ * Copyright (C) 2019 BARBOTIN Nicolas
  */
 
 package net.montoyo.wd.net.client;
@@ -8,7 +8,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.relauncher.Side;
-import net.montoyo.mcef.utilities.Log;
+import net.montoyo.wd.utilities.Log;
 import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.data.GuiData;
 import net.montoyo.wd.net.Message;

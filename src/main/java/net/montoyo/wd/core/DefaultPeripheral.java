@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 BARBOTIN Nicolas
+ * Copyright (C) 2019 BARBOTIN Nicolas
  */
 
 package net.montoyo.wd.core;
@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
 public enum DefaultPeripheral implements IStringSerializable {
 
     KEYBOARD("keyboard", "Keyboard", TileEntityKeyboard.class),                          //WITH FACING (< 3)
-    CC_INTERFACE("ccinterface", "ComputerCraft_Interface", null),
+    CC_INTERFACE("ccinterface", "ComputerCraft_Interface", TileEntityCCInterface.class),
     OC_INTERFACE("cointerface", "OpenComputers_Interface", TileEntityOCInterface.class),
     REMOTE_CONTROLLER("remotectrl", "Remote_Controller", TileEntityRCtrl.class),         //WITHOUT FACING (>= 3)
     REDSTONE_CONTROLLER("redstonectrl", "Redstone_Controller", TileEntityRedCtrl.class),

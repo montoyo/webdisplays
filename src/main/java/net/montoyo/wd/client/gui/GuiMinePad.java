@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 BARBOTIN Nicolas
+ * Copyright (C) 2019 BARBOTIN Nicolas
  */
 
 package net.montoyo.wd.client.gui;
@@ -82,6 +82,7 @@ public class GuiMinePad extends WDScreen {
     public void handleInput() {
         while(Keyboard.next()) {
             char key = Keyboard.getEventCharacter();
+            int keycode = Keyboard.getEventKey();
             boolean pressed = Keyboard.getEventKeyState();
 
             if(Keyboard.getEventKey() == Keyboard.KEY_ESCAPE) {
@@ -90,14 +91,12 @@ public class GuiMinePad extends WDScreen {
             }
 
             if(pad.view != null) {
-                if(key != '.' && key != ';' && key != ',') {
-                    if(pressed)
-                        pad.view.injectKeyPressed(key, 0);
-                    else
-                        pad.view.injectKeyReleased(key, 0);
-                }
+                if(pressed)
+                    pad.view.injectKeyPressedByKeyCode(keycode, key, 0);
+                else
+                    pad.view.injectKeyReleasedByKeyCode(keycode, key, 0);
 
-                if(key != Keyboard.CHAR_NONE)
+                if(key != 0)
                     pad.view.injectKeyTyped(key, 0);
             }
         }

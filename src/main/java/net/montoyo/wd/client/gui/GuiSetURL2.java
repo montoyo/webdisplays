@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 BARBOTIN Nicolas
+ * Copyright (C) 2019 BARBOTIN Nicolas
  */
 
 package net.montoyo.wd.client.gui;
@@ -94,6 +94,7 @@ public class GuiSetURL2 extends WDScreen {
     private void validate(String url) {
         if(!url.isEmpty()) {
             url = Util.addProtocol(url);
+            url = ((ClientProxy) WebDisplays.PROXY).getMCEF().punycode(url);
 
             if(isPad) {
                 WebDisplays.NET_HANDLER.sendToServer(new SMessagePadCtrl(url));

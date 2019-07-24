@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 BARBOTIN Nicolas
+ * Copyright (C) 2019 BARBOTIN Nicolas
  */
 
 package net.montoyo.wd.client;
@@ -15,7 +15,6 @@ import net.minecraft.client.multiplayer.ClientAdvancementManager;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
@@ -31,9 +30,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.resource.IResourceType;
+import net.minecraftforge.client.resource.ISelectiveResourceReloadListener;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -65,8 +65,9 @@ import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.*;
+import java.util.function.Predicate;
 
-public class ClientProxy extends SharedProxy implements IResourceManagerReloadListener, IDisplayHandler, IJSQueryHandler {
+public class ClientProxy extends SharedProxy implements ISelectiveResourceReloadListener, IDisplayHandler, IJSQueryHandler {
 
     public class PadData {
 
@@ -126,7 +127,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
 
         mcef = MCEFApi.getAPI();
         if(mcef != null)
-            mcef.registerScheme("wd", WDScheme.class, true, false, false);
+            mcef.registerScheme("wd", WDScheme.class, true, false, false, true, true, false, false);
     }
 
     @Override
@@ -374,7 +375,7 @@ public class ClientProxy extends SharedProxy implements IResourceManagerReloadLi
     /**************************************** RESOURCE MANAGER METHODS ****************************************/
 
     @Override
-    public void onResourceManagerReload(@Nonnull IResourceManager rm) {
+    public void onResourceManagerReload(IResourceManager resourceManager, Predicate<IResourceType> resourcePredicate) {
         Log.info("Resource manager reload: clearing GUI cache...");
         GuiLoader.clearCache();
     }

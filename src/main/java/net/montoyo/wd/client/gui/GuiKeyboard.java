@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 BARBOTIN Nicolas
+ * Copyright (C) 2019 BARBOTIN Nicolas
  */
 
 package net.montoyo.wd.client.gui;
@@ -17,10 +17,12 @@ import net.montoyo.wd.entity.TileEntityScreen;
 import net.montoyo.wd.net.server.SMessageScreenCtrl;
 import net.montoyo.wd.utilities.BlockSide;
 import net.montoyo.wd.utilities.Log;
+import net.montoyo.wd.utilities.TypeData;
 import net.montoyo.wd.utilities.Util;
 import org.lwjgl.input.Keyboard;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Map;
 
 @SideOnly(Side.CLIENT)
@@ -30,8 +32,7 @@ public class GuiKeyboard extends WDScreen {
 
     private TileEntityScreen tes;
     private BlockSide side;
-    private String eventStack = "";
-    private boolean lastIsType = false;
+    private final ArrayList<TypeData> evStack = new ArrayList<>();
     private BlockPos kbPos;
     private boolean showWarning = true;
 
@@ -119,45 +120,28 @@ public class GuiKeyboard extends WDScreen {
                 else {
                     char chr = Keyboard.getEventCharacter();
 
-                    if(chr == '\n' || chr == '\r' || chr == '\b') {
-                        if(Keyboard.getEventKeyState()) {
-                            if(lastIsType)
-                                lastIsType = false;
+                    if(Keyboard.getEventKeyState()) {
+                        int kc = Keyboard.getEventKey();
 
-                            if(!eventStack.isEmpty())
-                                eventStack += (char) 1;
-
-                            eventStack += 'p';
-                            eventStack += chr;
-                            eventStack += (char) 1;
-                            eventStack += 'r';
-                            eventStack += chr;
-                        }
-                    } else if(chr != 0) {
-                        if(!lastIsType) {
-                            if(!eventStack.isEmpty())
-                                eventStack += (char) 1;
-
-                            eventStack += 't';
-                            lastIsType = true;
-                        }
-
-                        eventStack += chr;
+                        evStack.add(new TypeData(TypeData.Action.PRESS, kc, chr));
+                        evStack.add(new TypeData(TypeData.Action.RELEASE, kc, chr));
                     }
+
+                    if(chr != 0)
+                        evStack.add(new TypeData(TypeData.Action.TYPE, 0, chr));
                 }
             }
 
-            if(!eventStack.isEmpty() && !syncRequested())
+            if(!evStack.isEmpty() && !syncRequested())
                 requestSync();
         }
     }
 
     @Override
     protected void sync() {
-        if(!eventStack.isEmpty()) {
-            WebDisplays.NET_HANDLER.sendToServer(SMessageScreenCtrl.type(tes, side, eventStack, kbPos));
-            eventStack = "";
-            lastIsType = false;
+        if(!evStack.isEmpty()) {
+            WebDisplays.NET_HANDLER.sendToServer(SMessageScreenCtrl.type(tes, side, WebDisplays.GSON.toJson(evStack), kbPos));
+            evStack.clear();
         }
     }
 

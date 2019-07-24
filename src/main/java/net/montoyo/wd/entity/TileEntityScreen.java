@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 BARBOTIN Nicolas
+ * Copyright (C) 2019 BARBOTIN Nicolas
  */
 
 package net.montoyo.wd.entity;
@@ -759,20 +759,35 @@ public class TileEntityScreen extends TileEntity {
         if(world.isRemote) {
             if(scr.browser != null) {
                 try {
-                    String[] events = text.split("" + ((char) 1));
+                    if(text.startsWith("t")) {
+                        for(int i = 1; i < text.length(); i++) {
+                            char chr = text.charAt(i);
+                            if(chr == 1)
+                                break;
 
-                    for(String ev: events) {
-                        char action = ev.charAt(0);
+                            scr.browser.injectKeyTyped(chr, 0);
+                        }
+                    } else {
+                        TypeData[] data = WebDisplays.GSON.fromJson(text, TypeData[].class);
 
-                        if(action == 'p')
-                            scr.browser.injectKeyPressed(ev.charAt(1), 0);
-                        else if(action == 'r')
-                            scr.browser.injectKeyReleased(ev.charAt(1), 0);
-                        else if(action == 't') {
-                            for(int i = 1; i < ev.length(); i++)
-                                scr.browser.injectKeyTyped(ev.charAt(i), 0);
-                        } else
-                            throw new RuntimeException("Invalid control key '" + action + '\'');
+                        for(TypeData ev : data) {
+                            switch(ev.getAction()) {
+                                case PRESS:
+                                    scr.browser.injectKeyPressedByKeyCode(ev.getKeyCode(), ev.getKeyChar(), 0);
+                                    break;
+
+                                case RELEASE:
+                                    scr.browser.injectKeyReleasedByKeyCode(ev.getKeyCode(), ev.getKeyChar(), 0);
+                                    break;
+
+                                case TYPE:
+                                    scr.browser.injectKeyTyped(ev.getKeyChar(), 0);
+                                    break;
+
+                                default:
+                                    throw new RuntimeException("Invalid type action '" + ev.getAction() + '\'');
+                            }
+                        }
                     }
                 } catch(Throwable t) {
                     Log.warningEx("Suspicious keyboard type packet received...", t);

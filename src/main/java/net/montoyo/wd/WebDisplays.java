@@ -1,12 +1,14 @@
 /*
- * Copyright (C) 2018 BARBOTIN Nicolas
+ * Copyright (C) 2019 BARBOTIN Nicolas
  */
 
 package net.montoyo.wd;
 
+import com.google.gson.Gson;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
@@ -17,10 +19,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
@@ -52,10 +57,10 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.UUID;
 
-@Mod(modid = "webdisplays", version = WebDisplays.MOD_VERSION, dependencies = "required-after:mcef;after:opencomputers;")
+@Mod(modid = "webdisplays", version = WebDisplays.MOD_VERSION, dependencies = "required-after:mcef@[1.0,2.0);after:opencomputers;after:computercraft;")
 public class WebDisplays {
 
-    public static final String MOD_VERSION = "1.0";
+    public static final String MOD_VERSION = "1.1";
 
     @Mod.Instance(owner = "webdisplays")
     public static WebDisplays INSTANCE;
@@ -67,6 +72,8 @@ public class WebDisplays {
     public static WDCreativeTab CREATIVE_TAB;
     public static final ResourceLocation ADV_PAD_BREAK = new ResourceLocation("webdisplays", "webdisplays/pad_break");
     public static final String BLACKLIST_URL = "mod://webdisplays/blacklisted.html";
+    public static final Gson GSON = new Gson();
+    public static final ResourceLocation CAPABILITY = new ResourceLocation("webdisplays", "customdatacap");
 
     //Blocks
     public BlockScreen blockScreen;
@@ -105,6 +112,7 @@ public class WebDisplays {
     private int lastPadId = 0;
     public boolean doHardRecipe;
     private boolean hasOC;
+    private boolean hasCC;
     private String[] blacklist;
     public boolean disableOwnershipThief;
     public double unloadDistance2;
@@ -241,13 +249,14 @@ public class WebDisplays {
     @Mod.EventHandler
     public void onInit(FMLInitializationEvent ev) {
         //Register tile entities
-        GameRegistry.registerTileEntity(TileEntityScreen.class, "webdisplays:screen");
+        GameRegistry.registerTileEntity(TileEntityScreen.class, new ResourceLocation("webdisplays", "screen"));
         for(DefaultPeripheral dp: DefaultPeripheral.values()) {
             if(dp.getTEClass() != null)
-                GameRegistry.registerTileEntity(dp.getTEClass(), "webdisplays:" + dp.getName());
+                GameRegistry.registerTileEntity(dp.getTEClass(), new ResourceLocation("webdisplays", dp.getName()));
         }
 
         //Other things
+        CapabilityManager.INSTANCE.register(IWDDCapability.class, new WDDCapability.Storage(), new WDDCapability.Factory());
         PROXY.init();
         NET_HANDLER = NetworkRegistry.INSTANCE.newSimpleChannel("webdisplays");
         Messages.registerAll(NET_HANDLER);
@@ -257,6 +266,17 @@ public class WebDisplays {
     public void onPostInit(FMLPostInitializationEvent ev) {
         PROXY.postInit();
         hasOC = Loader.isModLoaded("opencomputers");
+        hasCC = Loader.isModLoaded("computercraft");
+
+        if(hasCC) {
+            try {
+                //We have to do this because the "register" method might be stripped out if CC isn't loaded
+                CCPeripheralProvider.class.getMethod("register").invoke(null);
+            } catch(Throwable t) {
+                Log.error("ComputerCraft was found, but WebDisplays wasn't able to register its CC Interface Peripheral");
+                t.printStackTrace();
+            }
+        }
     }
 
     @SubscribeEvent
@@ -371,14 +391,50 @@ public class WebDisplays {
 
     @SubscribeEvent
     public void onLogIn(PlayerEvent.PlayerLoggedInEvent ev) {
-        if(!ev.player.world.isRemote && ev.player instanceof EntityPlayerMP)
+        if(!ev.player.world.isRemote && ev.player instanceof EntityPlayerMP) {
             WebDisplays.NET_HANDLER.sendTo(new CMessageServerInfo(miniservPort), (EntityPlayerMP) ev.player);
+            IWDDCapability cap = ev.player.getCapability(WDDCapability.INSTANCE, null);
+
+            if(cap == null)
+                Log.warning("Player %s (%s) has null IWDDCapability!", ev.player.getName(), ev.player.getGameProfile().getId().toString());
+            else if(cap.isFirstRun()) {
+                Util.toast(ev.player, TextFormatting.LIGHT_PURPLE, "welcome1");
+                Util.toast(ev.player, TextFormatting.LIGHT_PURPLE, "welcome2");
+                Util.toast(ev.player, TextFormatting.LIGHT_PURPLE, "welcome3");
+
+                cap.clearFirstRun();
+            }
+        }
     }
 
     @SubscribeEvent
     public void onLogOut(PlayerEvent.PlayerLoggedOutEvent ev) {
         if(!ev.player.world.isRemote)
             Server.getInstance().getClientManager().revokeClientKey(ev.player.getGameProfile().getId());
+    }
+
+    @SubscribeEvent
+    public void attachEntityCaps(AttachCapabilitiesEvent<Entity> ev) {
+        if(ev.getObject() instanceof EntityPlayer)
+            ev.addCapability(CAPABILITY, new WDDCapability.Provider());
+    }
+
+    @SubscribeEvent
+    public void onPlayerClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone ev) {
+        IWDDCapability src = ev.getOriginal().getCapability(WDDCapability.INSTANCE, null);
+        IWDDCapability dst = ev.getEntityPlayer().getCapability(WDDCapability.INSTANCE, null);
+
+        if(src == null) {
+            Log.error("src is null");
+            return;
+        }
+
+        if(dst == null) {
+            Log.error("dst is null");
+            return;
+        }
+
+        src.cloneTo(dst);
     }
 
     @SubscribeEvent
@@ -433,6 +489,10 @@ public class WebDisplays {
 
     public static boolean isOpenComputersAvailable() {
         return INSTANCE.hasOC;
+    }
+
+    public static boolean isComputerCraftAvailable() {
+        return INSTANCE.hasCC;
     }
 
     public static boolean isSiteBlacklisted(String url) {
