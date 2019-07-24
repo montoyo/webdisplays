@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PC"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:dye",
+      "data": 6
+    },
+    "P": {
+      "item": "webdisplays:craftcomp",
+      "data": 2
+    }
+  },
+  "result": {
+    "item": "webdisplays:peripheral",
+    "data": 1
+  }
+}
