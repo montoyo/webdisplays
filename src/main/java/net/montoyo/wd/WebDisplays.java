@@ -398,10 +398,6 @@ public class WebDisplays {
             if(cap == null)
                 Log.warning("Player %s (%s) has null IWDDCapability!", ev.player.getName(), ev.player.getGameProfile().getId().toString());
             else if(cap.isFirstRun()) {
-                Util.toast(ev.player, TextFormatting.LIGHT_PURPLE, "welcome1");
-                Util.toast(ev.player, TextFormatting.LIGHT_PURPLE, "welcome2");
-                Util.toast(ev.player, TextFormatting.LIGHT_PURPLE, "welcome3");
-
                 cap.clearFirstRun();
             }
         }
