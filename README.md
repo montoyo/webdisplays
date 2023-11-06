@@ -16,3 +16,4 @@ This is the WebDisplays mod for Minecraft 1.12.2. I don't have time to maintain 
 * In-game command to add/remove blacklisted domains
 * Config: RPMP (Real pixels per Minecraft pixels)
 * Disable miniserv in solo
+* Changing User Agent String
